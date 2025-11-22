@@ -45,8 +45,43 @@ function initBullseye() {
         target.appendChild(ringDiv);
     });
 
+    // Add click handler for misses (clicking outside rings)
+    canvas.addEventListener('click', handleBullseyeMiss);
+
     canvas.appendChild(target);
     console.log('Target appended to canvas. Canvas now has', canvas.children.length, 'children');
+}
+
+function handleBullseyeMiss(e) {
+    // Only handle clicks on the canvas itself, not on rings
+    if (e.target.id === 'gameCanvas' || e.target.classList.contains('target-bullseye')) {
+        const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+
+        if (currentPlayer.data.throws >= 5) {
+            return;
+        }
+
+        saveState();
+
+        // Count as a throw with 0 points
+        currentPlayer.data.throws = (currentPlayer.data.throws || 0) + 1;
+
+        updateScoreboard();
+
+        // Auto-advance if player has finished
+        if (currentPlayer.data.throws >= 5) {
+            setTimeout(() => {
+                const allFinished = GameState.players.every(p => p.data.throws >= 5);
+                if (allFinished) {
+                    endGame();
+                } else {
+                    if (confirm(`${currentPlayer.name} has finished! Next player?`)) {
+                        nextPlayer();
+                    }
+                }
+            }, 500);
+        }
+    }
 }
 
 function handleBullseyeHit(points) {
@@ -90,9 +125,12 @@ function initAroundWorld() {
         if (!player.data.currentZone) {
             player.data.currentZone = 1;
         }
+        if (!player.data.throws) {
+            player.data.throws = 0;
+        }
     });
 
-    // Create target with 12 zones
+    // Create target with 12 zones - SMALLER SIZE TO FIT SCREEN
     const target = document.createElement('div');
     target.className = 'atw-target';
 
@@ -101,30 +139,35 @@ function initAroundWorld() {
 
     for (let i = 0; i < zones; i++) {
         const angle = (360 / zones) * i - 90;
-        const nextAngle = (360 / zones) * (i + 1) - 90;
-
         const zone = document.createElement('div');
         zone.className = 'atw-zone';
         zone.dataset.zone = i + 1;
         zone.style.background = colors[i];
 
-        // Position zones in a circle
-        const radius = 300;
+        // Position zones in a circle - REDUCED RADIUS
+        const radius = 200; // Reduced from 300
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
         const x = Math.cos(angleRad) * radius * 0.7;
         const y = Math.sin(angleRad) * radius * 0.7;
 
-        zone.style.width = '120px';
-        zone.style.height = '120px';
-        zone.style.left = `calc(50% + ${x}px - 60px)`;
-        zone.style.top = `calc(50% + ${y}px - 60px)`;
+        zone.style.width = '90px'; // Reduced from 120px
+        zone.style.height = '90px';
+        zone.style.left = `calc(50% + ${x}px - 45px)`;
+        zone.style.top = `calc(50% + ${y}px - 45px)`;
         zone.style.borderRadius = '50%';
+        zone.style.fontSize = '1.8rem'; // Adjusted font size
         zone.textContent = i + 1;
 
-        zone.addEventListener('click', () => handleAroundWorldHit(i + 1, zone));
+        zone.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleAroundWorldHit(i + 1, zone);
+        });
 
         target.appendChild(zone);
     }
+
+    // Add click handler for misses (clicking outside zones)
+    canvas.addEventListener('click', handleAroundWorldMiss);
 
     canvas.appendChild(target);
     updateAroundWorldDisplay();
@@ -134,9 +177,13 @@ function handleAroundWorldHit(zoneNumber, zoneElement) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const currentZone = currentPlayer.data.currentZone || 1;
 
-    if (zoneNumber === currentZone) {
-        saveState();
+    saveState();
 
+    // Increment throw count
+    currentPlayer.data.throws = (currentPlayer.data.throws || 0) + 1;
+
+    if (zoneNumber === currentZone) {
+        // Correct zone hit!
         currentPlayer.data.currentZone = currentZone + 1;
         currentPlayer.score += 10;
         zoneElement.classList.add('completed');
@@ -144,18 +191,52 @@ function handleAroundWorldHit(zoneNumber, zoneElement) {
         updateScoreboard();
         updateAroundWorldDisplay();
 
-        // Check if player won
+        // Check if player completed all zones
         if (currentPlayer.data.currentZone > 12) {
-            setTimeout(() => {
-                endGame();
-            }, 500);
+            // Mark player as finished but continue game for other players
+            currentPlayer.data.finished = true;
+
+            // Check if all players are finished
+            const allFinished = GameState.players.every(p => p.data.finished || p.data.currentZone > 12);
+            if (allFinished) {
+                setTimeout(() => {
+                    endGame();
+                }, 500);
+                return;
+            }
         }
     } else {
-        // Visual feedback for wrong zone
+        // Wrong zone - visual feedback
+        const originalBg = zoneElement.style.background;
         zoneElement.style.background = '#dc3545';
         setTimeout(() => {
-            zoneElement.style.background = '';
+            zoneElement.style.background = originalBg;
         }, 300);
+    }
+
+    // Move to next player after each throw
+    setTimeout(() => {
+        nextPlayer();
+    }, 400);
+}
+
+// Handle clicking outside zones (miss)
+function handleAroundWorldMiss(e) {
+    // Only handle clicks on the canvas itself, not on zones
+    if (e.target.id === 'gameCanvas' || e.target.classList.contains('atw-target')) {
+        const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+
+        saveState();
+
+        // Count as a throw
+        currentPlayer.data.throws = (currentPlayer.data.throws || 0) + 1;
+
+        updateScoreboard();
+
+        // Move to next player
+        setTimeout(() => {
+            nextPlayer();
+        }, 200);
     }
 }
 
@@ -166,11 +247,11 @@ function updateAroundWorldDisplay() {
 
     zones.forEach(zone => {
         const zoneNum = parseInt(zone.dataset.zone);
-        zone.classList.remove('active', 'completed');
+        zone.classList.remove('active');
+        // Don't remove completed class as it might be from previous player
 
-        if (zoneNum < currentZone) {
-            zone.classList.add('completed');
-        } else if (zoneNum === currentZone) {
+        // Only highlight the CURRENT player's active zone
+        if (zoneNum === currentZone && !currentPlayer.data.finished) {
             zone.classList.add('active');
         }
     });
@@ -621,7 +702,18 @@ function init21Game() {
         target.appendChild(ringDiv);
     });
 
+    // Add click handler for misses
+    canvas.addEventListener('click', handle21GameMiss);
+
     canvas.appendChild(target);
+}
+
+function handle21GameMiss(e) {
+    // Only handle clicks on the canvas itself, not on rings
+    if (e.target.id === 'gameCanvas' || e.target.classList.contains('target-bullseye')) {
+        // Miss = 0 points, just update display
+        updateScoreboard();
+    }
 }
 
 function handle21GameHit(points) {

@@ -15,10 +15,50 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
+// Game player requirements
+const GAME_PLAYER_LIMITS = {
+    'ticTacToe': { min: 2, max: 2, name: 'Tic-Tac-Toe' },
+    'connectFour': { min: 2, max: 2, name: 'Connect Four' },
+    'bullseye': { min: 1, max: 8, name: 'Classic Bullseye' },
+    'aroundWorld': { min: 1, max: 8, name: 'Around the World' },
+    'targetPractice': { min: 1, max: 8, name: 'Target Practice' },
+    'zombieHunt': { min: 1, max: 8, name: 'Zombie Hunt' },
+    '21': { min: 1, max: 8, name: '21 Game' },
+    'knockout': { min: 2, max: 8, name: 'Knockout' }
+};
+
 // Main Menu Functions
 function selectGame(gameType) {
     GameState.currentGame = gameType;
     showScreen('playerSetup');
+
+    // Set player count based on game requirements
+    const limits = GAME_PLAYER_LIMITS[gameType];
+    if (limits) {
+        const countElement = document.getElementById('playerCount');
+        countElement.textContent = limits.min === limits.max ? limits.min : 2;
+
+        // Show notice for fixed player count games
+        const setupContainer = document.querySelector('.setup-container');
+        let notice = document.getElementById('playerCountNotice');
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'playerCountNotice';
+            notice.style.cssText = 'background: #ff6b6b; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-size: 1.1rem;';
+            setupContainer.insertBefore(notice, setupContainer.firstChild.nextSibling);
+        }
+
+        if (limits.min === limits.max) {
+            notice.textContent = `${limits.name} requires exactly ${limits.min} players`;
+            notice.style.display = 'block';
+        } else if (limits.min > 1) {
+            notice.textContent = `${limits.name} requires ${limits.min}-${limits.max} players`;
+            notice.style.display = 'block';
+        } else {
+            notice.style.display = 'none';
+        }
+    }
+
     updatePlayerNameInputs();
 }
 
@@ -29,9 +69,17 @@ function backToMenu() {
 
 // Player Setup Functions
 function changePlayerCount(delta) {
+    const limits = GAME_PLAYER_LIMITS[GameState.currentGame];
+    if (!limits) return;
+
+    // Don't allow changing if game requires exact player count
+    if (limits.min === limits.max) {
+        return;
+    }
+
     const countElement = document.getElementById('playerCount');
     let count = parseInt(countElement.textContent);
-    count = Math.max(1, Math.min(8, count + delta));
+    count = Math.max(limits.min, Math.min(limits.max, count + delta));
     countElement.textContent = count;
     updatePlayerNameInputs();
 }
@@ -54,6 +102,14 @@ function updatePlayerNameInputs() {
 
 function startGame() {
     const count = parseInt(document.getElementById('playerCount').textContent);
+    const limits = GAME_PLAYER_LIMITS[GameState.currentGame];
+
+    // Validate player count
+    if (limits && (count < limits.min || count > limits.max)) {
+        alert(`${limits.name} requires ${limits.min === limits.max ? 'exactly ' + limits.min : limits.min + '-' + limits.max} players!`);
+        return;
+    }
+
     GameState.players = [];
 
     for (let i = 0; i < count; i++) {
