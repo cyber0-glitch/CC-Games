@@ -34,7 +34,6 @@ function initBullseye() {
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
-        ringDiv.style.position = 'relative';
 
         // Create label element positioned on the ring edge
         const label = document.createElement('div');
@@ -953,7 +952,6 @@ function init21Game() {
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
-        ringDiv.style.position = 'relative';
 
         // Create label element positioned on the ring edge
         const label = document.createElement('div');
