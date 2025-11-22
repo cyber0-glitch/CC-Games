@@ -52,28 +52,7 @@ function selectGame(gameType) {
             buttons.forEach(btn => btn.style.display = 'inline-block');
         }
 
-        // Show notice for games that require specific player counts (but hide for 2-player games)
-        const setupContainer = document.querySelector('.setup-container');
-        let notice = document.getElementById('playerCountNotice');
-        if (!notice) {
-            notice = document.createElement('div');
-            notice.id = 'playerCountNotice';
-            notice.style.cssText = 'background: #ff6b6b; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-size: 1.1rem;';
-            setupContainer.insertBefore(notice, setupContainer.firstChild.nextSibling);
-        }
-
-        // Hide notice for 2-player only games (Tic-Tac-Toe and Connect Four)
-        if (limits.min === limits.max && limits.min === 2) {
-            notice.style.display = 'none';
-        } else if (limits.min === limits.max) {
-            notice.textContent = `${limits.name} requires exactly ${limits.min} players`;
-            notice.style.display = 'block';
-        } else if (limits.min > 1) {
-            notice.textContent = `${limits.name} requires ${limits.min}-${limits.max} players`;
-            notice.style.display = 'block';
-        } else {
-            notice.style.display = 'none';
-        }
+        // Remove warning notices - user requested removal
     }
 
     updatePlayerNameInputs();
@@ -298,6 +277,8 @@ function nextPlayer() {
     // Reset turn-specific data for new player
     if (GameState.currentGame === 'targetPractice') {
         generateTargets();
+    } else if (GameState.currentGame === 'aroundWorld') {
+        updateAroundWorldDisplay();
     }
 }
 

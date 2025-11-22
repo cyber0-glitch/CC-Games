@@ -33,15 +33,29 @@ function initBullseye() {
         ringDiv.style.width = ring.size + 'px';
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
-        ringDiv.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
-        ringDiv.textContent = ring.label;
         ringDiv.dataset.points = ring.points;
+
+        // Create label element positioned on the ring
+        const label = document.createElement('div');
+        label.className = 'ring-label';
+        label.textContent = ring.label;
+        label.style.position = 'absolute';
+        label.style.top = '50%';
+        label.style.left = '50%';
+        label.style.transform = 'translate(-50%, -50%)';
+        label.style.fontSize = '1.5rem';
+        label.style.fontWeight = 'bold';
+        label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
+        label.style.pointerEvents = 'none';
+        label.style.zIndex = '10';
+        ringDiv.style.position = 'relative';
 
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();
             handleBullseyeHit(ring.points);
         });
 
+        ringDiv.appendChild(label);
         target.appendChild(ringDiv);
     });
 
@@ -577,9 +591,11 @@ function spawnZombie() {
 
     canvas.appendChild(zombie);
 
-    // Animate zombie movement if enabled
+    // Animate zombie movement if enabled, otherwise disable transitions
     if (GameState.settings.movingTargets) {
         animateZombie(zombie);
+    } else {
+        zombie.style.transition = 'none';
     }
 
     // Spawn next zombie
@@ -831,15 +847,29 @@ function init21Game() {
         ringDiv.style.width = ring.size + 'px';
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
-        ringDiv.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
-        ringDiv.textContent = ring.label;
         ringDiv.dataset.points = ring.points;
+
+        // Create label element positioned on the ring
+        const label = document.createElement('div');
+        label.className = 'ring-label';
+        label.textContent = ring.label;
+        label.style.position = 'absolute';
+        label.style.top = '50%';
+        label.style.left = '50%';
+        label.style.transform = 'translate(-50%, -50%)';
+        label.style.fontSize = '1.5rem';
+        label.style.fontWeight = 'bold';
+        label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
+        label.style.pointerEvents = 'none';
+        label.style.zIndex = '10';
+        ringDiv.style.position = 'relative';
 
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();
             handle21GameHit(ring.points);
         });
 
+        ringDiv.appendChild(label);
         target.appendChild(ringDiv);
     });
 
@@ -938,7 +968,7 @@ function renderKnockoutBoard() {
         playerHeader.style.padding = '10px';
         playerHeader.style.background = 'rgba(42, 42, 62, 0.6)';
         playerHeader.style.borderRadius = '10px';
-        playerHeader.innerHTML = `${player.name}<br><span style="font-size: 0.9rem; color: #4ecdc4;">Score: ${player.score}</span>`;
+        playerHeader.textContent = player.name;
         header.appendChild(playerHeader);
     });
 
@@ -975,13 +1005,14 @@ function renderKnockoutBoard() {
             cell.textContent = marks;
             cell.style.fontSize = '2.5rem';
             cell.style.fontWeight = 'bold';
-            cell.style.padding = '15px';
+            cell.style.padding = '0';
             cell.style.background = hits >= 3 ? '#4ecdc4' : 'rgba(42, 42, 62, 0.8)';
             cell.style.color = hits >= 3 ? '#1a1a2e' : '#fff';
             cell.style.border = '2px solid #555';
-            cell.style.borderRadius = '10px';
+            cell.style.borderRadius = '50%';
             cell.style.cursor = 'pointer';
-            cell.style.minHeight = '70px';
+            cell.style.width = '80px';
+            cell.style.height = '80px';
             cell.style.display = 'flex';
             cell.style.alignItems = 'center';
             cell.style.justifyContent = 'center';
