@@ -34,6 +34,8 @@ function initBullseye() {
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
+        // Set z-index so smaller rings are on top (index 0 is largest, index 5 is smallest)
+        ringDiv.style.zIndex = String(index + 1);
 
         // Create label element positioned on the ring edge
         const label = document.createElement('div');
@@ -952,6 +954,8 @@ function init21Game() {
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
+        // Set z-index so smaller rings are on top (index 0 is largest, index 5 is smallest)
+        ringDiv.style.zIndex = String(index + 1);
 
         // Create label element positioned on the ring edge
         const label = document.createElement('div');
