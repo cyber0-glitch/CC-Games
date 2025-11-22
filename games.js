@@ -399,6 +399,11 @@ function generateTargets() {
 }
 
 function animateTarget(target) {
+    // CRITICAL: Check if we're still in target practice game
+    if (GameState.currentGame !== 'targetPractice') {
+        return;
+    }
+
     const duration = 3000 + Math.random() * 2000;
     const newX = Math.random() * 80 + 10;
     const newY = Math.random() * 80 + 10;
@@ -408,7 +413,7 @@ function animateTarget(target) {
     target.style.top = newY + '%';
 
     setTimeout(() => {
-        if (target.parentElement) {
+        if (target.parentElement && GameState.currentGame === 'targetPractice') {
             animateTarget(target);
         }
     }, duration);
@@ -470,11 +475,18 @@ function initZombieHunt() {
 }
 
 function spawnZombie() {
+    // CRITICAL: Check if we're still in zombie hunt game
+    if (GameState.currentGame !== 'zombieHunt') {
+        return;
+    }
+
     if (GameState.gameData.timeRemaining <= 0) {
         return;
     }
 
     const canvas = document.getElementById('gameCanvas');
+    if (!canvas) return;
+
     const zombie = document.createElement('div');
     zombie.className = 'zombie';
     zombie.textContent = '🧟';
@@ -489,7 +501,13 @@ function spawnZombie() {
 
     // Spawn next zombie
     const spawnDelay = Math.max(500, 2000 - GameState.gameData.zombiesKilled * 50);
-    setTimeout(() => spawnZombie(), spawnDelay);
+    const timeoutId = setTimeout(() => spawnZombie(), spawnDelay);
+
+    // Store timeout ID so we can clear it if needed
+    if (!GameState.gameData.zombieTimeouts) {
+        GameState.gameData.zombieTimeouts = [];
+    }
+    GameState.gameData.zombieTimeouts.push(timeoutId);
 
     // Remove zombie after some time if not clicked
     setTimeout(() => {
@@ -520,18 +538,32 @@ function handleZombieClick(zombie) {
 
 function startZombieTimer() {
     const updateTimer = () => {
+        // CRITICAL: Check if we're still in zombie hunt game
+        if (GameState.currentGame !== 'zombieHunt') {
+            return;
+        }
+
         GameState.gameData.timeRemaining--;
 
         // Update display
         const instructions = document.getElementById('gameInstructions');
-        instructions.textContent = `Time: ${GameState.gameData.timeRemaining}s | Zombies: ${GameState.gameData.zombiesKilled}`;
+        if (instructions) {
+            instructions.textContent = `Time: ${GameState.gameData.timeRemaining}s | Zombies: ${GameState.gameData.zombiesKilled}`;
+        }
 
         if (GameState.gameData.timeRemaining <= 0) {
             setTimeout(() => {
-                endGame();
+                if (GameState.currentGame === 'zombieHunt') {
+                    endGame();
+                }
             }, 500);
         } else {
-            setTimeout(updateTimer, 1000);
+            const timeoutId = setTimeout(updateTimer, 1000);
+            // Store timeout ID
+            if (!GameState.gameData.zombieTimeouts) {
+                GameState.gameData.zombieTimeouts = [];
+            }
+            GameState.gameData.zombieTimeouts.push(timeoutId);
         }
     };
 

@@ -140,9 +140,18 @@ function initializeGame(gameType) {
     console.log('Canvas element:', gameCanvas);
     console.log('Canvas dimensions:', gameCanvas.offsetWidth, 'x', gameCanvas.offsetHeight);
 
-    // Clear previous game
+    // CRITICAL: Clear previous game state and event listeners
     gameCanvas.innerHTML = '';
+
+    // Remove all event listeners by cloning and replacing the canvas
+    const newCanvas = gameCanvas.cloneNode(false);
+    gameCanvas.parentNode.replaceChild(newCanvas, gameCanvas);
+
+    // Clear game data
     GameState.gameData = {};
+
+    // Update reference
+    const canvas = document.getElementById('gameCanvas');
 
     // Initialize specific game
     switch(gameType) {
