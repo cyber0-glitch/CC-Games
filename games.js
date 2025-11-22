@@ -19,12 +19,12 @@ function initBullseye() {
     console.log('Target created:', target);
 
     const rings = [
-        { size: 100, color: '#FFD700', points: 50, label: '50' },
-        { size: 200, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 300, color: '#fff', points: 15, label: '15' },
-        { size: 400, color: '#000', points: 10, label: '10' },
-        { size: 500, color: '#f0a500', points: 5, label: '5' },
-        { size: 600, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 60, color: '#FFD700', points: 50, label: '50' },
+        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 180, color: '#fff', points: 15, label: '15' },
+        { size: 240, color: '#000', points: 10, label: '10' },
+        { size: 300, color: '#f0a500', points: 5, label: '5' },
+        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach(ring => {
@@ -43,7 +43,7 @@ function initBullseye() {
         label.style.top = '50%';
         label.style.left = '50%';
         label.style.transform = 'translate(-50%, -50%)';
-        label.style.fontSize = '1.5rem';
+        label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -833,12 +833,12 @@ function init21Game() {
     target.className = 'target-bullseye';
 
     const rings = [
-        { size: 100, color: '#FFD700', points: 7, label: '7' },
-        { size: 200, color: '#ff6b6b', points: 5, label: '5' },
-        { size: 300, color: '#fff', points: 3, label: '3' },
-        { size: 400, color: '#000', points: 2, label: '2' },
-        { size: 500, color: '#f0a500', points: 1, label: '1' },
-        { size: 600, color: '#1a1a2e', points: 0, label: '0' }
+        { size: 60, color: '#FFD700', points: 7, label: '7' },
+        { size: 120, color: '#ff6b6b', points: 5, label: '5' },
+        { size: 180, color: '#fff', points: 3, label: '3' },
+        { size: 240, color: '#000', points: 2, label: '2' },
+        { size: 300, color: '#f0a500', points: 1, label: '1' },
+        { size: 360, color: '#1a1a2e', points: 0, label: '0' }
     ];
 
     rings.reverse().forEach(ring => {
@@ -857,7 +857,7 @@ function init21Game() {
         label.style.top = '50%';
         label.style.left = '50%';
         label.style.transform = 'translate(-50%, -50%)';
-        label.style.fontSize = '1.5rem';
+        label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -948,6 +948,7 @@ function renderKnockoutBoard() {
     header.style.gap = '10px';
     header.style.marginBottom = '20px';
     header.style.alignItems = 'center';
+    header.style.justifyItems = 'center';
 
     // Number column header
     const numHeader = document.createElement('div');
@@ -983,6 +984,7 @@ function renderKnockoutBoard() {
         row.style.gap = '10px';
         row.style.marginBottom = '15px';
         row.style.alignItems = 'center';
+        row.style.justifyItems = 'center';
 
         // Number label
         const numLabel = document.createElement('div');

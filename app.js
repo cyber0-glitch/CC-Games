@@ -418,6 +418,35 @@ function showSettings() {
 function toggleMovingTargets() {
     GameState.settings.movingTargets = document.getElementById('movingTargetsToggle').checked;
     console.log('Moving targets:', GameState.settings.movingTargets);
+
+    // If movement is disabled, stop all existing animations
+    if (!GameState.settings.movingTargets) {
+        // Stop zombie animations
+        const zombies = document.querySelectorAll('.zombie');
+        zombies.forEach(zombie => {
+            zombie.style.transition = 'none';
+            // Get current computed position
+            const computedStyle = window.getComputedStyle(zombie);
+            const currentLeft = computedStyle.left;
+            const currentTop = computedStyle.top;
+            // Set position to current position (stops animation)
+            zombie.style.left = currentLeft;
+            zombie.style.top = currentTop;
+        });
+
+        // Stop moving target animations
+        const targets = document.querySelectorAll('.moving-target');
+        targets.forEach(target => {
+            target.style.transition = 'none';
+            // Get current computed position
+            const computedStyle = window.getComputedStyle(target);
+            const currentLeft = computedStyle.left;
+            const currentTop = computedStyle.top;
+            // Set position to current position (stops animation)
+            target.style.left = currentLeft;
+            target.style.top = currentTop;
+        });
+    }
 }
 
 // Help Functions
