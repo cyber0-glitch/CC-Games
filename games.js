@@ -2,7 +2,9 @@
 // GAME 1: CLASSIC BULLSEYE
 // ============================================
 function initBullseye() {
+    console.log('initBullseye called');
     const canvas = document.getElementById('gameCanvas');
+    console.log('Bullseye canvas:', canvas);
 
     // Initialize player data
     GameState.players.forEach(player => {
@@ -14,6 +16,7 @@ function initBullseye() {
     // Create bullseye target
     const target = document.createElement('div');
     target.className = 'target-bullseye';
+    console.log('Target created:', target);
 
     const rings = [
         { size: 100, color: '#FFD700', points: 50, label: '50' },
@@ -43,6 +46,7 @@ function initBullseye() {
     });
 
     canvas.appendChild(target);
+    console.log('Target appended to canvas. Canvas now has', canvas.children.length, 'children');
 }
 
 function handleBullseyeHit(points) {

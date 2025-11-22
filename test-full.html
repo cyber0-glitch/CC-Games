@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Game Screen directly -->
+        <div id="gameScreen" class="screen active">
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 id="gameTitle">Classic Bullseye</h2>
+                    <div id="gameInstructions">Click where the axe hit. 5 throws per player.</div>
+                </div>
+                <button class="btn-exit" onclick="alert('Exit clicked')">Exit Game</button>
+            </div>
+
+            <div id="scoreboard" class="scoreboard">
+                <div class="player-score active">
+                    <div class="player-name">Player 1</div>
+                    <div class="score">0</div>
+                    <div style="font-size: 0.9rem; color: #aaa;">Throws: 0/5</div>
+                </div>
+                <div class="player-score">
+                    <div class="player-name">Player 2</div>
+                    <div class="score">0</div>
+                    <div style="font-size: 0.9rem; color: #aaa;">Throws: 0/5</div>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <div id="gameCanvas" class="game-canvas">
+                    <!-- Game will render here -->
+                </div>
+                <div id="clickIndicator" class="click-indicator"></div>
+            </div>
+
+            <div class="game-controls">
+                <div id="currentPlayerDisplay" class="current-player">Current Player: <span>Player 1</span></div>
+                <div class="control-buttons">
+                    <button class="btn-control">Undo</button>
+                    <button class="btn-control btn-primary">Next Player</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simplified initialization for testing
+        console.log('Initializing test...');
+
+        const canvas = document.getElementById('gameCanvas');
+        console.log('Canvas:', canvas);
+        console.log('Canvas size:', canvas.offsetWidth, 'x', canvas.offsetHeight);
+
+        // Create bullseye target
+        const target = document.createElement('div');
+        target.className = 'target-bullseye';
+
+        const rings = [
+            { size: 100, color: '#FFD700', points: 50, label: '50' },
+            { size: 200, color: '#ff6b6b', points: 25, label: '25' },
+            { size: 300, color: '#fff', points: 15, label: '15' },
+            { size: 400, color: '#000', points: 10, label: '10' },
+            { size: 500, color: '#f0a500', points: 5, label: '5' },
+            { size: 600, color: '#1a1a2e', points: 1, label: '1' }
+        ];
+
+        rings.reverse().forEach(ring => {
+            const ringDiv = document.createElement('div');
+            ringDiv.className = 'target-ring';
+            ringDiv.style.width = ring.size + 'px';
+            ringDiv.style.height = ring.size + 'px';
+            ringDiv.style.background = ring.color;
+            ringDiv.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
+            ringDiv.textContent = ring.label;
+            ringDiv.onclick = () => {
+                alert('Clicked: ' + ring.points + ' points!');
+            };
+            target.appendChild(ringDiv);
+        });
+
+        canvas.appendChild(target);
+        console.log('Bullseye target added!');
+        console.log('Target element:', target);
+        console.log('Target in DOM:', document.contains(target));
+
+        // Log canvas dimensions
+        setTimeout(() => {
+            console.log('Final canvas size:', canvas.offsetWidth, 'x', canvas.offsetHeight);
+            console.log('Target size:', target.offsetWidth, 'x', target.offsetHeight);
+            const rect = target.getBoundingClientRect();
+            console.log('Target position:', rect.top, rect.left);
+        }, 100);
+    </script>
+</body>
+</html>

@@ -79,6 +79,11 @@ function initializeGame(gameType) {
     const gameInstructions = document.getElementById('gameInstructions');
     const gameCanvas = document.getElementById('gameCanvas');
 
+    // Debug logging
+    console.log('Initializing game:', gameType);
+    console.log('Canvas element:', gameCanvas);
+    console.log('Canvas dimensions:', gameCanvas.offsetWidth, 'x', gameCanvas.offsetHeight);
+
     // Clear previous game
     gameCanvas.innerHTML = '';
     GameState.gameData = {};
@@ -88,7 +93,12 @@ function initializeGame(gameType) {
         case 'bullseye':
             gameTitle.textContent = 'Classic Bullseye';
             gameInstructions.textContent = 'Click where the axe hit. 5 throws per player.';
-            initBullseye();
+            if (typeof initBullseye === 'function') {
+                initBullseye();
+                console.log('Bullseye initialized');
+            } else {
+                console.error('initBullseye function not found!');
+            }
             break;
         case 'aroundWorld':
             gameTitle.textContent = 'Around the World';
