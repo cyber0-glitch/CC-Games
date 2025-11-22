@@ -4,7 +4,10 @@ const GameState = {
     players: [],
     currentPlayerIndex: 0,
     gameData: {},
-    history: []
+    history: [],
+    settings: {
+        movingTargets: true
+    }
 };
 
 // Screen Management
@@ -19,12 +22,12 @@ function showScreen(screenId) {
 const GAME_PLAYER_LIMITS = {
     'ticTacToe': { min: 2, max: 2, name: 'Tic-Tac-Toe' },
     'connectFour': { min: 2, max: 2, name: 'Connect Four' },
-    'bullseye': { min: 1, max: 8, name: 'Classic Bullseye' },
-    'aroundWorld': { min: 1, max: 8, name: 'Around the World' },
-    'targetPractice': { min: 1, max: 8, name: 'Target Practice' },
-    'zombieHunt': { min: 1, max: 8, name: 'Zombie Hunt' },
-    '21': { min: 1, max: 8, name: '21 Game' },
-    'knockout': { min: 2, max: 8, name: 'Knockout' }
+    'bullseye': { min: 1, max: 4, name: 'Classic Bullseye' },
+    'aroundWorld': { min: 1, max: 4, name: 'Around the World' },
+    'targetPractice': { min: 1, max: 4, name: 'Target Practice' },
+    'zombieHunt': { min: 1, max: 4, name: 'Zombie Hunt' },
+    '21': { min: 1, max: 4, name: '21 Game' },
+    'knockout': { min: 2, max: 4, name: 'Knockout' }
 };
 
 // Main Menu Functions
@@ -408,6 +411,23 @@ function getRelativePosition(event, element) {
 // Utility: Calculate distance from center
 function getDistanceFromCenter(x, y, centerX, centerY) {
     return Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+}
+
+// Settings Functions
+function showSettings() {
+    showScreen('settingsScreen');
+    // Update toggle state from GameState
+    document.getElementById('movingTargetsToggle').checked = GameState.settings.movingTargets;
+}
+
+function toggleMovingTargets() {
+    GameState.settings.movingTargets = document.getElementById('movingTargetsToggle').checked;
+    console.log('Moving targets:', GameState.settings.movingTargets);
+}
+
+// Help Functions
+function showHelp() {
+    showScreen('helpScreen');
 }
 
 // Initialize on load

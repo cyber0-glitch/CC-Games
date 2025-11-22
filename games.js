@@ -404,6 +404,11 @@ function animateTarget(target) {
         return;
     }
 
+    // Check if moving targets is enabled
+    if (!GameState.settings.movingTargets) {
+        return;
+    }
+
     const duration = 3000 + Math.random() * 2000;
     const newX = Math.random() * 80 + 10;
     const newY = Math.random() * 80 + 10;
@@ -413,7 +418,7 @@ function animateTarget(target) {
     target.style.top = newY + '%';
 
     setTimeout(() => {
-        if (target.parentElement && GameState.currentGame === 'targetPractice') {
+        if (target.parentElement && GameState.currentGame === 'targetPractice' && GameState.settings.movingTargets) {
             animateTarget(target);
         }
     }, duration);
@@ -491,9 +496,32 @@ function spawnZombie() {
     zombie.className = 'zombie';
     zombie.textContent = '🧟';
 
-    // Random position
-    zombie.style.left = Math.random() * 90 + 5 + '%';
-    zombie.style.top = Math.random() * 90 + 5 + '%';
+    // Position based on settings
+    if (GameState.settings.movingTargets) {
+        // Random position for moving zombies
+        zombie.style.left = Math.random() * 90 + 5 + '%';
+        zombie.style.top = Math.random() * 90 + 5 + '%';
+    } else {
+        // Fixed grid positions when movement is disabled
+        if (!GameState.gameData.zombieGridIndex) {
+            GameState.gameData.zombieGridIndex = 0;
+        }
+        const gridPositions = [
+            { left: '20%', top: '20%' },
+            { left: '50%', top: '20%' },
+            { left: '80%', top: '20%' },
+            { left: '20%', top: '50%' },
+            { left: '50%', top: '50%' },
+            { left: '80%', top: '50%' },
+            { left: '20%', top: '80%' },
+            { left: '50%', top: '80%' },
+            { left: '80%', top: '80%' }
+        ];
+        const pos = gridPositions[GameState.gameData.zombieGridIndex % gridPositions.length];
+        zombie.style.left = pos.left;
+        zombie.style.top = pos.top;
+        GameState.gameData.zombieGridIndex++;
+    }
 
     zombie.addEventListener('click', () => handleZombieClick(zombie));
 

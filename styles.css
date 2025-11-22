@@ -613,6 +613,204 @@ body {
     flex-wrap: wrap;
 }
 
+/* Menu Buttons (Settings & Help) */
+.menu-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.btn-menu {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    background: rgba(42, 42, 62, 0.9);
+    border: 2px solid #f0a500;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    min-width: 150px;
+}
+
+.btn-menu:hover, .btn-menu:active {
+    background: rgba(240, 165, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(240, 165, 0, 0.4);
+}
+
+/* Settings Screen */
+.settings-container {
+    background: rgba(42, 42, 62, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.settings-container h1 {
+    color: #f0a500;
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.settings-content {
+    margin-bottom: 30px;
+}
+
+.settings-content h2 {
+    color: #ff6b6b;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #555;
+    padding-bottom: 10px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(26, 26, 46, 0.7);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.setting-label h3 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.setting-label p {
+    color: #aaa;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555;
+    transition: 0.4s;
+    border-radius: 40px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 32px;
+    width: 32px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #4CAF50;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(40px);
+}
+
+/* Help Screen */
+.help-container {
+    background: rgba(42, 42, 62, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.help-container h1 {
+    color: #f0a500;
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.help-content {
+    margin-bottom: 30px;
+}
+
+.help-section {
+    background: rgba(26, 26, 46, 0.7);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 5px solid #f0a500;
+}
+
+.help-section h2 {
+    color: #ff6b6b;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.help-section p {
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.help-section p strong {
+    color: #f0a500;
+}
+
+/* Scrollbar styling for settings and help */
+.settings-container::-webkit-scrollbar,
+.help-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.settings-container::-webkit-scrollbar-track,
+.help-container::-webkit-scrollbar-track {
+    background: rgba(26, 26, 46, 0.5);
+    border-radius: 10px;
+}
+
+.settings-container::-webkit-scrollbar-thumb,
+.help-container::-webkit-scrollbar-thumb {
+    background: #f0a500;
+    border-radius: 10px;
+}
+
+.settings-container::-webkit-scrollbar-thumb:hover,
+.help-container::-webkit-scrollbar-thumb:hover {
+    background: #ff6b6b;
+}
+
 /* Responsive adjustments for smaller tablets */
 @media (max-width: 768px) {
     .logo h1 {
@@ -651,5 +849,20 @@ body {
 
     .atw-zone {
         font-size: 1.5rem;
+    }
+
+    .settings-container,
+    .help-container {
+        padding: 25px;
+    }
+
+    .settings-container h1,
+    .help-container h1 {
+        font-size: 2.5rem;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        text-align: center;
     }
 }
