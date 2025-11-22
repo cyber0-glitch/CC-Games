@@ -484,6 +484,10 @@ body {
     font-size: 4rem;
     cursor: pointer;
     transition: all 0.3s;
+    /* animation removed - controlled by JavaScript based on settings */
+}
+
+.zombie.floating {
     animation: zombieFloat 3s ease-in-out infinite;
 }
 

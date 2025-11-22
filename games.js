@@ -27,28 +27,29 @@ function initBullseye() {
         { size: 360, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
-    rings.reverse().forEach(ring => {
+    rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
         ringDiv.style.width = ring.size + 'px';
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
+        ringDiv.style.position = 'relative';
 
-        // Create label element positioned on the ring
+        // Create label element positioned on the ring edge
         const label = document.createElement('div');
         label.className = 'ring-label';
         label.textContent = ring.label;
         label.style.position = 'absolute';
-        label.style.top = '50%';
+        label.style.top = '10px';
         label.style.left = '50%';
-        label.style.transform = 'translate(-50%, -50%)';
+        label.style.transform = 'translateX(-50%)';
         label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
         label.style.zIndex = '10';
-        ringDiv.style.position = 'relative';
+        label.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
 
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -161,18 +162,18 @@ function initAroundWorld() {
         zone.dataset.zone = i + 1;
         zone.style.background = colors[i];
 
-        // Position zones in a circle - REDUCED RADIUS
-        const radius = 200; // Reduced from 300
+        // Position zones in a circle - INCREASED RADIUS and REDUCED SIZE for better spacing
+        const radius = 280; // Increased for better spacing
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
-        const x = Math.cos(angleRad) * radius * 0.7;
-        const y = Math.sin(angleRad) * radius * 0.7;
+        const x = Math.cos(angleRad) * radius * 0.65;
+        const y = Math.sin(angleRad) * radius * 0.65;
 
-        zone.style.width = '90px'; // Reduced from 120px
-        zone.style.height = '90px';
-        zone.style.left = `calc(50% + ${x}px - 45px)`;
-        zone.style.top = `calc(50% + ${y}px - 45px)`;
+        zone.style.width = '70px'; // Further reduced to prevent overlap
+        zone.style.height = '70px';
+        zone.style.left = `calc(50% + ${x}px - 35px)`;
+        zone.style.top = `calc(50% + ${y}px - 35px)`;
         zone.style.borderRadius = '50%';
-        zone.style.fontSize = '1.8rem'; // Adjusted font size
+        zone.style.fontSize = '1.5rem'; // Adjusted font size
         zone.textContent = i + 1;
 
         zone.addEventListener('click', (e) => {
@@ -530,16 +531,24 @@ function generateSingleTarget() {
 function initZombieHunt() {
     const canvas = document.getElementById('gameCanvas');
 
+    // Initialize player data with individual timers
+    GameState.players.forEach(player => {
+        if (!player.data.timeRemaining) {
+            player.data.timeRemaining = 60;
+            player.data.zombiesKilled = 0;
+            player.data.finished = false;
+        }
+    });
+
     // Initialize game data
-    if (!GameState.gameData.timeRemaining) {
-        GameState.gameData.timeRemaining = 60;
-        GameState.gameData.zombiesKilled = 0;
+    if (!GameState.gameData.initialized) {
+        GameState.gameData.initialized = true;
     }
 
     // Start spawning zombies
     spawnZombie();
 
-    // Start timer
+    // Start timer for current player
     startZombieTimer();
 }
 
@@ -549,7 +558,8 @@ function spawnZombie() {
         return;
     }
 
-    if (GameState.gameData.timeRemaining <= 0) {
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    if (!currentPlayer || currentPlayer.data.timeRemaining <= 0 || currentPlayer.data.finished) {
         return;
     }
 
@@ -591,11 +601,14 @@ function spawnZombie() {
 
     canvas.appendChild(zombie);
 
-    // Animate zombie movement if enabled, otherwise disable transitions
+    // Animate zombie movement if enabled, otherwise disable transitions AND animations
     if (GameState.settings.movingTargets) {
+        zombie.classList.add('floating');
         animateZombie(zombie);
     } else {
         zombie.style.transition = 'none';
+        zombie.style.animation = 'none';
+        zombie.classList.remove('floating');
     }
 
     // Spawn next zombie
@@ -652,7 +665,7 @@ function handleZombieClick(zombie) {
     zombie.classList.add('hit');
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     currentPlayer.score += 10;
-    GameState.gameData.zombiesKilled++;
+    currentPlayer.data.zombiesKilled = (currentPlayer.data.zombiesKilled || 0) + 1;
 
     updateScoreboard();
 
@@ -668,20 +681,59 @@ function startZombieTimer() {
             return;
         }
 
-        GameState.gameData.timeRemaining--;
+        const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+        if (!currentPlayer || currentPlayer.data.finished) {
+            return;
+        }
+
+        currentPlayer.data.timeRemaining--;
 
         // Update display
         const instructions = document.getElementById('gameInstructions');
         if (instructions) {
-            instructions.textContent = `Time: ${GameState.gameData.timeRemaining}s | Zombies: ${GameState.gameData.zombiesKilled}`;
+            if (GameState.settings.zombieTimer) {
+                instructions.textContent = `${currentPlayer.name} - Time: ${currentPlayer.data.timeRemaining}s | Zombies: ${currentPlayer.data.zombiesKilled || 0}`;
+            } else {
+                instructions.textContent = `${currentPlayer.name} - Zombies: ${currentPlayer.data.zombiesKilled || 0}`;
+            }
         }
 
-        if (GameState.gameData.timeRemaining <= 0) {
-            setTimeout(() => {
-                if (GameState.currentGame === 'zombieHunt') {
-                    endGame();
-                }
-            }, 500);
+        if (currentPlayer.data.timeRemaining <= 0) {
+            currentPlayer.data.finished = true;
+
+            // Check if all players finished
+            const allFinished = GameState.players.every(p => p.data.finished);
+
+            if (allFinished) {
+                setTimeout(() => {
+                    if (GameState.currentGame === 'zombieHunt') {
+                        endGame();
+                    }
+                }, 500);
+            } else {
+                // Move to next player
+                setTimeout(() => {
+                    // Clear zombies from canvas
+                    const canvas = document.getElementById('gameCanvas');
+                    if (canvas) {
+                        canvas.innerHTML = '';
+                    }
+
+                    // Move to next unfinished player
+                    let nextIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+                    while (GameState.players[nextIndex].data.finished && !allFinished) {
+                        nextIndex = (nextIndex + 1) % GameState.players.length;
+                    }
+                    GameState.currentPlayerIndex = nextIndex;
+
+                    updateScoreboard();
+                    updateCurrentPlayerDisplay();
+
+                    // Start new player's turn
+                    spawnZombie();
+                    startZombieTimer();
+                }, 1000);
+            }
         } else {
             const timeoutId = setTimeout(updateTimer, 1000);
             // Store timeout ID
@@ -841,28 +893,29 @@ function init21Game() {
         { size: 360, color: '#1a1a2e', points: 0, label: '0' }
     ];
 
-    rings.reverse().forEach(ring => {
+    rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
         ringDiv.style.width = ring.size + 'px';
         ringDiv.style.height = ring.size + 'px';
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
+        ringDiv.style.position = 'relative';
 
-        // Create label element positioned on the ring
+        // Create label element positioned on the ring edge
         const label = document.createElement('div');
         label.className = 'ring-label';
         label.textContent = ring.label;
         label.style.position = 'absolute';
-        label.style.top = '50%';
+        label.style.top = '10px';
         label.style.left = '50%';
-        label.style.transform = 'translate(-50%, -50%)';
+        label.style.transform = 'translateX(-50%)';
         label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
         label.style.zIndex = '10';
-        ringDiv.style.position = 'relative';
+        label.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
 
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();

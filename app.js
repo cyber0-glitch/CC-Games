@@ -6,7 +6,8 @@ const GameState = {
     gameData: {},
     history: [],
     settings: {
-        movingTargets: true
+        movingTargets: true,
+        zombieTimer: true
     }
 };
 
@@ -222,6 +223,14 @@ function updateScoreboard() {
         } else if (GameState.currentGame === 'aroundWorld') {
             const zone = player.data.currentZone || 1;
             extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zone: ${zone}/12</div>`;
+        } else if (GameState.currentGame === 'zombieHunt') {
+            const zombies = player.data.zombiesKilled || 0;
+            const time = player.data.timeRemaining || 0;
+            if (GameState.settings.zombieTimer) {
+                extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Time: ${time}s | Zombies: ${zombies}</div>`;
+            } else {
+                extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zombies: ${zombies}</div>`;
+            }
         }
 
         scoreDiv.innerHTML = `
@@ -300,10 +309,33 @@ function undoLastHit() {
         GameState.gameData = JSON.parse(JSON.stringify(lastAction.gameState));
     }
 
-    // Re-render the game
-    initializeGame(GameState.currentGame);
+    // Update displays without reinitializing the game
     updateScoreboard();
     updateCurrentPlayerDisplay();
+
+    // Game-specific undo rendering
+    switch(GameState.currentGame) {
+        case 'ticTacToe':
+        case 'connectFour':
+            // Re-render board-based games
+            initializeGame(GameState.currentGame);
+            break;
+        case 'knockout':
+            // Re-render knockout board
+            renderKnockoutBoard();
+            break;
+        case 'aroundWorld':
+            // Update zone display
+            updateAroundWorldDisplay();
+            break;
+        case 'bullseye':
+        case '21':
+        case 'targetPractice':
+        case 'zombieHunt':
+            // These games don't need visual re-rendering for undo
+            // Just update the scoreboard which is already done above
+            break;
+    }
 }
 
 // Save state for undo
@@ -413,6 +445,7 @@ function showSettings() {
     showScreen('settingsScreen');
     // Update toggle state from GameState
     document.getElementById('movingTargetsToggle').checked = GameState.settings.movingTargets;
+    document.getElementById('zombieTimerToggle').checked = GameState.settings.zombieTimer;
 }
 
 function toggleMovingTargets() {
@@ -425,6 +458,8 @@ function toggleMovingTargets() {
         const zombies = document.querySelectorAll('.zombie');
         zombies.forEach(zombie => {
             zombie.style.transition = 'none';
+            zombie.style.animation = 'none';
+            zombie.classList.remove('floating');
             // Get current computed position
             const computedStyle = window.getComputedStyle(zombie);
             const currentLeft = computedStyle.left;
@@ -447,6 +482,11 @@ function toggleMovingTargets() {
             target.style.top = currentTop;
         });
     }
+}
+
+function toggleZombieTimer() {
+    GameState.settings.zombieTimer = document.getElementById('zombieTimerToggle').checked;
+    console.log('Zombie timer:', GameState.settings.zombieTimer);
 }
 
 // Help Functions
