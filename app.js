@@ -27,7 +27,7 @@ const GAME_PLAYER_LIMITS = {
     'targetPractice': { min: 1, max: 4, name: 'Target Practice' },
     'zombieHunt': { min: 1, max: 4, name: 'Zombie Hunt' },
     '21': { min: 1, max: 4, name: '21 Game' },
-    'knockout': { min: 2, max: 4, name: 'Knockout' }
+    'knockout': { min: 2, max: 4, name: 'Cricket' }
 };
 
 // Main Menu Functions
@@ -41,7 +41,18 @@ function selectGame(gameType) {
         const countElement = document.getElementById('playerCount');
         countElement.textContent = limits.min === limits.max ? limits.min : 2;
 
-        // Show notice for fixed player count games
+        // Hide/show player count buttons for fixed player count games
+        const numberSelector = document.querySelector('.number-selector');
+        const buttons = numberSelector.querySelectorAll('button');
+        if (limits.min === limits.max) {
+            // Hide +/- buttons for games with fixed player count
+            buttons.forEach(btn => btn.style.display = 'none');
+        } else {
+            // Show +/- buttons for games with variable player count
+            buttons.forEach(btn => btn.style.display = 'inline-block');
+        }
+
+        // Show notice for games that require specific player counts (but hide for 2-player games)
         const setupContainer = document.querySelector('.setup-container');
         let notice = document.getElementById('playerCountNotice');
         if (!notice) {
@@ -51,7 +62,10 @@ function selectGame(gameType) {
             setupContainer.insertBefore(notice, setupContainer.firstChild.nextSibling);
         }
 
-        if (limits.min === limits.max) {
+        // Hide notice for 2-player only games (Tic-Tac-Toe and Connect Four)
+        if (limits.min === limits.max && limits.min === 2) {
+            notice.style.display = 'none';
+        } else if (limits.min === limits.max) {
             notice.textContent = `${limits.name} requires exactly ${limits.min} players`;
             notice.style.display = 'block';
         } else if (limits.min > 1) {
@@ -199,8 +213,8 @@ function initializeGame(gameType) {
             init21Game();
             break;
         case 'knockout':
-            gameTitle.textContent = 'Knockout';
-            gameInstructions.textContent = 'Hit opponent\'s numbers to eliminate them!';
+            gameTitle.textContent = 'Cricket';
+            gameInstructions.textContent = 'Hit each number 3 times to close it. Score points after closing!';
             initKnockout();
             break;
     }

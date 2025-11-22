@@ -17,6 +17,23 @@
 
             <div class="menu-container">
                 <h2>Select a Game</h2>
+
+                <h3 style="color: #f0a500; margin-top: 20px; margin-bottom: 10px; text-align: center;">2-Player Games</h3>
+                <div class="game-grid">
+                    <button class="game-card" onclick="selectGame('ticTacToe')">
+                        <div class="game-icon">❌</div>
+                        <h3>Tic-Tac-Toe</h3>
+                        <p>Classic game with axes</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('connectFour')">
+                        <div class="game-icon">🔴</div>
+                        <h3>Connect Four</h3>
+                        <p>Four in a row wins</p>
+                    </button>
+                </div>
+
+                <h3 style="color: #f0a500; margin-top: 30px; margin-bottom: 10px; text-align: center;">2-4 Player Games</h3>
                 <div class="game-grid">
                     <button class="game-card" onclick="selectGame('bullseye')">
                         <div class="game-icon">🎯</div>
@@ -28,12 +45,6 @@
                         <div class="game-icon">🌍</div>
                         <h3>Around the World</h3>
                         <p>Hit all zones in order</p>
-                    </button>
-
-                    <button class="game-card" onclick="selectGame('ticTacToe')">
-                        <div class="game-icon">❌</div>
-                        <h3>Tic-Tac-Toe</h3>
-                        <p>Classic game with axes</p>
                     </button>
 
                     <button class="game-card" onclick="selectGame('targetPractice')">
@@ -48,12 +59,6 @@
                         <p>Eliminate the undead horde</p>
                     </button>
 
-                    <button class="game-card" onclick="selectGame('connectFour')">
-                        <div class="game-icon">🔴</div>
-                        <h3>Connect Four</h3>
-                        <p>Four in a row wins</p>
-                    </button>
-
                     <button class="game-card" onclick="selectGame('21')">
                         <div class="game-icon">🎲</div>
                         <h3>21 Game</h3>
@@ -62,8 +67,8 @@
 
                     <button class="game-card" onclick="selectGame('knockout')">
                         <div class="game-icon">💥</div>
-                        <h3>Knockout</h3>
-                        <p>Eliminate opponent's points</p>
+                        <h3>Cricket</h3>
+                        <p>Close all numbers and score points</p>
                     </button>
                 </div>
 
@@ -215,10 +220,11 @@
                     </div>
 
                     <div class="help-section">
-                        <h2>💥 Knockout</h2>
-                        <p><strong>How to Play:</strong> Click opponent numbers to eliminate them. When all numbers are gone, they lose a life!</p>
-                        <p><strong>Controls:</strong> Click on an opponent's number to knock it out. You cannot eliminate your own numbers.</p>
-                        <p><strong>Lives:</strong> Each player starts with 3 lives. Last player standing wins!</p>
+                        <h2>💥 Cricket</h2>
+                        <p><strong>How to Play:</strong> Click numbers to mark them. Hit each number (15-20, 25) three times to "close" it.</p>
+                        <p><strong>Scoring:</strong> After closing a number, hitting it again scores points (only if opponents haven't closed it).</p>
+                        <p><strong>Marks:</strong> / = 1 hit, X = 2 hits, ⊗ = 3 hits (closed)</p>
+                        <p><strong>Winning:</strong> First player to close all numbers with the most points wins!</p>
                     </div>
 
                     <div class="help-section">

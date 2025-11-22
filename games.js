@@ -128,6 +128,9 @@ function initAroundWorld() {
         if (!player.data.throws) {
             player.data.throws = 0;
         }
+        if (!player.data.completedZones) {
+            player.data.completedZones = [];
+        }
     });
 
     // Create target with 12 zones - SMALLER SIZE TO FIT SCREEN
@@ -184,9 +187,9 @@ function handleAroundWorldHit(zoneNumber, zoneElement) {
 
     if (zoneNumber === currentZone) {
         // Correct zone hit!
+        currentPlayer.data.completedZones.push(zoneNumber);
         currentPlayer.data.currentZone = currentZone + 1;
         currentPlayer.score += 10;
-        zoneElement.classList.add('completed');
 
         updateScoreboard();
         updateAroundWorldDisplay();
@@ -244,11 +247,16 @@ function updateAroundWorldDisplay() {
     const zones = document.querySelectorAll('.atw-zone');
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const currentZone = currentPlayer.data.currentZone || 1;
+    const completedZones = currentPlayer.data.completedZones || [];
 
     zones.forEach(zone => {
         const zoneNum = parseInt(zone.dataset.zone);
-        zone.classList.remove('active');
-        // Don't remove completed class as it might be from previous player
+        zone.classList.remove('active', 'completed');
+
+        // Show completed zones for CURRENT player only with transparency
+        if (completedZones.includes(zoneNum)) {
+            zone.classList.add('completed');
+        }
 
         // Only highlight the CURRENT player's active zone
         if (zoneNum === currentZone && !currentPlayer.data.finished) {
@@ -393,8 +401,12 @@ function generateTargets() {
 
         canvas.appendChild(target);
 
-        // Animate target movement
-        animateTarget(target);
+        // Animate target movement with delay
+        if (GameState.settings.movingTargets) {
+            setTimeout(() => {
+                animateTarget(target);
+            }, 1000); // 1 second delay before starting movement
+        }
     }
 }
 
@@ -441,6 +453,11 @@ function handleTargetPracticeHit(points, target) {
     target.style.transform = 'scale(0)';
     setTimeout(() => {
         target.remove();
+
+        // Generate a new target if player still has throws remaining
+        if (currentPlayer.data.throws < 10) {
+            generateSingleTarget();
+        }
     }, 300);
 
     updateScoreboard();
@@ -457,6 +474,39 @@ function handleTargetPracticeHit(points, target) {
                 }
             }
         }, 500);
+    }
+}
+
+function generateSingleTarget() {
+    const canvas = document.getElementById('gameCanvas');
+    const targetValues = [10, 20, 30, 50, 100];
+
+    const target = document.createElement('div');
+    target.className = 'moving-target';
+
+    // Random position
+    const x = Math.random() * 80 + 10; // 10% to 90%
+    const y = Math.random() * 80 + 10;
+
+    target.style.left = x + '%';
+    target.style.top = y + '%';
+
+    const value = targetValues[Math.floor(Math.random() * targetValues.length)];
+    target.innerHTML = `<div class="target-value">${value}</div>`;
+    target.dataset.value = value;
+
+    target.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleTargetPracticeHit(value, target);
+    });
+
+    canvas.appendChild(target);
+
+    // Animate target movement with delay
+    if (GameState.settings.movingTargets) {
+        setTimeout(() => {
+            animateTarget(target);
+        }, 1000); // 1 second delay before starting movement
     }
 }
 
@@ -527,6 +577,11 @@ function spawnZombie() {
 
     canvas.appendChild(zombie);
 
+    // Animate zombie movement if enabled
+    if (GameState.settings.movingTargets) {
+        animateZombie(zombie);
+    }
+
     // Spawn next zombie
     const spawnDelay = Math.max(500, 2000 - GameState.gameData.zombiesKilled * 50);
     const timeoutId = setTimeout(() => spawnZombie(), spawnDelay);
@@ -543,6 +598,32 @@ function spawnZombie() {
             zombie.remove();
         }
     }, 5000);
+}
+
+function animateZombie(zombie) {
+    // Check if we're still in zombie hunt game
+    if (GameState.currentGame !== 'zombieHunt') {
+        return;
+    }
+
+    // Check if moving targets is enabled
+    if (!GameState.settings.movingTargets) {
+        return;
+    }
+
+    const duration = 2000 + Math.random() * 1000;
+    const newX = Math.random() * 90 + 5;
+    const newY = Math.random() * 90 + 5;
+
+    zombie.style.transition = `all ${duration}ms linear`;
+    zombie.style.left = newX + '%';
+    zombie.style.top = newY + '%';
+
+    setTimeout(() => {
+        if (zombie.parentElement && GameState.currentGame === 'zombieHunt' && GameState.settings.movingTargets && !zombie.classList.contains('hit')) {
+            animateZombie(zombie);
+        }
+    }, duration);
 }
 
 function handleZombieClick(zombie) {
@@ -799,16 +880,17 @@ function handle21GameHit(points) {
 }
 
 // ============================================
-// GAME 8: KNOCKOUT
+// GAME 8: KNOCKOUT (Cricket-style)
 // ============================================
 function initKnockout() {
     const canvas = document.getElementById('gameCanvas');
 
-    // Initialize player numbers
+    // Initialize player cricket data
     GameState.players.forEach((player, index) => {
-        if (!player.data.numbers) {
-            player.data.numbers = [15, 16, 17, 18, 19, 20, 25]; // Standard knockout numbers
-            player.data.lives = 3;
+        if (!player.data.cricket) {
+            player.data.cricket = {
+                15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0
+            };
         }
     });
 
@@ -824,93 +906,133 @@ function renderKnockoutBoard() {
     boardDiv.style.top = '50%';
     boardDiv.style.left = '50%';
     boardDiv.style.transform = 'translate(-50%, -50%)';
-    boardDiv.style.width = '90%';
-    boardDiv.style.maxWidth = '800px';
+    boardDiv.style.width = '95%';
+    boardDiv.style.maxWidth = '900px';
+    boardDiv.style.overflowY = 'auto';
+    boardDiv.style.maxHeight = '80vh';
 
+    // Create header
+    const header = document.createElement('div');
+    header.style.display = 'grid';
+    header.style.gridTemplateColumns = `150px repeat(${GameState.players.length}, 1fr)`;
+    header.style.gap = '10px';
+    header.style.marginBottom = '20px';
+    header.style.alignItems = 'center';
+
+    // Number column header
+    const numHeader = document.createElement('div');
+    numHeader.style.fontSize = '1.3rem';
+    numHeader.style.fontWeight = 'bold';
+    numHeader.style.color = '#f0a500';
+    numHeader.style.textAlign = 'center';
+    numHeader.textContent = 'Number';
+    header.appendChild(numHeader);
+
+    // Player headers
     GameState.players.forEach((player, pIndex) => {
-        const playerSection = document.createElement('div');
-        playerSection.style.marginBottom = '30px';
-        playerSection.style.padding = '20px';
-        playerSection.style.background = 'rgba(42, 42, 62, 0.8)';
-        playerSection.style.borderRadius = '15px';
-        playerSection.style.border = pIndex === GameState.currentPlayerIndex ? '3px solid #ff6b6b' : '2px solid #555';
+        const playerHeader = document.createElement('div');
+        playerHeader.style.fontSize = '1.1rem';
+        playerHeader.style.fontWeight = 'bold';
+        playerHeader.style.color = pIndex === GameState.currentPlayerIndex ? '#ff6b6b' : '#aaa';
+        playerHeader.style.textAlign = 'center';
+        playerHeader.style.padding = '10px';
+        playerHeader.style.background = 'rgba(42, 42, 62, 0.6)';
+        playerHeader.style.borderRadius = '10px';
+        playerHeader.innerHTML = `${player.name}<br><span style="font-size: 0.9rem; color: #4ecdc4;">Score: ${player.score}</span>`;
+        header.appendChild(playerHeader);
+    });
 
-        const playerTitle = document.createElement('div');
-        playerTitle.style.fontSize = '1.5rem';
-        playerTitle.style.color = '#f0a500';
-        playerTitle.style.marginBottom = '15px';
-        playerTitle.textContent = `${player.name} - Lives: ${'❤️'.repeat(player.data.lives)}`;
+    boardDiv.appendChild(header);
 
-        const numbersDiv = document.createElement('div');
-        numbersDiv.style.display = 'flex';
-        numbersDiv.style.gap = '10px';
-        numbersDiv.style.flexWrap = 'wrap';
-        numbersDiv.style.justifyContent = 'center';
+    // Create rows for each number
+    const numbers = [20, 19, 18, 17, 16, 15, 25];
+    numbers.forEach(num => {
+        const row = document.createElement('div');
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = `150px repeat(${GameState.players.length}, 1fr)`;
+        row.style.gap = '10px';
+        row.style.marginBottom = '15px';
+        row.style.alignItems = 'center';
 
-        player.data.numbers.forEach(num => {
-            const numBtn = document.createElement('button');
-            numBtn.textContent = num;
-            numBtn.style.width = '70px';
-            numBtn.style.height = '70px';
-            numBtn.style.fontSize = '1.5rem';
-            numBtn.style.fontWeight = 'bold';
-            numBtn.style.background = '#f0a500';
-            numBtn.style.border = 'none';
-            numBtn.style.borderRadius = '10px';
-            numBtn.style.cursor = 'pointer';
-            numBtn.style.color = '#1a1a2e';
+        // Number label
+        const numLabel = document.createElement('div');
+        numLabel.style.fontSize = '2rem';
+        numLabel.style.fontWeight = 'bold';
+        numLabel.style.color = '#f0a500';
+        numLabel.style.textAlign = 'center';
+        numLabel.style.background = 'rgba(240, 165, 0, 0.2)';
+        numLabel.style.padding = '15px';
+        numLabel.style.borderRadius = '10px';
+        numLabel.textContent = num;
+        row.appendChild(numLabel);
 
-            numBtn.addEventListener('click', () => handleKnockoutHit(pIndex, num));
+        // Player cells
+        GameState.players.forEach((player, pIndex) => {
+            const cell = document.createElement('button');
+            const hits = player.data.cricket[num] || 0;
+            const marks = ['', '/', 'X', '⊗'][Math.min(hits, 3)];
 
-            numbersDiv.appendChild(numBtn);
+            cell.textContent = marks;
+            cell.style.fontSize = '2.5rem';
+            cell.style.fontWeight = 'bold';
+            cell.style.padding = '15px';
+            cell.style.background = hits >= 3 ? '#4ecdc4' : 'rgba(42, 42, 62, 0.8)';
+            cell.style.color = hits >= 3 ? '#1a1a2e' : '#fff';
+            cell.style.border = '2px solid #555';
+            cell.style.borderRadius = '10px';
+            cell.style.cursor = 'pointer';
+            cell.style.minHeight = '70px';
+            cell.style.display = 'flex';
+            cell.style.alignItems = 'center';
+            cell.style.justifyContent = 'center';
+
+            cell.addEventListener('click', () => handleKnockoutHit(num));
+
+            row.appendChild(cell);
         });
 
-        playerSection.appendChild(playerTitle);
-        playerSection.appendChild(numbersDiv);
-        boardDiv.appendChild(playerSection);
+        boardDiv.appendChild(row);
     });
 
     canvas.appendChild(boardDiv);
 }
 
-function handleKnockoutHit(targetPlayerIndex, number) {
-    // Can only hit other players' numbers, not your own
-    if (targetPlayerIndex === GameState.currentPlayerIndex) {
-        alert('You cannot eliminate your own numbers!');
-        return;
-    }
+function handleKnockoutHit(number) {
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
 
     saveState();
 
-    const targetPlayer = GameState.players[targetPlayerIndex];
-    const numIndex = targetPlayer.data.numbers.indexOf(number);
+    // Increment hit count for this number
+    currentPlayer.data.cricket[number] = (currentPlayer.data.cricket[number] || 0) + 1;
 
-    if (numIndex > -1) {
-        targetPlayer.data.numbers.splice(numIndex, 1);
-        GameState.players[GameState.currentPlayerIndex].score += 10;
+    // If this number is closed (3+ hits) and not all opponents have closed it, score points
+    if (currentPlayer.data.cricket[number] > 3) {
+        // Check if any opponent hasn't closed this number
+        const canScore = GameState.players.some((p, i) =>
+            i !== GameState.currentPlayerIndex && (p.data.cricket[number] || 0) < 3
+        );
 
-        // Check if player is eliminated
-        if (targetPlayer.data.numbers.length === 0) {
-            targetPlayer.data.lives--;
-
-            if (targetPlayer.data.lives <= 0) {
-                alert(`${targetPlayer.name} is eliminated!`);
-
-                // Check if only one player remains
-                const remainingPlayers = GameState.players.filter(p => p.data.lives > 0);
-                if (remainingPlayers.length === 1) {
-                    setTimeout(() => {
-                        endGame();
-                    }, 500);
-                    return;
-                }
-            } else {
-                // Reset numbers
-                targetPlayer.data.numbers = [15, 16, 17, 18, 19, 20, 25];
-            }
+        if (canScore) {
+            currentPlayer.score += number;
         }
+    }
 
-        renderKnockoutBoard();
-        updateScoreboard();
+    renderKnockoutBoard();
+    updateScoreboard();
+
+    // Check for win condition
+    const allClosed = Object.values(currentPlayer.data.cricket).every(hits => hits >= 3);
+    if (allClosed) {
+        // Check if current player has most points or tied
+        const maxOpponentScore = Math.max(...GameState.players
+            .filter((p, i) => i !== GameState.currentPlayerIndex)
+            .map(p => p.score));
+
+        if (currentPlayer.score >= maxOpponentScore) {
+            setTimeout(() => {
+                endGame();
+            }, 500);
+            return;
+        }
     }
 }
