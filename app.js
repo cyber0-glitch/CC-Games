@@ -1,0 +1,342 @@
+// Global Game State
+const GameState = {
+    currentGame: null,
+    players: [],
+    currentPlayerIndex: 0,
+    gameData: {},
+    history: []
+};
+
+// Screen Management
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    document.getElementById(screenId).classList.add('active');
+}
+
+// Main Menu Functions
+function selectGame(gameType) {
+    GameState.currentGame = gameType;
+    showScreen('playerSetup');
+    updatePlayerNameInputs();
+}
+
+function backToMenu() {
+    showScreen('mainMenu');
+    resetGameState();
+}
+
+// Player Setup Functions
+function changePlayerCount(delta) {
+    const countElement = document.getElementById('playerCount');
+    let count = parseInt(countElement.textContent);
+    count = Math.max(1, Math.min(8, count + delta));
+    countElement.textContent = count;
+    updatePlayerNameInputs();
+}
+
+function updatePlayerNameInputs() {
+    const count = parseInt(document.getElementById('playerCount').textContent);
+    const container = document.getElementById('playerNames');
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+        const div = document.createElement('div');
+        div.className = 'player-name-input';
+        div.innerHTML = `
+            <label>Player ${i + 1} Name:</label>
+            <input type="text" id="player${i}Name" placeholder="Player ${i + 1}" value="Player ${i + 1}">
+        `;
+        container.appendChild(div);
+    }
+}
+
+function startGame() {
+    const count = parseInt(document.getElementById('playerCount').textContent);
+    GameState.players = [];
+
+    for (let i = 0; i < count; i++) {
+        const nameInput = document.getElementById(`player${i}Name`);
+        GameState.players.push({
+            name: nameInput.value || `Player ${i + 1}`,
+            score: 0,
+            data: {}
+        });
+    }
+
+    GameState.currentPlayerIndex = 0;
+    GameState.history = [];
+    initializeGame(GameState.currentGame);
+    showScreen('gameScreen');
+    updateScoreboard();
+    updateCurrentPlayerDisplay();
+}
+
+// Game Initialization
+function initializeGame(gameType) {
+    const gameTitle = document.getElementById('gameTitle');
+    const gameInstructions = document.getElementById('gameInstructions');
+    const gameCanvas = document.getElementById('gameCanvas');
+
+    // Clear previous game
+    gameCanvas.innerHTML = '';
+    GameState.gameData = {};
+
+    // Initialize specific game
+    switch(gameType) {
+        case 'bullseye':
+            gameTitle.textContent = 'Classic Bullseye';
+            gameInstructions.textContent = 'Click where the axe hit. 5 throws per player.';
+            initBullseye();
+            break;
+        case 'aroundWorld':
+            gameTitle.textContent = 'Around the World';
+            gameInstructions.textContent = 'Hit all zones in order. First to complete wins!';
+            initAroundWorld();
+            break;
+        case 'ticTacToe':
+            gameTitle.textContent = 'Tic-Tac-Toe';
+            gameInstructions.textContent = 'Get three in a row to win!';
+            initTicTacToe();
+            break;
+        case 'targetPractice':
+            gameTitle.textContent = 'Target Practice';
+            gameInstructions.textContent = 'Hit the targets for points. 10 throws per player.';
+            initTargetPractice();
+            break;
+        case 'zombieHunt':
+            gameTitle.textContent = 'Zombie Hunt';
+            gameInstructions.textContent = 'Click on zombies to eliminate them. 60 seconds!';
+            initZombieHunt();
+            break;
+        case 'connectFour':
+            gameTitle.textContent = 'Connect Four';
+            gameInstructions.textContent = 'Get four in a row to win!';
+            initConnectFour();
+            break;
+        case '21':
+            gameTitle.textContent = '21 Game';
+            gameInstructions.textContent = 'First to exactly 21 points wins!';
+            init21Game();
+            break;
+        case 'knockout':
+            gameTitle.textContent = 'Knockout';
+            gameInstructions.textContent = 'Hit opponent\'s numbers to eliminate them!';
+            initKnockout();
+            break;
+    }
+}
+
+// Scoreboard Update
+function updateScoreboard() {
+    const scoreboard = document.getElementById('scoreboard');
+    scoreboard.innerHTML = '';
+
+    GameState.players.forEach((player, index) => {
+        const scoreDiv = document.createElement('div');
+        scoreDiv.className = 'player-score';
+        if (index === GameState.currentPlayerIndex) {
+            scoreDiv.classList.add('active');
+        }
+
+        let displayScore = player.score;
+        let extraInfo = '';
+
+        // Add game-specific information
+        if (GameState.currentGame === 'bullseye' || GameState.currentGame === 'targetPractice') {
+            const throws = player.data.throws || 0;
+            const maxThrows = GameState.currentGame === 'bullseye' ? 5 : 10;
+            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Throws: ${throws}/${maxThrows}</div>`;
+        } else if (GameState.currentGame === 'aroundWorld') {
+            const zone = player.data.currentZone || 1;
+            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zone: ${zone}/12</div>`;
+        }
+
+        scoreDiv.innerHTML = `
+            <div class="player-name">${player.name}</div>
+            <div class="score">${displayScore}</div>
+            ${extraInfo}
+        `;
+        scoreboard.appendChild(scoreDiv);
+    });
+}
+
+// Current Player Display
+function updateCurrentPlayerDisplay() {
+    const display = document.getElementById('currentPlayerDisplay');
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    display.innerHTML = `Current Player: <span>${currentPlayer.name}</span>`;
+}
+
+// Next Player
+function nextPlayer() {
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+
+    // Check if current player has finished their turn based on game type
+    if (GameState.currentGame === 'bullseye') {
+        const throws = currentPlayer.data.throws || 0;
+        if (throws < 5) {
+            alert(`${currentPlayer.name} still has ${5 - throws} throws remaining!`);
+            return;
+        }
+    } else if (GameState.currentGame === 'targetPractice') {
+        const throws = currentPlayer.data.throws || 0;
+        if (throws < 10) {
+            alert(`${currentPlayer.name} still has ${10 - throws} throws remaining!`);
+            return;
+        }
+    }
+
+    GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+
+    // Check if all players have finished their turns
+    if (GameState.currentGame === 'bullseye' || GameState.currentGame === 'targetPractice') {
+        const maxThrows = GameState.currentGame === 'bullseye' ? 5 : 10;
+        const allFinished = GameState.players.every(p => (p.data.throws || 0) >= maxThrows);
+        if (allFinished) {
+            endGame();
+            return;
+        }
+    }
+
+    updateScoreboard();
+    updateCurrentPlayerDisplay();
+
+    // Reset turn-specific data for new player
+    if (GameState.currentGame === 'targetPractice') {
+        generateTargets();
+    }
+}
+
+// Undo Last Hit
+function undoLastHit() {
+    if (GameState.history.length === 0) {
+        alert('Nothing to undo!');
+        return;
+    }
+
+    const lastAction = GameState.history.pop();
+
+    // Restore player state
+    GameState.players[lastAction.playerIndex] = JSON.parse(JSON.stringify(lastAction.playerState));
+    GameState.currentPlayerIndex = lastAction.playerIndex;
+
+    // Restore game-specific state
+    if (lastAction.gameState) {
+        GameState.gameData = JSON.parse(JSON.stringify(lastAction.gameState));
+    }
+
+    // Re-render the game
+    initializeGame(GameState.currentGame);
+    updateScoreboard();
+    updateCurrentPlayerDisplay();
+}
+
+// Save state for undo
+function saveState() {
+    GameState.history.push({
+        playerIndex: GameState.currentPlayerIndex,
+        playerState: JSON.parse(JSON.stringify(GameState.players[GameState.currentPlayerIndex])),
+        gameState: JSON.parse(JSON.stringify(GameState.gameData))
+    });
+
+    // Limit history to last 10 actions
+    if (GameState.history.length > 10) {
+        GameState.history.shift();
+    }
+}
+
+// Exit Game
+function exitGame() {
+    if (confirm('Are you sure you want to exit the game?')) {
+        backToMenu();
+    }
+}
+
+// End Game
+function endGame() {
+    showScreen('gameOver');
+
+    // Sort players by score (descending)
+    const sortedPlayers = [...GameState.players].sort((a, b) => b.score - a.score);
+
+    const winnerDisplay = document.getElementById('winnerDisplay');
+    const finalScores = document.getElementById('finalScores');
+
+    // Check for tie
+    if (sortedPlayers[0].score === sortedPlayers[1]?.score) {
+        const winners = sortedPlayers.filter(p => p.score === sortedPlayers[0].score);
+        winnerDisplay.innerHTML = `It's a Tie!<br>${winners.map(w => w.name).join(' & ')}`;
+    } else {
+        winnerDisplay.innerHTML = `Winner: ${sortedPlayers[0].name}!`;
+    }
+
+    finalScores.innerHTML = '';
+    sortedPlayers.forEach((player, index) => {
+        const scoreDiv = document.createElement('div');
+        scoreDiv.className = 'final-score-item';
+        if (index === 0) {
+            scoreDiv.classList.add('winner');
+        }
+        scoreDiv.innerHTML = `${index + 1}. ${player.name}: ${player.score} points`;
+        finalScores.appendChild(scoreDiv);
+    });
+}
+
+// Play Again
+function playAgain() {
+    GameState.players.forEach(player => {
+        player.score = 0;
+        player.data = {};
+    });
+    GameState.currentPlayerIndex = 0;
+    GameState.history = [];
+    initializeGame(GameState.currentGame);
+    showScreen('gameScreen');
+    updateScoreboard();
+    updateCurrentPlayerDisplay();
+}
+
+// Reset Game State
+function resetGameState() {
+    GameState.currentGame = null;
+    GameState.players = [];
+    GameState.currentPlayerIndex = 0;
+    GameState.gameData = {};
+    GameState.history = [];
+}
+
+// Click Indicator Effect
+function showClickIndicator(x, y) {
+    const indicator = document.getElementById('clickIndicator');
+    indicator.style.left = x + 'px';
+    indicator.style.top = y + 'px';
+    indicator.classList.add('show');
+
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 500);
+}
+
+// Utility: Get click position relative to element
+function getRelativePosition(event, element) {
+    const rect = element.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        centerX: rect.width / 2,
+        centerY: rect.height / 2
+    };
+}
+
+// Utility: Calculate distance from center
+function getDistanceFromCenter(x, y, centerX, centerY) {
+    return Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    showScreen('mainMenu');
+    updatePlayerNameInputs();
+});

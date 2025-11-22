@@ -1,0 +1,638 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    overflow: hidden;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Main Menu Styles */
+#mainMenu {
+    padding: 20px;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo h1 {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ff6b6b;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+    letter-spacing: 8px;
+}
+
+.tagline {
+    font-size: 1.5rem;
+    color: #f0a500;
+    margin-top: 10px;
+}
+
+.menu-container {
+    max-width: 1200px;
+    width: 100%;
+}
+
+.menu-container h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: #f0a500;
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.game-card {
+    background: linear-gradient(145deg, #2a2a3e, #1f1f2e);
+    border: 3px solid #f0a500;
+    border-radius: 15px;
+    padding: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-card:hover, .game-card:active {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(240, 165, 0, 0.4);
+    background: linear-gradient(145deg, #3a3a4e, #2f2f3e);
+}
+
+.game-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+}
+
+.game-card h3 {
+    font-size: 1.5rem;
+    color: #ff6b6b;
+    margin-bottom: 10px;
+}
+
+.game-card p {
+    color: #aaa;
+    font-size: 1rem;
+}
+
+/* Player Setup Styles */
+.setup-container {
+    background: rgba(42, 42, 62, 0.9);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 600px;
+    width: 90%;
+}
+
+.setup-container h2 {
+    color: #f0a500;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.player-input {
+    margin-bottom: 30px;
+}
+
+.player-input label {
+    display: block;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.number-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.number-selector button {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    background: #f0a500;
+    border: none;
+    border-radius: 10px;
+    color: #1a1a2e;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.number-selector button:active {
+    background: #ff6b6b;
+}
+
+.number-selector span {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ff6b6b;
+    min-width: 80px;
+    text-align: center;
+}
+
+#playerNames {
+    margin: 20px 0;
+}
+
+.player-name-input {
+    margin: 15px 0;
+}
+
+.player-name-input label {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #f0a500;
+}
+
+.player-name-input input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 2px solid #f0a500;
+    border-radius: 10px;
+    background: #1a1a2e;
+    color: #fff;
+}
+
+/* Button Styles */
+.btn-primary, .btn-secondary, .btn-control, .btn-exit {
+    padding: 18px 40px;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin: 10px;
+    min-width: 150px;
+}
+
+.btn-primary {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+.btn-primary:hover, .btn-primary:active {
+    background: #ff5252;
+    transform: scale(1.05);
+}
+
+.btn-secondary {
+    background: #555;
+    color: #fff;
+}
+
+.btn-secondary:hover, .btn-secondary:active {
+    background: #666;
+}
+
+.btn-control {
+    background: #f0a500;
+    color: #1a1a2e;
+}
+
+.btn-control:active {
+    background: #ffc107;
+}
+
+.btn-exit {
+    background: #dc3545;
+    color: #fff;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+}
+
+/* Game Screen Styles */
+#gameScreen {
+    padding: 0;
+}
+
+.game-header {
+    background: rgba(26, 26, 46, 0.95);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #f0a500;
+}
+
+.game-info h2 {
+    color: #ff6b6b;
+    font-size: 2rem;
+}
+
+.game-info #gameInstructions {
+    color: #aaa;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+.scoreboard {
+    background: rgba(42, 42, 62, 0.9);
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.player-score {
+    background: #1a1a2e;
+    border: 2px solid #555;
+    border-radius: 10px;
+    padding: 15px 25px;
+    min-width: 150px;
+    text-align: center;
+}
+
+.player-score.active {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.player-score .player-name {
+    font-size: 1.2rem;
+    color: #f0a500;
+    margin-bottom: 8px;
+}
+
+.player-score .score {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff6b6b;
+}
+
+/* Game Canvas */
+.game-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+.game-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+}
+
+/* Click Indicator */
+.click-indicator {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 3px solid #ff6b6b;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+.click-indicator.show {
+    opacity: 1;
+}
+
+/* Game Controls */
+.game-controls {
+    background: rgba(26, 26, 46, 0.95);
+    padding: 20px;
+    border-top: 3px solid #f0a500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.current-player {
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: bold;
+}
+
+.current-player span {
+    color: #ff6b6b;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* Target Styles */
+.target-bullseye {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+}
+
+.target-ring {
+    position: absolute;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.target-ring:hover {
+    filter: brightness(1.2);
+}
+
+/* Tic-Tac-Toe Grid */
+.ttt-grid {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px;
+    width: 600px;
+    height: 600px;
+}
+
+.ttt-cell {
+    background: rgba(42, 42, 62, 0.8);
+    border: 4px solid #f0a500;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 6rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.ttt-cell:hover:not(.filled) {
+    background: rgba(240, 165, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.ttt-cell.filled {
+    cursor: not-allowed;
+}
+
+/* Connect Four Grid */
+.c4-grid {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 8px;
+    width: 700px;
+    height: 600px;
+    background: rgba(42, 42, 62, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    border: 4px solid #f0a500;
+}
+
+.c4-cell {
+    background: rgba(26, 26, 46, 0.8);
+    border: 2px solid #555;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    cursor: pointer;
+}
+
+.c4-cell:hover:not(.filled) {
+    background: rgba(240, 165, 0, 0.3);
+}
+
+/* Zombie Hunt */
+.zombie {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    font-size: 4rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    animation: zombieFloat 3s ease-in-out infinite;
+}
+
+.zombie:hover {
+    transform: scale(1.2);
+}
+
+@keyframes zombieFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.zombie.hit {
+    animation: zombieDeath 0.5s forwards;
+}
+
+@keyframes zombieDeath {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+
+/* Target Practice */
+.moving-target {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ff6b6b 20%, #f0a500 40%, #fff 60%, #000 80%);
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+}
+
+.moving-target .target-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 4px #000;
+}
+
+/* Around the World */
+.atw-target {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 700px;
+}
+
+.atw-zone {
+    position: absolute;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    border: 3px solid #fff;
+    transition: all 0.3s;
+}
+
+.atw-zone.completed {
+    background: rgba(0, 255, 0, 0.3) !important;
+    border-color: #0f0;
+}
+
+.atw-zone.active {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.9);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Game Over Screen */
+.gameover-container {
+    background: rgba(42, 42, 62, 0.95);
+    border-radius: 20px;
+    padding: 50px;
+    max-width: 700px;
+    width: 90%;
+    text-align: center;
+}
+
+.gameover-container h1 {
+    font-size: 4rem;
+    color: #f0a500;
+    margin-bottom: 30px;
+}
+
+#winnerDisplay {
+    font-size: 2.5rem;
+    color: #ff6b6b;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+#finalScores {
+    margin-bottom: 30px;
+}
+
+.final-score-item {
+    font-size: 1.8rem;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(26, 26, 46, 0.7);
+    border-radius: 10px;
+}
+
+.final-score-item.winner {
+    border: 3px solid #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.gameover-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments for smaller tablets */
+@media (max-width: 768px) {
+    .logo h1 {
+        font-size: 3rem;
+    }
+
+    .game-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .game-card {
+        padding: 20px;
+        min-height: 150px;
+    }
+
+    .target-bullseye {
+        width: 400px;
+        height: 400px;
+    }
+
+    .ttt-grid {
+        width: 450px;
+        height: 450px;
+    }
+
+    .c4-grid {
+        width: 500px;
+        height: 430px;
+    }
+}

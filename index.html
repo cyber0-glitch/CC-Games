@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Chop Chop - Axe Throwing Games</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen active">
+            <div class="logo">
+                <h1>CHOP CHOP</h1>
+                <p class="tagline">Axe Throwing Games</p>
+            </div>
+
+            <div class="menu-container">
+                <h2>Select a Game</h2>
+                <div class="game-grid">
+                    <button class="game-card" onclick="selectGame('bullseye')">
+                        <div class="game-icon">🎯</div>
+                        <h3>Classic Bullseye</h3>
+                        <p>Hit the center for maximum points</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('aroundWorld')">
+                        <div class="game-icon">🌍</div>
+                        <h3>Around the World</h3>
+                        <p>Hit all zones in order</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('ticTacToe')">
+                        <div class="game-icon">❌</div>
+                        <h3>Tic-Tac-Toe</h3>
+                        <p>Classic game with axes</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('targetPractice')">
+                        <div class="game-icon">🎪</div>
+                        <h3>Target Practice</h3>
+                        <p>Hit moving targets for points</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('zombieHunt')">
+                        <div class="game-icon">🧟</div>
+                        <h3>Zombie Hunt</h3>
+                        <p>Eliminate the undead horde</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('connectFour')">
+                        <div class="game-icon">🔴</div>
+                        <h3>Connect Four</h3>
+                        <p>Four in a row wins</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('21')">
+                        <div class="game-icon">🎲</div>
+                        <h3>21 Game</h3>
+                        <p>First to 21 points wins</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('knockout')">
+                        <div class="game-icon">💥</div>
+                        <h3>Knockout</h3>
+                        <p>Eliminate opponent's points</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Setup Screen -->
+        <div id="playerSetup" class="screen">
+            <div class="setup-container">
+                <h2>Player Setup</h2>
+                <div class="player-input">
+                    <label>Number of Players:</label>
+                    <div class="number-selector">
+                        <button onclick="changePlayerCount(-1)">-</button>
+                        <span id="playerCount">2</span>
+                        <button onclick="changePlayerCount(1)">+</button>
+                    </div>
+                </div>
+
+                <div id="playerNames"></div>
+
+                <button class="btn-primary" onclick="startGame()">Start Game</button>
+                <button class="btn-secondary" onclick="backToMenu()">Back</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <!-- Game Header -->
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 id="gameTitle"></h2>
+                    <div id="gameInstructions"></div>
+                </div>
+                <button class="btn-exit" onclick="exitGame()">Exit Game</button>
+            </div>
+
+            <!-- Scoreboard -->
+            <div id="scoreboard" class="scoreboard"></div>
+
+            <!-- Game Canvas Area -->
+            <div class="game-container">
+                <div id="gameCanvas" class="game-canvas">
+                    <!-- Game-specific content will be rendered here -->
+                </div>
+
+                <!-- Click indicator -->
+                <div id="clickIndicator" class="click-indicator"></div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <div id="currentPlayerDisplay" class="current-player"></div>
+                <div class="control-buttons">
+                    <button id="undoBtn" class="btn-control" onclick="undoLastHit()">Undo</button>
+                    <button id="nextPlayerBtn" class="btn-control btn-primary" onclick="nextPlayer()">Next Player</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOver" class="screen">
+            <div class="gameover-container">
+                <h1>Game Over!</h1>
+                <div id="winnerDisplay"></div>
+                <div id="finalScores"></div>
+                <div class="gameover-buttons">
+                    <button class="btn-primary" onclick="playAgain()">Play Again</button>
+                    <button class="btn-secondary" onclick="backToMenu()">Main Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="games.js"></script>
+</body>
+</html>
