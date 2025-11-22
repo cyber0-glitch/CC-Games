@@ -42,9 +42,15 @@ function initBullseye() {
         label.className = 'ring-label';
         label.textContent = ring.label;
         label.style.position = 'absolute';
-        label.style.top = '10px';
+        // Center the label for the smallest ring (50 points), move others up
+        if (ring.size === 60) {
+            label.style.top = '50%';
+            label.style.transform = 'translate(-50%, -50%)';
+        } else {
+            label.style.top = '5px';
+            label.style.transform = 'translateX(-50%)';
+        }
         label.style.left = '50%';
-        label.style.transform = 'translateX(-50%)';
         label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
@@ -962,9 +968,15 @@ function init21Game() {
         label.className = 'ring-label';
         label.textContent = ring.label;
         label.style.position = 'absolute';
-        label.style.top = '10px';
+        // Center the label for the smallest ring (7 points), move others up
+        if (ring.size === 60) {
+            label.style.top = '50%';
+            label.style.transform = 'translate(-50%, -50%)';
+        } else {
+            label.style.top = '5px';
+            label.style.transform = 'translateX(-50%)';
+        }
         label.style.left = '50%';
-        label.style.transform = 'translateX(-50%)';
         label.style.fontSize = '1.2rem';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';

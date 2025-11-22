@@ -127,7 +127,7 @@ function startGame() {
 }
 
 // Game Initialization
-function initializeGame(gameType) {
+function initializeGame(gameType, preserveState = false) {
     const gameTitle = document.getElementById('gameTitle');
     const gameInstructions = document.getElementById('gameInstructions');
     const gameCanvas = document.getElementById('gameCanvas');
@@ -144,8 +144,10 @@ function initializeGame(gameType) {
     const newCanvas = gameCanvas.cloneNode(false);
     gameCanvas.parentNode.replaceChild(newCanvas, gameCanvas);
 
-    // Clear game data
-    GameState.gameData = {};
+    // Clear game data only if not preserving state (e.g., for undo)
+    if (!preserveState) {
+        GameState.gameData = {};
+    }
 
     // Update reference
     const canvas = document.getElementById('gameCanvas');
@@ -317,8 +319,8 @@ function undoLastHit() {
     switch(GameState.currentGame) {
         case 'ticTacToe':
         case 'connectFour':
-            // Re-render board-based games
-            initializeGame(GameState.currentGame);
+            // Re-render board-based games with preserved state
+            initializeGame(GameState.currentGame, true);
             break;
         case 'knockout':
             // Re-render knockout board
