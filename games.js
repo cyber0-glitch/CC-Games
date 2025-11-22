@@ -559,12 +559,31 @@ function spawnZombie() {
     }
 
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-    if (!currentPlayer || currentPlayer.data.timeRemaining <= 0 || currentPlayer.data.finished) {
+    if (!currentPlayer || currentPlayer.data.finished) {
+        return;
+    }
+
+    // Check timer setting - if timer is disabled, skip time check
+    if (GameState.settings.zombieTimer && currentPlayer.data.timeRemaining <= 0) {
         return;
     }
 
     const canvas = document.getElementById('gameCanvas');
     if (!canvas) return;
+
+    // Limit maximum zombies on screen
+    const currentZombies = canvas.querySelectorAll('.zombie:not(.hit)').length;
+    const maxZombies = 15; // Maximum zombies allowed on screen at once
+    if (currentZombies >= maxZombies) {
+        // Try again later
+        const retryDelay = 500;
+        const timeoutId = setTimeout(() => spawnZombie(), retryDelay);
+        if (!GameState.gameData.zombieTimeouts) {
+            GameState.gameData.zombieTimeouts = [];
+        }
+        GameState.gameData.zombieTimeouts.push(timeoutId);
+        return;
+    }
 
     const zombie = document.createElement('div');
     zombie.className = 'zombie';
@@ -576,25 +595,11 @@ function spawnZombie() {
         zombie.style.left = Math.random() * 90 + 5 + '%';
         zombie.style.top = Math.random() * 90 + 5 + '%';
     } else {
-        // Fixed grid positions when movement is disabled
-        if (!GameState.gameData.zombieGridIndex) {
-            GameState.gameData.zombieGridIndex = 0;
-        }
-        const gridPositions = [
-            { left: '20%', top: '20%' },
-            { left: '50%', top: '20%' },
-            { left: '80%', top: '20%' },
-            { left: '20%', top: '50%' },
-            { left: '50%', top: '50%' },
-            { left: '80%', top: '50%' },
-            { left: '20%', top: '80%' },
-            { left: '50%', top: '80%' },
-            { left: '80%', top: '80%' }
-        ];
-        const pos = gridPositions[GameState.gameData.zombieGridIndex % gridPositions.length];
-        zombie.style.left = pos.left;
-        zombie.style.top = pos.top;
-        GameState.gameData.zombieGridIndex++;
+        // Random non-overlapping positions when movement is disabled
+        const existingZombies = Array.from(canvas.querySelectorAll('.zombie:not(.hit)'));
+        let position = findNonOverlappingPosition(existingZombies);
+        zombie.style.left = position.left;
+        zombie.style.top = position.top;
     }
 
     zombie.addEventListener('click', () => handleZombieClick(zombie));
@@ -611,8 +616,8 @@ function spawnZombie() {
         zombie.classList.remove('floating');
     }
 
-    // Spawn next zombie
-    const spawnDelay = Math.max(500, 2000 - GameState.gameData.zombiesKilled * 50);
+    // Spawn next zombie with adaptive delay
+    const spawnDelay = Math.max(800, 2000 - (currentPlayer.data.zombiesKilled || 0) * 30);
     const timeoutId = setTimeout(() => spawnZombie(), spawnDelay);
 
     // Store timeout ID so we can clear it if needed
@@ -621,12 +626,56 @@ function spawnZombie() {
     }
     GameState.gameData.zombieTimeouts.push(timeoutId);
 
-    // Remove zombie after some time if not clicked
+    // Remove zombie after some time if not clicked (longer time if movement disabled)
+    const despawnTime = GameState.settings.movingTargets ? 5000 : 8000;
     setTimeout(() => {
         if (zombie.parentElement && !zombie.classList.contains('hit')) {
             zombie.remove();
         }
-    }, 5000);
+    }, despawnTime);
+}
+
+// Helper function to find non-overlapping position
+function findNonOverlappingPosition(existingZombies) {
+    const minDistance = 100; // Minimum distance in pixels between zombies
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    while (attempts < maxAttempts) {
+        // Generate random position (5% to 90% range)
+        const left = Math.random() * 85 + 5;
+        const top = Math.random() * 85 + 5;
+
+        // Check if this position overlaps with existing zombies
+        let overlaps = false;
+        for (let existingZombie of existingZombies) {
+            const existingLeft = parseFloat(existingZombie.style.left);
+            const existingTop = parseFloat(existingZombie.style.top);
+
+            // Calculate distance (in percentage units)
+            const distance = Math.sqrt(
+                Math.pow(left - existingLeft, 2) +
+                Math.pow(top - existingTop, 2)
+            );
+
+            if (distance < 12) { // 12% distance minimum
+                overlaps = true;
+                break;
+            }
+        }
+
+        if (!overlaps) {
+            return { left: left + '%', top: top + '%' };
+        }
+
+        attempts++;
+    }
+
+    // If we couldn't find a non-overlapping position, return a random one
+    return {
+        left: Math.random() * 85 + 5 + '%',
+        top: Math.random() * 85 + 5 + '%'
+    };
 }
 
 function animateZombie(zombie) {
@@ -686,7 +735,10 @@ function startZombieTimer() {
             return;
         }
 
-        currentPlayer.data.timeRemaining--;
+        // Only decrement timer if timer setting is enabled
+        if (GameState.settings.zombieTimer) {
+            currentPlayer.data.timeRemaining--;
+        }
 
         // Update display
         const instructions = document.getElementById('gameInstructions');
@@ -698,7 +750,8 @@ function startZombieTimer() {
             }
         }
 
-        if (currentPlayer.data.timeRemaining <= 0) {
+        // Only check for time-based game end if timer is enabled
+        if (GameState.settings.zombieTimer && currentPlayer.data.timeRemaining <= 0) {
             currentPlayer.data.finished = true;
 
             // Check if all players finished

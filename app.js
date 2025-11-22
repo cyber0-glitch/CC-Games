@@ -300,8 +300,8 @@ function undoLastHit() {
 
     const lastAction = GameState.history.pop();
 
-    // Restore player state
-    GameState.players[lastAction.playerIndex] = JSON.parse(JSON.stringify(lastAction.playerState));
+    // Restore all players' states
+    GameState.players = JSON.parse(JSON.stringify(lastAction.allPlayers));
     GameState.currentPlayerIndex = lastAction.playerIndex;
 
     // Restore game-specific state
@@ -342,7 +342,7 @@ function undoLastHit() {
 function saveState() {
     GameState.history.push({
         playerIndex: GameState.currentPlayerIndex,
-        playerState: JSON.parse(JSON.stringify(GameState.players[GameState.currentPlayerIndex])),
+        allPlayers: JSON.parse(JSON.stringify(GameState.players)),
         gameState: JSON.parse(JSON.stringify(GameState.gameData))
     });
 
