@@ -49,6 +49,11 @@ body {
 /* Main Menu Styles */
 #mainMenu {
     padding: 20px;
+    overflow-y: auto;
+}
+
+#mainMenu.active {
+    justify-content: flex-start;
 }
 
 .logo {
@@ -795,26 +800,30 @@ body {
     color: #f0a500;
 }
 
-/* Scrollbar styling for settings and help */
+/* Scrollbar styling for settings, help, and main menu */
 .settings-container::-webkit-scrollbar,
-.help-container::-webkit-scrollbar {
+.help-container::-webkit-scrollbar,
+#mainMenu::-webkit-scrollbar {
     width: 10px;
 }
 
 .settings-container::-webkit-scrollbar-track,
-.help-container::-webkit-scrollbar-track {
+.help-container::-webkit-scrollbar-track,
+#mainMenu::-webkit-scrollbar-track {
     background: rgba(26, 26, 46, 0.5);
     border-radius: 10px;
 }
 
 .settings-container::-webkit-scrollbar-thumb,
-.help-container::-webkit-scrollbar-thumb {
+.help-container::-webkit-scrollbar-thumb,
+#mainMenu::-webkit-scrollbar-thumb {
     background: #f0a500;
     border-radius: 10px;
 }
 
 .settings-container::-webkit-scrollbar-thumb:hover,
-.help-container::-webkit-scrollbar-thumb:hover {
+.help-container::-webkit-scrollbar-thumb:hover,
+#mainMenu::-webkit-scrollbar-thumb:hover {
     background: #ff6b6b;
 }
 
