@@ -66,6 +66,7 @@ const GameState = {
         dateEnableDares: true,
         dateThrowsPerPlayer: 10,
         // Merry Axe-mas settings
+        xmasEnabled: true,
         xmasGameMode: 'Bullseye Mode',
         xmasEnableMoving: false,
         xmasGiftValues: '10,20,30,50',
@@ -213,6 +214,17 @@ function initializeGame(gameType, preserveState = false) {
     // CRITICAL: Clear previous game state and event listeners
     gameCanvas.innerHTML = '';
 
+    // Clear any running timers/intervals to prevent contamination
+    if (GameState.gameData && GameState.gameData.gameTimerInterval) {
+        clearInterval(GameState.gameData.gameTimerInterval);
+    }
+    if (GameState.gameData && GameState.gameData.spawnInterval) {
+        clearInterval(GameState.gameData.spawnInterval);
+    }
+    if (GameState.gameData && GameState.gameData.countdownInterval) {
+        clearInterval(GameState.gameData.countdownInterval);
+    }
+
     // Remove all event listeners by cloning and replacing the canvas
     const newCanvas = gameCanvas.cloneNode(false);
     gameCanvas.parentNode.replaceChild(newCanvas, gameCanvas);
@@ -329,6 +341,14 @@ function initializeGame(gameType, preserveState = false) {
 function updateScoreboard() {
     const scoreboard = document.getElementById('scoreboard');
     scoreboard.innerHTML = '';
+
+    // Hide scoreboard for games with custom scoreboards
+    const gamesWithCustomScoreboards = ['infectionMode', 'landmines', 'throwRoyale'];
+    if (gamesWithCustomScoreboards.includes(GameState.currentGame)) {
+        scoreboard.style.display = 'none';
+        return;
+    }
+    scoreboard.style.display = 'grid';
 
     GameState.players.forEach((player, index) => {
         const scoreDiv = document.createElement('div');
@@ -552,15 +572,22 @@ function endGame() {
     }
 
     finalScores.innerHTML = '';
-    sortedPlayers.forEach((player, index) => {
-        const scoreDiv = document.createElement('div');
-        scoreDiv.className = 'final-score-item';
-        if (index === 0) {
-            scoreDiv.classList.add('winner');
-        }
-        scoreDiv.innerHTML = `${index + 1}. ${player.name}: ${player.score} points`;
-        finalScores.appendChild(scoreDiv);
-    });
+
+    // For Throw Royale, only show the winner, not scores
+    if (GameState.currentGame === 'throwRoyale') {
+        finalScores.style.display = 'none';
+    } else {
+        finalScores.style.display = 'block';
+        sortedPlayers.forEach((player, index) => {
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'final-score-item';
+            if (index === 0) {
+                scoreDiv.classList.add('winner');
+            }
+            scoreDiv.innerHTML = `${index + 1}. ${player.name}: ${player.score} points`;
+            finalScores.appendChild(scoreDiv);
+        });
+    }
 }
 
 // Play Again
@@ -923,6 +950,15 @@ function updateDateThrowsPerPlayer() {
 }
 
 // Merry Axe-mas Settings
+function updateXmasEnabled() {
+    GameState.settings.xmasEnabled = document.getElementById('xmasEnabled').checked;
+    // Update menu visibility
+    const xmasCard = document.querySelector('button.game-card[onclick="selectGame(\'merryAxemas\')"]');
+    if (xmasCard) {
+        xmasCard.style.display = GameState.settings.xmasEnabled ? 'block' : 'none';
+    }
+}
+
 function updateXmasGameMode() {
     GameState.settings.xmasGameMode = document.getElementById('xmasGameMode').value;
 }

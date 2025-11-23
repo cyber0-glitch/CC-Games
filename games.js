@@ -1269,7 +1269,29 @@ function initAxeCrush() {
 function renderAxeCrushGrid() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
-    
+
+    // Add turn indicator
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    const maxThrows = GameState.settings.crushThrowsPerPlayer;
+    const throwsRemaining = maxThrows - (currentPlayer.data.throws || 0);
+
+    const turnIndicator = document.createElement('div');
+    turnIndicator.style.textAlign = 'center';
+    turnIndicator.style.marginBottom = '15px';
+    turnIndicator.style.padding = '15px';
+    turnIndicator.style.background = '#2a2a3e';
+    turnIndicator.style.borderRadius = '10px';
+    turnIndicator.style.border = '2px solid #f0a500';
+    turnIndicator.innerHTML = `
+        <div style="font-size: 1.2rem; color: #f0a500; margin-bottom: 5px;">
+            <strong>${currentPlayer.name}'s Turn</strong>
+        </div>
+        <div style="font-size: 1rem; color: #fff;">
+            Throws Remaining: <span style="color: #4CAF50; font-weight: bold;">${throwsRemaining}</span> / ${maxThrows}
+        </div>
+    `;
+    canvas.appendChild(turnIndicator);
+
     const gridContainer = document.createElement('div');
     gridContainer.className = 'crush-grid';
     gridContainer.style.display = 'grid';
@@ -1513,6 +1535,27 @@ function checkCascades(player) {
         renderAxeCrushGrid();
         updateScoreboard();
 
+        // Show combo notification
+        const canvas = document.getElementById('gameCanvas');
+        const comboNotif = document.createElement('div');
+        comboNotif.style.position = 'fixed';
+        comboNotif.style.top = '50%';
+        comboNotif.style.left = '50%';
+        comboNotif.style.transform = 'translate(-50%, -50%)';
+        comboNotif.style.background = 'rgba(244, 67, 54, 0.95)';
+        comboNotif.style.color = '#fff';
+        comboNotif.style.padding = '30px 50px';
+        comboNotif.style.borderRadius = '20px';
+        comboNotif.style.fontSize = '2.5rem';
+        comboNotif.style.fontWeight = 'bold';
+        comboNotif.style.zIndex = '1000';
+        comboNotif.style.boxShadow = '0 0 30px rgba(244, 67, 54, 0.8)';
+        comboNotif.style.animation = 'pulse 0.3s ease-in-out';
+        comboNotif.innerHTML = '🔥 COMBO! 🔥';
+        canvas.appendChild(comboNotif);
+
+        setTimeout(() => comboNotif.remove(), 800);
+
         // Check for more cascades
         setTimeout(() => checkCascades(player), 300);
     }
@@ -1547,9 +1590,22 @@ function initAxeMemory() {
         [pairIds[i], pairIds[j]] = [pairIds[j], pairIds[i]];
     }
     
-    // Create grid
-    const cols = 6;
-    const rows = gridSize / cols;
+    // Create grid - determine cols and rows based on gridSize
+    let cols, rows;
+    if (gridSize === 16) {
+        cols = 4;
+        rows = 4;
+    } else if (gridSize === 24) {
+        cols = 4;
+        rows = 6;
+    } else if (gridSize === 36) {
+        cols = 6;
+        rows = 6;
+    } else {
+        // Default fallback
+        cols = 6;
+        rows = gridSize / cols;
+    }
     GameState.gameData.grid = [];
     let index = 0;
     for (let r = 0; r < rows; r++) {
@@ -1902,7 +1958,6 @@ function initEmojiFrenzy() {
 
     GameState.gameData.emojis = [];
     GameState.gameData.currentRound = 1;
-    GameState.gameData.targetEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     GameState.gameData.throwsThisRound = 0;
 
     // Create emoji objects with grid-based positioning to prevent overlap
@@ -1928,31 +1983,26 @@ function initEmojiFrenzy() {
     const cellWidth = 100 / gridCols;
     const cellHeight = 100 / gridRows;
 
-    // Ensure target emoji is included at least once
-    let targetIncluded = false;
-
     for (let i = 0; i < numEmojis; i++) {
         const pos = positions[i];
 
         // Add random offset within the cell (but keep some margin)
+        // Adjust bounds to account for emoji size to keep them fully inside the border
         const x = (pos.col * cellWidth) + (Math.random() * cellWidth * 0.6 + cellWidth * 0.2);
         const y = (pos.row * cellHeight) + (Math.random() * cellHeight * 0.6 + cellHeight * 0.2);
 
-        // Force first emoji to be target emoji to guarantee it's on screen
-        let emojiType;
-        if (i === 0 && !targetIncluded) {
-            emojiType = GameState.gameData.targetEmoji;
-            targetIncluded = true;
-        } else {
-            emojiType = emojis[Math.floor(Math.random() * emojis.length)];
-        }
+        const emojiType = emojis[Math.floor(Math.random() * emojis.length)];
 
         GameState.gameData.emojis.push({
             type: emojiType,
-            x: Math.min(Math.max(x, 8), 85), // Clamp to safe bounds
-            y: Math.min(Math.max(y, 5), 85)
+            x: Math.min(Math.max(x, 12), 82), // Tighter bounds to keep emojis inside
+            y: Math.min(Math.max(y, 15), 80)
         });
     }
+
+    // IMPORTANT: Pick target emoji from the spawned emojis (not before spawning)
+    const spawnedEmojiTypes = GameState.gameData.emojis.map(e => e.type);
+    GameState.gameData.targetEmoji = spawnedEmojiTypes[Math.floor(Math.random() * spawnedEmojiTypes.length)];
 
     renderEmojiFrenzy();
 }
@@ -2058,25 +2108,25 @@ function handleEmojiClick(index) {
 
         GameState.gameData.emojis[index] = {
             type: emojis[Math.floor(Math.random() * emojis.length)],
-            x: Math.min(Math.max(x, 8), 85),
-            y: Math.min(Math.max(y, 5), 85)
+            x: Math.min(Math.max(x, 12), 82), // Tighter bounds to match init
+            y: Math.min(Math.max(y, 15), 80)
         };
     }
-    
+
     GameState.gameData.throwsThisRound++;
-    
+
     // Check if round is over
     if (GameState.gameData.throwsThisRound >= GameState.players.length) {
         GameState.gameData.currentRound++;
         GameState.gameData.throwsThisRound = 0;
-        
+
         if (GameState.gameData.currentRound > GameState.settings.emojiRoundsPerGame) {
             setTimeout(() => endGame(), 500);
             return;
         } else {
-            // New target for next round
-            const emojis = ['😂', '😍', '🤡', '💀', '😎', '🥳', '😱', '🤩', '🥶', '🤯'];
-            GameState.gameData.targetEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            // New target for next round - pick from currently spawned emojis
+            const spawnedEmojiTypes = GameState.gameData.emojis.map(e => e.type);
+            GameState.gameData.targetEmoji = spawnedEmojiTypes[Math.floor(Math.random() * spawnedEmojiTypes.length)];
         }
     }
     
@@ -2128,17 +2178,71 @@ function initBadAxe() {
         ringDiv.dataset.points = ring.points;
         ringDiv.dataset.label = ring.label;
         ringDiv.style.zIndex = String(index + 1);
-        
-        ringDiv.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleBadAxeHit(ring.label);
-        });
-        
+
         target.appendChild(ringDiv);
     });
-    
+
+    // Add quadrant overlays based on settings
+    const shotZoneType = GameState.settings.badaxeShotZoneType;
+    if (shotZoneType === 'Quadrant only' || shotZoneType === 'Ring + Quadrant') {
+        const quadrants = [
+            { name: 'Top-Left', x: '0%', y: '0%' },
+            { name: 'Top-Right', x: '50%', y: '0%' },
+            { name: 'Bottom-Left', x: '0%', y: '50%' },
+            { name: 'Bottom-Right', x: '50%', y: '50%' }
+        ];
+
+        quadrants.forEach(quad => {
+            const quadDiv = document.createElement('div');
+            quadDiv.style.position = 'absolute';
+            quadDiv.style.left = quad.x;
+            quadDiv.style.top = quad.y;
+            quadDiv.style.width = '50%';
+            quadDiv.style.height = '50%';
+            quadDiv.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+            quadDiv.style.zIndex = '100';
+            quadDiv.style.pointerEvents = 'auto';
+            quadDiv.style.cursor = 'pointer';
+            quadDiv.dataset.quadrant = quad.name;
+
+            quadDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const rect = target.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                const radius = Math.sqrt(Math.pow(clickX - rect.width / 2, 2) + Math.pow(clickY - rect.height / 2, 2));
+
+                // Determine which ring was clicked
+                let ringLabel = 'Outer';
+                for (const ring of rings) {
+                    if (radius <= ring.size / 2) {
+                        ringLabel = ring.label;
+                        break;
+                    }
+                }
+
+                handleBadAxeHit(ringLabel, quad.name);
+            });
+
+            target.appendChild(quadDiv);
+        });
+    } else {
+        // Ring only mode - add click handlers directly to rings
+        rings.reverse().forEach((ring) => {
+            const ringElements = target.querySelectorAll(`[data-label="${ring.label}"]`);
+            ringElements.forEach(ringEl => {
+                ringEl.style.pointerEvents = 'auto';
+                ringEl.style.cursor = 'pointer';
+                ringEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleBadAxeHit(ring.label, null);
+                });
+            });
+        });
+    }
+
     canvas.appendChild(target);
-    
+
     // Show shot selection UI
     showBadAxeShotSelection();
 }
@@ -2174,23 +2278,29 @@ function showBadAxeShotSelection() {
     canvas.appendChild(shotUI);
 }
 
-function handleBadAxeHit(ringLabel) {
+function handleBadAxeHit(ringLabel, quadrant = null) {
+    const shotZoneType = GameState.settings.badaxeShotZoneType;
+
     if (GameState.gameData.phase === 'selectingShot') {
         // Shot caller is setting the challenge
         const caller = GameState.players[GameState.gameData.shotCallerId];
-        
+
         GameState.gameData.currentShot = {
             ring: ringLabel,
+            quadrant: quadrant,
             callerId: GameState.gameData.shotCallerId
         };
-        
+
+        // Award points to shot caller for making the shot
+        caller.score += 10;
+
         GameState.gameData.phase = 'copying';
         GameState.gameData.currentAttempterId = (GameState.gameData.shotCallerId + 1) % GameState.players.length;
-        
+
         // Skip eliminated players
         while (GameState.players[GameState.gameData.currentAttempterId].data.eliminated) {
             GameState.gameData.currentAttempterId = (GameState.gameData.currentAttempterId + 1) % GameState.players.length;
-            
+
             // Safety: if all eliminated except caller, end game
             const activeCount = GameState.players.filter(p => !p.data.eliminated).length;
             if (activeCount <= 1) {
@@ -2198,12 +2308,21 @@ function handleBadAxeHit(ringLabel) {
                 return;
             }
         }
-        
+
         updateBadAxeUI();
     } else if (GameState.gameData.phase === 'copying') {
         // Other player attempting to copy
         const attempter = GameState.players[GameState.gameData.currentAttempterId];
-        const success = (ringLabel === GameState.gameData.currentShot.ring);
+
+        // Determine success based on shot zone type
+        let success = false;
+        if (shotZoneType === 'Ring only') {
+            success = (ringLabel === GameState.gameData.currentShot.ring);
+        } else if (shotZoneType === 'Quadrant only') {
+            success = (quadrant === GameState.gameData.currentShot.quadrant);
+        } else if (shotZoneType === 'Ring + Quadrant') {
+            success = (ringLabel === GameState.gameData.currentShot.ring && quadrant === GameState.gameData.currentShot.quadrant);
+        }
 
         if (success) {
             // Successful copy - award points and show feedback
@@ -2212,9 +2331,13 @@ function handleBadAxeHit(ringLabel) {
             // Show success message briefly
             const existingUI = document.getElementById('badAxeShotUI');
             if (existingUI) {
+                let shotDescription = GameState.gameData.currentShot.ring;
+                if (GameState.gameData.currentShot.quadrant) {
+                    shotDescription = `${GameState.gameData.currentShot.ring} (${GameState.gameData.currentShot.quadrant})`;
+                }
                 existingUI.innerHTML = `
                     <h3 style="color: #4CAF50;">✓ Success!</h3>
-                    <p>${attempter.name} matched the ${GameState.gameData.currentShot.ring} ring!</p>
+                    <p>${attempter.name} matched the shot: ${shotDescription}!</p>
                     <p style="margin-top: 10px; font-size: 1.5rem;">+10 points</p>
                 `;
                 setTimeout(() => updateBadAxeUI(), 1000);
@@ -2228,9 +2351,17 @@ function handleBadAxeHit(ringLabel) {
             // Show miss message
             const existingUI = document.getElementById('badAxeShotUI');
             if (existingUI) {
+                let attemptDescription = ringLabel;
+                if (quadrant) {
+                    attemptDescription = `${ringLabel} (${quadrant})`;
+                }
+                let targetDescription = GameState.gameData.currentShot.ring;
+                if (GameState.gameData.currentShot.quadrant) {
+                    targetDescription = `${GameState.gameData.currentShot.ring} (${GameState.gameData.currentShot.quadrant})`;
+                }
                 existingUI.innerHTML = `
                     <h3 style="color: #ff6b6b;">✗ Miss!</h3>
-                    <p>${attempter.name} hit ${ringLabel} instead of ${GameState.gameData.currentShot.ring}</p>
+                    <p>${attempter.name} hit ${attemptDescription} instead of ${targetDescription}</p>
                     <p style="margin-top: 10px; font-size: 1.5rem;">+${nextLetter}</p>
                 `;
                 setTimeout(() => updateBadAxeUI(), 1000);
@@ -2304,8 +2435,12 @@ function updateBadAxeUI() {
 
     if (GameState.gameData.phase === 'copying') {
         const attempter = GameState.players[GameState.gameData.currentAttempterId];
+        let shotDescription = GameState.gameData.currentShot.ring;
+        if (GameState.gameData.currentShot.quadrant) {
+            shotDescription = `${GameState.gameData.currentShot.ring} (${GameState.gameData.currentShot.quadrant})`;
+        }
         shotUI.innerHTML = `
-            <h3>Challenge: ${GameState.gameData.currentShot.ring} Ring</h3>
+            <h3>Challenge: ${shotDescription}</h3>
             <p>${attempter.name}'s turn to copy the shot!</p>
             <p style="margin-top: 10px; color: #aaa;">Letters: ${attempter.data.letters.join(' ') || 'None'}</p>
         `;
@@ -2314,6 +2449,19 @@ function updateBadAxeUI() {
         GameState.currentPlayerIndex = GameState.gameData.currentAttempterId;
         updateCurrentPlayerDisplay();
     } else if (GameState.gameData.phase === 'selectingShot') {
+        const shotZoneType = GameState.settings.badaxeShotZoneType;
+        let instructions = 'Select a ring, then throw to set the challenge!';
+        if (shotZoneType === 'Quadrant only') {
+            instructions = 'Select a quadrant, then throw to set the challenge!';
+        } else if (shotZoneType === 'Ring + Quadrant') {
+            instructions = 'Select a ring and quadrant combination, then throw to set the challenge!';
+        }
+        shotUI.innerHTML = `
+            <h3 style="margin-bottom: 15px;">${GameState.players[GameState.gameData.shotCallerId].name}'s Turn to Set the Shot</h3>
+            <p style="margin-bottom: 10px;">${instructions}</p>
+            <div style="font-size: 0.9rem; color: #aaa;">When you hit, that becomes the challenge for everyone else.</div>
+        `;
+
         // Update current player index for display
         GameState.currentPlayerIndex = GameState.gameData.shotCallerId;
         updateCurrentPlayerDisplay();
@@ -2462,9 +2610,16 @@ function renderInfectionMode() {
     const infected = GameState.players.find((p, i) => p.data.team === 'Infected' && i === GameState.gameData.infectedIndex);
 
     if (survivor && infected) {
+        const currentTurn = GameState.gameData.duelPhase === 'survivor' ? survivor.name : infected.name;
+        const currentTeam = GameState.gameData.duelPhase === 'survivor' ? 'Survivor' : 'Infected';
+        const teamColor = GameState.gameData.duelPhase === 'survivor' ? '#4CAF50' : '#f44336';
+
         duelArea.innerHTML = `
             <h3>DUEL: ${survivor.name} vs ${infected.name}</h3>
             <p>Survivor: ${survivor.data.duelScore} | Infected: ${infected.data.duelScore}</p>
+            <div style="margin-top: 15px; padding: 10px; background: ${teamColor}; border-radius: 10px; color: #fff; font-weight: bold;">
+                Current Turn: ${currentTurn} (${currentTeam})
+            </div>
         `;
     }
 
@@ -2508,15 +2663,38 @@ function renderInfectionMode() {
 function handleInfectionHit(points) {
     const throwsPerDuel = GameState.settings.infectionThrowsPerDuel;
 
+    let playerName;
     if (GameState.gameData.duelPhase === 'survivor') {
         const survivor = GameState.players[GameState.gameData.survivorIndex];
         survivor.data.duelScore += points;
+        playerName = survivor.name;
         GameState.gameData.duelPhase = 'infected';
     } else {
         const infected = GameState.players[GameState.gameData.infectedIndex];
         infected.data.duelScore += points;
+        playerName = infected.name;
         GameState.gameData.duelPhase = 'survivor';
     }
+
+    // Show hit feedback
+    const canvas = document.getElementById('gameCanvas');
+    const hitFeedback = document.createElement('div');
+    hitFeedback.style.position = 'fixed';
+    hitFeedback.style.top = '50%';
+    hitFeedback.style.left = '50%';
+    hitFeedback.style.transform = 'translate(-50%, -50%)';
+    hitFeedback.style.background = 'rgba(240, 165, 0, 0.95)';
+    hitFeedback.style.color = '#fff';
+    hitFeedback.style.padding = '20px 40px';
+    hitFeedback.style.borderRadius = '15px';
+    hitFeedback.style.fontSize = '1.5rem';
+    hitFeedback.style.fontWeight = 'bold';
+    hitFeedback.style.zIndex = '1000';
+    hitFeedback.style.boxShadow = '0 0 20px rgba(240, 165, 0, 0.6)';
+    hitFeedback.innerHTML = `${playerName}: +${points} points`;
+    canvas.appendChild(hitFeedback);
+
+    setTimeout(() => hitFeedback.remove(), 1000);
 
     GameState.gameData.throwsThisDuel++;
 
@@ -2606,6 +2784,7 @@ function renderLandminesBoard() {
 
     // Ladder visualization
     const ladder = document.createElement('div');
+    ladder.id = 'landminesLadder';
     ladder.style.flex = '0 0 250px';
     ladder.style.background = '#2a2a3e';
     ladder.style.padding = '20px';
@@ -2614,9 +2793,18 @@ function renderLandminesBoard() {
     ladder.style.maxHeight = '600px';
     ladder.style.overflowY = 'auto';
     ladder.style.position = 'relative';
+    // Custom scrollbar styling to match settings/help menus
+    ladder.style.scrollbarWidth = 'thin';
+    ladder.style.scrollbarColor = '#f0a500 #2a2a3e';
 
     const targetScore = GameState.gameData.targetScore;
     const landmines = GameState.gameData.landmineScores;
+
+    // Save current scroll position
+    const existingLadder = document.getElementById('landminesLadder');
+    const savedScrollTop = existingLadder ? existingLadder.scrollTop : 0;
+
+    let currentPlayerScore = GameState.players[GameState.currentPlayerIndex]?.score || 0;
 
     for (let score = 0; score <= targetScore; score += 5) {
         const rung = document.createElement('div');
@@ -2624,6 +2812,7 @@ function renderLandminesBoard() {
         rung.style.margin = '5px 0';
         rung.style.borderRadius = '8px';
         rung.style.position = 'relative';
+        rung.dataset.score = score;
 
         if (landmines.includes(score)) {
             rung.style.background = '#f44336';
@@ -2645,6 +2834,13 @@ function renderLandminesBoard() {
 
         ladder.insertBefore(rung, ladder.firstChild); // Insert at top
     }
+
+    // Restore scroll position after render
+    setTimeout(() => {
+        if (savedScrollTop > 0) {
+            ladder.scrollTop = savedScrollTop;
+        }
+    }, 0);
 
     // Bullseye target
     const targetArea = document.createElement('div');
@@ -2902,15 +3098,23 @@ function initDateNight() {
         "Take a selfie together!",
         "Switch lanes with another couple!",
         "Loser buys dessert!",
-        "Winner picks the next date!",
+        "Winner picks the next date location!",
         "Share your favorite memory together!",
         "Give your partner a compliment!",
-        "Plan your next adventure!",
+        "Tell each other what you love most about them!",
         "Dance for 30 seconds!",
         "Tell each other a secret!",
         "Share a kiss!",
         "Winner gets a back rub!",
-        "Loser does the dishes tonight!"
+        "Loser does the dishes tonight!",
+        "Hold hands for the next 3 throws!",
+        "Share your first impression of each other!",
+        "Tell your partner why you're grateful for them!",
+        "Make a wish together!",
+        "Whisper something sweet to your partner!",
+        "Give your partner a hug!",
+        "Tell your partner your favorite thing about today!",
+        "Share what you're looking forward to together!"
     ];
 
     renderDateNight();
@@ -3054,7 +3258,8 @@ function handleDateNightHit(points, isHeart = false) {
         darePopup.innerHTML = `
             <h2 style="color: #fff; margin: 0 0 15px 0; font-size: 1.8rem;">💕 Date Dare! 💕</h2>
             <p style="color: #fff; font-size: 1.3rem; margin: 0 0 20px 0;">${randomDare}</p>
-            <p style="color: #FFD700; font-size: 1.1rem; margin: 0;">Bonus: +${finalPoints} points!</p>
+            <p style="color: #FFD700; font-size: 1.1rem; margin: 0 0 15px 0;">Bonus: +${finalPoints} points!</p>
+            <button style="background: #fff; color: #ff6b6b; border: none; padding: 10px 30px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Got it! ❤️</button>
         `;
 
         document.body.appendChild(darePopup);
@@ -3072,11 +3277,12 @@ function handleDateNightHit(points, isHeart = false) {
             document.head.appendChild(style);
         }
 
-        // Remove popup after 3 seconds
-        setTimeout(() => {
+        // Click button to dismiss popup
+        const button = darePopup.querySelector('button');
+        button.addEventListener('click', () => {
             darePopup.style.animation = 'popIn 0.3s ease-out reverse';
             setTimeout(() => darePopup.remove(), 300);
-        }, 3000);
+        });
     }
 
     currentPlayer.score += finalPoints;
@@ -3123,24 +3329,18 @@ function initMerryAxemas() {
     // Add Christmas decorations
     addChristmasDecorations(canvas);
 
-    if (GameState.settings.xmasGameMode === 'Bullseye Mode') {
-        renderXmasBullseye();
-    } else {
-        // Gift Hunt Mode
-        GameState.gameData.presents = [];
-        const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
+    // Initialize presents/ornaments on tree
+    GameState.gameData.presents = [];
+    const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
 
-        for (let i = 0; i < 10; i++) {
-            GameState.gameData.presents.push({
-                value: giftValues[Math.floor(Math.random() * giftValues.length)],
-                x: Math.random() * 80 + 10,
-                y: Math.random() * 80 + 10,
-                emoji: ['🎁', '🎄', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 5)]
-            });
-        }
-
-        renderXmasGiftHunt();
+    for (let i = 0; i < 10; i++) {
+        GameState.gameData.presents.push({
+            value: giftValues[Math.floor(Math.random() * giftValues.length)],
+            emoji: ['🎁', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 4)]
+        });
     }
+
+    renderXmasTreeWithGifts();
 }
 
 function addChristmasDecorations(canvas) {
@@ -3176,56 +3376,90 @@ function addChristmasDecorations(canvas) {
     }
 }
 
-function renderXmasBullseye() {
+function renderXmasTreeWithGifts() {
     const canvas = document.getElementById('gameCanvas');
 
-    // Create Christmas-themed bullseye
-    const target = document.createElement('div');
-    target.className = 'target-bullseye';
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.maxWidth = '600px';
+    container.style.height = '600px';
+    container.style.margin = '20px auto';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
 
-    const rings = [
-        { size: 60, color: '#FFD700', points: 50, emoji: '⭐', name: 'Star' },
-        { size: 120, color: '#ff6b6b', points: 25, emoji: '🎅', name: 'Santa' },
-        { size: 180, color: '#4CAF50', points: 15, emoji: '🎄', name: 'Tree' },
-        { size: 240, color: '#fff', points: 10, emoji: '❄️', name: 'Snow' },
-        { size: 300, color: '#f0a500', points: 5, emoji: '🔔', name: 'Bell' },
-        { size: 360, color: '#1a1a2e', points: 1, emoji: '🎁', name: 'Gift' }
+    // Create large Christmas tree using text/emoji layers
+    const tree = document.createElement('div');
+    tree.style.position = 'relative';
+    tree.style.fontSize = '20rem';
+    tree.style.lineHeight = '1';
+    tree.style.textAlign = 'center';
+    tree.style.filter = 'drop-shadow(0 0 20px rgba(76, 175, 80, 0.6))';
+    tree.textContent = '🎄';
+
+    // Add twinkling star on top
+    const star = document.createElement('div');
+    star.textContent = '⭐';
+    star.style.position = 'absolute';
+    star.style.top = '-40px';
+    star.style.left = '50%';
+    star.style.transform = 'translateX(-50%)';
+    star.style.fontSize = '4rem';
+    star.style.animation = 'twinkle 1.5s ease-in-out infinite';
+    star.style.filter = 'drop-shadow(0 0 10px #FFD700)';
+    tree.appendChild(star);
+
+    // Position gifts/ornaments on the tree using a grid pattern
+    const treePositions = [
+        { x: '50%', y: '20%' },  // Top
+        { x: '35%', y: '35%' },  // Upper left
+        { x: '65%', y: '35%' },  // Upper right
+        { x: '25%', y: '50%' },  // Middle left
+        { x: '50%', y: '50%' },  // Center
+        { x: '75%', y: '50%' },  // Middle right
+        { x: '20%', y: '65%' },  // Lower left
+        { x: '45%', y: '65%' },  // Lower mid-left
+        { x: '80%', y: '65%' },  // Lower right
+        { x: '50%', y: '80%' }   // Bottom
     ];
 
-    rings.reverse().forEach((ring, index) => {
-        const ringDiv = document.createElement('div');
-        ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
-        ringDiv.style.background = ring.color;
-        ringDiv.dataset.points = ring.points;
-        ringDiv.style.zIndex = String(index + 1);
+    GameState.gameData.presents.forEach((present, index) => {
+        const pos = treePositions[index];
+        const giftDiv = document.createElement('div');
+        giftDiv.textContent = present.emoji;
+        giftDiv.style.position = 'absolute';
+        giftDiv.style.left = pos.x;
+        giftDiv.style.top = pos.y;
+        giftDiv.style.transform = 'translate(-50%, -50%)';
+        giftDiv.style.fontSize = '3rem';
+        giftDiv.style.cursor = 'pointer';
+        giftDiv.style.transition = 'transform 0.2s, filter 0.2s';
+        giftDiv.style.filter = 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))';
+        giftDiv.style.zIndex = '10';
 
-        // Add Christmas emoji with twinkling effect
-        const label = document.createElement('div');
-        label.textContent = ring.emoji;
-        label.style.position = 'absolute';
-        label.style.top = '50%';
-        label.style.left = '50%';
-        label.style.transform = 'translate(-50%, -50%)';
-        label.style.fontSize = '2.5rem';
-        label.style.pointerEvents = 'none';
-        if (ring.emoji === '⭐') {
-            label.style.animation = 'twinkle 1.5s ease-in-out infinite';
-        }
-        ringDiv.appendChild(label);
-
-        ringDiv.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleXmasHit(ring.points);
+        giftDiv.addEventListener('mouseenter', () => {
+            giftDiv.style.transform = 'translate(-50%, -50%) scale(1.3)';
+            giftDiv.style.filter = 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.9))';
         });
 
-        target.appendChild(ringDiv);
+        giftDiv.addEventListener('mouseleave', () => {
+            giftDiv.style.transform = 'translate(-50%, -50%) scale(1)';
+            giftDiv.style.filter = 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))';
+        });
+
+        giftDiv.addEventListener('click', () => {
+            handleXmasGiftClick(index);
+        });
+
+        tree.appendChild(giftDiv);
     });
 
-    canvas.appendChild(target);
+    container.appendChild(tree);
+    canvas.appendChild(container);
 }
 
+// Keep old function for compatibility but update it
 function renderXmasGiftHunt() {
     const canvas = document.getElementById('gameCanvas');
     const existingContainer = canvas.querySelector('.xmas-gift-container');

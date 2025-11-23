@@ -628,19 +628,19 @@
 
                     <div class="setting-item">
                         <div class="setting-label">
-                            <h3>Game Mode</h3>
-                            <p>Bullseye Mode (static target) or Gift Hunt Mode (moving targets)</p>
+                            <h3>Enable Merry Axe-mas</h3>
+                            <p>Show or hide the Merry Axe-mas game from the main menu</p>
                         </div>
-                        <select id="xmasGameMode" style="width: 150px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateXmasGameMode()">
-                            <option value="Bullseye Mode" selected>Bullseye Mode</option>
-                            <option value="Gift Hunt Mode">Gift Hunt Mode</option>
-                        </select>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="xmasEnabled" checked onchange="updateXmasEnabled()">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
 
                     <div class="setting-item">
                         <div class="setting-label">
                             <h3>Gift Values (comma-separated)</h3>
-                            <p>Point values for different presents/ornaments</p>
+                            <p>Point values for different presents/ornaments on the tree</p>
                         </div>
                         <input type="text" id="xmasGiftValues" value="10,20,30,50" style="width: 150px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateXmasGiftValues()">
                     </div>
@@ -784,9 +784,10 @@
 
                     <div class="help-section">
                         <h2>🎄 Merry Axe-mas</h2>
-                        <p><strong>How to Play:</strong> Celebrate the holidays with a festive target! In Bullseye Mode, play a standard game on a Christmas-themed board. In Gift Hunt Mode, hit moving presents and ornaments for different point values.</p>
-                        <p><strong>Scoring:</strong> Bullseye Mode uses classic scoring. Gift Hunt Mode awards points based on the present or ornament you hit.</p>
+                        <p><strong>How to Play:</strong> Celebrate the holidays with a festive Christmas tree! Hit the presents and ornaments hanging on the tree to score points. Each gift has a different point value.</p>
+                        <p><strong>Scoring:</strong> Points are awarded based on which gift or ornament you hit. Values can be customized in settings.</p>
                         <p><strong>Winning:</strong> After all players have thrown, highest score wins.</p>
+                        <p><strong>Settings:</strong> You can hide this game from the main menu when it's not winter by disabling it in settings.</p>
                     </div>
 
                     <div class="help-section">
