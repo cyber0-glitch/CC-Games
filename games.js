@@ -443,19 +443,32 @@ function animateTarget(target) {
         return;
     }
 
-    const duration = 3000 + Math.random() * 2000;
+    // Movement phase: target moves for moveDuration seconds
+    const moveDurationMs = GameState.settings.moveDuration * 1000;
     const newX = Math.random() * 80 + 10;
     const newY = Math.random() * 80 + 10;
 
-    target.style.transition = `all ${duration}ms linear`;
+    target.style.transition = `all ${moveDurationMs}ms linear`;
     target.style.left = newX + '%';
     target.style.top = newY + '%';
 
+    // After movement, enter static phase
     setTimeout(() => {
-        if (target.parentElement && GameState.currentGame === 'targetPractice' && GameState.settings.movingTargets) {
-            animateTarget(target);
+        if (!target.parentElement || GameState.currentGame !== 'targetPractice' || !GameState.settings.movingTargets) {
+            return;
         }
-    }, duration);
+
+        // Static phase: target stays still for staticDuration seconds
+        const staticDurationMs = GameState.settings.staticDuration * 1000;
+        target.style.transition = 'none'; // Disable transition during static phase
+
+        // After static phase, start moving again
+        setTimeout(() => {
+            if (target.parentElement && GameState.currentGame === 'targetPractice' && GameState.settings.movingTargets) {
+                animateTarget(target); // Repeat the cycle
+            }
+        }, staticDurationMs);
+    }, moveDurationMs);
 }
 
 function handleTargetPracticeHit(points, target) {
@@ -541,7 +554,7 @@ function initZombieHunt() {
     // Initialize player data with individual timers
     GameState.players.forEach(player => {
         if (!player.data.timeRemaining) {
-            player.data.timeRemaining = 60;
+            player.data.timeRemaining = GameState.settings.zombieCountdown;
             player.data.zombiesKilled = 0;
             player.data.finished = false;
         }
@@ -696,19 +709,32 @@ function animateZombie(zombie) {
         return;
     }
 
-    const duration = 2000 + Math.random() * 1000;
+    // Movement phase: zombie moves for moveDuration seconds
+    const moveDurationMs = GameState.settings.moveDuration * 1000;
     const newX = Math.random() * 90 + 5;
     const newY = Math.random() * 90 + 5;
 
-    zombie.style.transition = `all ${duration}ms linear`;
+    zombie.style.transition = `all ${moveDurationMs}ms linear`;
     zombie.style.left = newX + '%';
     zombie.style.top = newY + '%';
 
+    // After movement, enter static phase
     setTimeout(() => {
-        if (zombie.parentElement && GameState.currentGame === 'zombieHunt' && GameState.settings.movingTargets && !zombie.classList.contains('hit')) {
-            animateZombie(zombie);
+        if (!zombie.parentElement || GameState.currentGame !== 'zombieHunt' || !GameState.settings.movingTargets || zombie.classList.contains('hit')) {
+            return;
         }
-    }, duration);
+
+        // Static phase: zombie stays still for staticDuration seconds
+        const staticDurationMs = GameState.settings.staticDuration * 1000;
+        zombie.style.transition = 'none'; // Disable transition during static phase
+
+        // After static phase, start moving again
+        setTimeout(() => {
+            if (zombie.parentElement && GameState.currentGame === 'zombieHunt' && GameState.settings.movingTargets && !zombie.classList.contains('hit')) {
+                animateZombie(zombie); // Repeat the cycle
+            }
+        }, staticDurationMs);
+    }, moveDurationMs);
 }
 
 function handleZombieClick(zombie) {
@@ -1012,12 +1038,26 @@ function handle21GameHit(points) {
 
     saveState();
 
+    const previousScore = currentPlayer.score;
     currentPlayer.score += points;
 
     // Check if player went over 21 or hit exactly 21
     if (currentPlayer.score > 21) {
-        alert(`${currentPlayer.name} went over 21! Setting score to 0.`);
-        currentPlayer.score = 0;
+        if (GameState.settings.hardMode) {
+            // Hard mode: reset to 0
+            alert(`${currentPlayer.name} went over 21! Setting score to 0.`);
+            currentPlayer.score = 0;
+        } else {
+            // Easy mode: keep previous score
+            alert(`${currentPlayer.name} went over 21! Score remains at ${previousScore}.`);
+            currentPlayer.score = previousScore;
+        }
+        // Move to next player
+        updateScoreboard();
+        setTimeout(() => {
+            nextPlayer();
+        }, 500);
+        return;
     } else if (currentPlayer.score === 21) {
         updateScoreboard();
         setTimeout(() => {

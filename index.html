@@ -174,6 +174,45 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>21 Game - Hard Mode</h3>
+                            <p>Hard Mode: Score resets to 0 if you go over 21. Easy Mode: Score stays the same if you go over 21.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hardModeToggle" checked onchange="toggleHardMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Movement Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Movement Duration (seconds)</h3>
+                            <p>How long targets move before becoming static</p>
+                        </div>
+                        <input type="number" id="moveDuration" min="1" max="10" value="3" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMoveDuration()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Static Duration (seconds)</h3>
+                            <p>How long targets stay static before moving again</p>
+                        </div>
+                        <input type="number" id="staticDuration" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateStaticDuration()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Zombie Hunt Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Zombie Hunt Countdown Time (seconds)</h3>
+                            <p>How long each player has in Zombie Hunt</p>
+                        </div>
+                        <input type="number" id="zombieCountdown" min="10" max="300" value="60" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieCountdown()">
+                    </div>
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
             </div>
@@ -207,14 +246,14 @@
                         <h2>🎪 Target Practice</h2>
                         <p><strong>How to Play:</strong> Click on moving targets to hit them. Each player gets 10 throws.</p>
                         <p><strong>Scoring:</strong> Targets are worth 10, 20, 30, 50, or 100 points. Hit high-value targets for the win!</p>
-                        <p><strong>Settings:</strong> You can disable target movement in Settings</p>
+                        <p><strong>Settings:</strong> You can disable target movement in Settings, or customize how long targets move and stay static</p>
                     </div>
 
                     <div class="help-section">
                         <h2>🧟 Zombie Hunt</h2>
-                        <p><strong>How to Play:</strong> Click on zombies to eliminate them. You have 60 seconds to get the highest score!</p>
+                        <p><strong>How to Play:</strong> Click on zombies to eliminate them. You have a countdown timer to get the highest score!</p>
                         <p><strong>Scoring:</strong> Each zombie is worth 10 points. Zombies spawn faster as you progress!</p>
-                        <p><strong>Settings:</strong> You can disable zombie movement in Settings</p>
+                        <p><strong>Settings:</strong> You can disable zombie movement, customize how long zombies move and stay static, and change the countdown time in Settings</p>
                     </div>
 
                     <div class="help-section">
@@ -227,7 +266,9 @@
                         <h2>🎲 21 Game</h2>
                         <p><strong>How to Play:</strong> Click the target to score points. First player to reach exactly 21 wins!</p>
                         <p><strong>Scoring:</strong> Center (7), Red (5), White (3), Black (2), Orange (1), Outer (0)</p>
-                        <p><strong>Warning:</strong> Going over 21 resets your score to 0!</p>
+                        <p><strong>Hard Mode:</strong> Going over 21 resets your score to 0!</p>
+                        <p><strong>Easy Mode:</strong> Going over 21 keeps your previous score and moves to the next player.</p>
+                        <p><strong>Settings:</strong> You can toggle between Hard and Easy mode in Settings</p>
                     </div>
 
                     <div class="help-section">

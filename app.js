@@ -7,7 +7,11 @@ const GameState = {
     history: [],
     settings: {
         movingTargets: true,
-        zombieTimer: true
+        zombieTimer: true,
+        hardMode: true,
+        moveDuration: 3,
+        staticDuration: 5,
+        zombieCountdown: 60
     }
 };
 
@@ -448,6 +452,10 @@ function showSettings() {
     // Update toggle state from GameState
     document.getElementById('movingTargetsToggle').checked = GameState.settings.movingTargets;
     document.getElementById('zombieTimerToggle').checked = GameState.settings.zombieTimer;
+    document.getElementById('hardModeToggle').checked = GameState.settings.hardMode;
+    document.getElementById('moveDuration').value = GameState.settings.moveDuration;
+    document.getElementById('staticDuration').value = GameState.settings.staticDuration;
+    document.getElementById('zombieCountdown').value = GameState.settings.zombieCountdown;
 }
 
 function toggleMovingTargets() {
@@ -489,6 +497,35 @@ function toggleMovingTargets() {
 function toggleZombieTimer() {
     GameState.settings.zombieTimer = document.getElementById('zombieTimerToggle').checked;
     console.log('Zombie timer:', GameState.settings.zombieTimer);
+}
+
+function toggleHardMode() {
+    GameState.settings.hardMode = document.getElementById('hardModeToggle').checked;
+    console.log('21 Game Hard Mode:', GameState.settings.hardMode);
+}
+
+function updateMoveDuration() {
+    const value = parseInt(document.getElementById('moveDuration').value);
+    if (value >= 1 && value <= 10) {
+        GameState.settings.moveDuration = value;
+        console.log('Move duration:', GameState.settings.moveDuration);
+    }
+}
+
+function updateStaticDuration() {
+    const value = parseInt(document.getElementById('staticDuration').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.staticDuration = value;
+        console.log('Static duration:', GameState.settings.staticDuration);
+    }
+}
+
+function updateZombieCountdown() {
+    const value = parseInt(document.getElementById('zombieCountdown').value);
+    if (value >= 10 && value <= 300) {
+        GameState.settings.zombieCountdown = value;
+        console.log('Zombie countdown:', GameState.settings.zombieCountdown);
+    }
 }
 
 // Help Functions
