@@ -2293,6 +2293,8 @@ function showBadAxeShotSelection() {
 function handleBadAxeHit(ringLabel, quadrant = null) {
     const shotZoneType = GameState.settings.badaxeShotZoneType;
 
+    saveState();
+
     if (GameState.gameData.phase === 'selectingShot') {
         // Shot caller is setting the challenge
         const caller = GameState.players[GameState.gameData.shotCallerId];
@@ -2703,6 +2705,8 @@ function renderInfectionMode() {
 function handleInfectionHit(points) {
     const throwsPerDuel = GameState.settings.infectionThrowsPerDuel;
 
+    saveState();
+
     let playerName;
     if (GameState.gameData.duelPhase === 'survivor') {
         const survivor = GameState.players[GameState.gameData.survivorIndex];
@@ -3049,9 +3053,12 @@ function renderThrowRoyale() {
             playerDiv.style.border = isCurrentThrower ? '3px solid #FFD700' : 'none';
 
             const hearts = '❤️'.repeat(player.data.lives);
+            const roundScore = player.data.roundScore || 0;
+            const scoreDisplay = roundScore > 0 ? `<div style="font-size: 1.2rem; color: #4CAF50; margin-top: 5px;">+${roundScore} pts</div>` : '';
             playerDiv.innerHTML = `
                 <div style="font-weight: bold; color: ${isCurrentThrower ? '#000' : '#fff'};">${player.name}${isCurrentThrower ? ' 🎯' : ''}</div>
                 <div style="font-size: 1.5rem; margin-top: 5px;">${hearts}</div>
+                ${scoreDisplay}
             `;
 
             livesContainer.appendChild(playerDiv);
