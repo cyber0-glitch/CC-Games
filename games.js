@@ -2880,8 +2880,38 @@ function renderLandminesBoard() {
     const targetArea = document.createElement('div');
     targetArea.style.flex = '1';
     targetArea.style.display = 'flex';
+    targetArea.style.flexDirection = 'column';
     targetArea.style.justifyContent = 'center';
     targetArea.style.alignItems = 'center';
+    targetArea.style.gap = '20px';
+
+    // Score indicator
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    const scoreIndicator = document.createElement('div');
+    scoreIndicator.style.background = '#2a2a3e';
+    scoreIndicator.style.padding = '20px';
+    scoreIndicator.style.borderRadius = '15px';
+    scoreIndicator.style.border = '3px solid #f0a500';
+    scoreIndicator.style.textAlign = 'center';
+    scoreIndicator.style.minWidth = '300px';
+
+    const nextCheckpoint = Math.ceil(currentPlayer.score / GameState.gameData.checkpointInterval) * GameState.gameData.checkpointInterval;
+    const pointsToCheckpoint = nextCheckpoint - currentPlayer.score;
+    const upcomingLandmines = GameState.gameData.landmineScores.filter(m => m > currentPlayer.score && m <= currentPlayer.score + 50);
+
+    let landmineWarning = '';
+    if (upcomingLandmines.length > 0) {
+        landmineWarning = `<div style="color: #f44336; margin-top: 10px; font-weight: bold;">⚠️ Landmines ahead: ${upcomingLandmines.join(', ')} 💣</div>`;
+    }
+
+    scoreIndicator.innerHTML = `
+        <div style="font-size: 1.2rem; color: #f0a500; font-weight: bold;">${currentPlayer.name}'s Turn</div>
+        <div style="font-size: 2rem; color: #4CAF50; font-weight: bold; margin: 10px 0;">Current Score: ${currentPlayer.score}</div>
+        <div style="font-size: 1rem; color: #aaa;">Next Checkpoint: ${nextCheckpoint} (${pointsToCheckpoint} points away)</div>
+        <div style="font-size: 1rem; color: #aaa;">Target: ${GameState.gameData.targetScore}</div>
+        ${landmineWarning}
+    `;
+    targetArea.appendChild(scoreIndicator);
 
     const target = document.createElement('div');
     target.className = 'target-bullseye';
@@ -3197,9 +3227,9 @@ function renderDateNight() {
         heartContainer.style.cursor = 'pointer';
         heartContainer.dataset.bonus = 'heart';
 
-        // Random position around the target
+        // Position at the outer edge of the inner bullseye (red ring)
         const angle = (360 / heartZones) * i;
-        const radius = 200;
+        const radius = 52; // Just inside the red ring edge (60px radius)
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
 
@@ -3426,7 +3456,7 @@ function renderXmasTreeWithGifts() {
     // Create large Christmas tree using text/emoji layers
     const tree = document.createElement('div');
     tree.style.position = 'relative';
-    tree.style.fontSize = '20rem';
+    tree.style.fontSize = '28rem';
     tree.style.lineHeight = '1';
     tree.style.textAlign = 'center';
     tree.style.filter = 'drop-shadow(0 0 20px rgba(76, 175, 80, 0.6))';
@@ -3491,6 +3521,11 @@ function renderXmasTreeWithGifts() {
 
     container.appendChild(tree);
     canvas.appendChild(container);
+}
+
+// Alias for undo compatibility
+function renderMerryAxemas() {
+    renderXmasTreeWithGifts();
 }
 
 // Keep old function for compatibility but update it
@@ -3600,16 +3635,14 @@ function handleXmasGiftClick(index) {
     currentPlayer.score += present.value;
     currentPlayer.data.throws++;
 
-    // Remove present and spawn new one
+    // Respawn present with new value and emoji
     const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
     GameState.gameData.presents[index] = {
         value: giftValues[Math.floor(Math.random() * giftValues.length)],
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10,
-        emoji: ['🎁', '🎄', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 5)]
+        emoji: ['🎁', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 4)]
     };
 
-    renderXmasGiftHunt();
+    renderXmasTreeWithGifts();
     updateScoreboard();
 
     if (currentPlayer.data.throws >= maxThrows) {

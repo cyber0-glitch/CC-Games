@@ -477,6 +477,40 @@ function undoLastHit() {
             // Update zone display
             updateAroundWorldDisplay();
             break;
+        case 'axeCrush':
+            renderAxeCrushGrid();
+            break;
+        case 'axeMemory':
+            renderAxeMemoryGrid();
+            break;
+        case 'axeWordWack':
+            renderAxeWordWack();
+            break;
+        case 'emojiFrenzy':
+            renderEmojiFrenzy();
+            break;
+        case 'badAxe':
+            if (GameState.gameData.phase === 'selectingShot') {
+                showBadAxeShotSelection();
+            } else {
+                updateBadAxeUI();
+            }
+            break;
+        case 'infectionMode':
+            renderInfectionMode();
+            break;
+        case 'landmines':
+            renderLandminesBoard();
+            break;
+        case 'throwRoyale':
+            renderThrowRoyale();
+            break;
+        case 'dateNight':
+            renderDateNight();
+            break;
+        case 'merryAxemas':
+            renderMerryAxemas();
+            break;
         case 'bullseye':
         case '21':
         case 'targetPractice':
