@@ -2520,6 +2520,12 @@ function initInfectionMode() {
     // Initialize game timer (convert minutes to seconds)
     GameState.gameData.gameTimeRemaining = GameState.settings.infectionGameTime * 60;
     GameState.gameData.gameTimerInterval = setInterval(() => {
+        // Guard: Only update if we're still in Infection Mode
+        if (GameState.currentGame !== 'infectionMode') {
+            clearInterval(GameState.gameData.gameTimerInterval);
+            return;
+        }
+
         GameState.gameData.gameTimeRemaining--;
         if (GameState.gameData.gameTimeRemaining <= 0) {
             clearInterval(GameState.gameData.gameTimerInterval);
@@ -3245,9 +3251,9 @@ function renderDateNight() {
         heartContainer.style.zIndex = '100'; // Ensure hearts are above all rings
         heartContainer.dataset.bonus = 'heart';
 
-        // Position inside the bullseye for better gameplay
+        // Position at outer rim of the bullseye for better gameplay
         const angle = (360 / heartZones) * i;
-        const radius = 100; // Position inside the target near the outer ring
+        const radius = 150; // Position at the outer rim of the orange ring
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
 
@@ -3564,6 +3570,46 @@ function renderXmasTreeWithGifts() {
 
     container.appendChild(tree);
     canvas.appendChild(container);
+
+    // Add miss handler for clicking outside gifts
+    canvas.addEventListener('click', handleXmasMiss);
+}
+
+function handleXmasMiss(e) {
+    // Only handle clicks on canvas/tree background, not on gifts
+    if (e.target.id === 'gameCanvas' || e.target.textContent === '🎄' || e.target.textContent === '⭐') {
+        const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+        const maxThrows = GameState.settings.xmasThrowsPerPlayer;
+
+        if (currentPlayer.data.throws >= maxThrows) return;
+
+        saveState();
+
+        currentPlayer.data.throws++;
+
+        if (currentPlayer.data.throws >= maxThrows) {
+            const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
+            if (allFinished) {
+                updateScoreboard();
+                setTimeout(() => endGame(), 500);
+                return;
+            }
+
+            // Switch to next player
+            let nextPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+            while (GameState.players[nextPlayerIndex].data.throws >= maxThrows && nextPlayerIndex !== GameState.currentPlayerIndex) {
+                nextPlayerIndex = (nextPlayerIndex + 1) % GameState.players.length;
+            }
+
+            if (GameState.players[nextPlayerIndex].data.throws < maxThrows) {
+                GameState.currentPlayerIndex = nextPlayerIndex;
+                updateCurrentPlayerDisplay();
+            }
+        }
+
+        renderXmasTreeWithGifts();
+        updateScoreboard();
+    }
 }
 
 // Alias for undo compatibility
@@ -3687,12 +3733,10 @@ function handleXmasGiftClick(index) {
         emoji: ['🎁', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 4)]
     };
 
-    renderXmasTreeWithGifts();
-    updateScoreboard();
-
     if (currentPlayer.data.throws >= maxThrows) {
         const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
         if (allFinished) {
+            updateScoreboard();
             setTimeout(() => endGame(), 500);
             return;
         }
@@ -3706,6 +3750,11 @@ function handleXmasGiftClick(index) {
         if (GameState.players[nextPlayerIndex].data.throws < maxThrows) {
             GameState.currentPlayerIndex = nextPlayerIndex;
             updateCurrentPlayerDisplay();
+        }
+    }
+
+    renderXmasTreeWithGifts();
+    updateScoreboard();
         }
     }
 }
