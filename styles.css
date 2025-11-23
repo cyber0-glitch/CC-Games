@@ -389,8 +389,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
-    height: 400px;
+    width: 550px;
+    height: 550px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -425,9 +425,9 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 10px;
-    width: 600px;
-    height: 600px;
+    gap: 15px;
+    width: 900px;
+    height: 900px;
 }
 
 .ttt-cell {
@@ -460,13 +460,13 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    gap: 8px;
-    width: 700px;
-    height: 600px;
+    gap: 12px;
+    width: 1050px;
+    height: 900px;
     background: rgba(42, 42, 62, 0.9);
-    padding: 20px;
-    border-radius: 15px;
-    border: 4px solid #f0a500;
+    padding: 30px;
+    border-radius: 20px;
+    border: 5px solid #f0a500;
 }
 
 .c4-cell {
@@ -487,9 +487,9 @@ body {
 /* Zombie Hunt */
 .zombie {
     position: absolute;
-    width: 80px;
-    height: 80px;
-    font-size: 4rem;
+    width: 100px;
+    height: 100px;
+    font-size: 5rem;
     cursor: pointer;
     transition: all 0.3s;
     /* animation removed - controlled by JavaScript based on settings */
@@ -520,13 +520,13 @@ body {
 /* Target Practice */
 .moving-target {
     position: absolute;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     background: radial-gradient(circle, #ff6b6b 20%, #f0a500 40%, #fff 60%, #000 80%);
     cursor: pointer;
-    border: 3px solid #fff;
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+    border: 4px solid #fff;
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
 }
 
 .moving-target .target-value {
@@ -546,8 +546,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 500px;
-    height: 500px;
+    width: 700px;
+    height: 700px;
 }
 
 .atw-zone {
@@ -827,59 +827,59 @@ body {
     background: #ff6b6b;
 }
 
-/* Responsive adjustments for smaller tablets */
-@media (max-width: 768px) {
+/* Responsive adjustments - optimized for 1200x1920 tablet */
+@media (max-width: 1300px) {
     .logo h1 {
-        font-size: 3rem;
+        font-size: 3.5rem;
     }
 
     .game-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
     }
 
     .game-card {
-        padding: 20px;
-        min-height: 150px;
+        padding: 25px;
+        min-height: 180px;
     }
 
     .target-bullseye {
-        width: 340px;
-        height: 340px;
+        width: 550px;
+        height: 550px;
     }
 
     .ttt-grid {
-        width: 450px;
-        height: 450px;
+        width: 900px;
+        height: 900px;
     }
 
     .c4-grid {
-        width: 500px;
-        height: 430px;
+        width: 1050px;
+        height: 900px;
     }
 
     .atw-target {
-        width: 350px;
-        height: 350px;
+        width: 700px;
+        height: 700px;
     }
 
     .atw-zone {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
 
     .settings-container,
     .help-container {
-        padding: 25px;
+        padding: 30px;
     }
 
     .settings-container h1,
     .help-container h1 {
-        font-size: 2.5rem;
+        font-size: 3rem;
     }
 
     .setting-item {
-        flex-direction: column;
-        text-align: center;
+        flex-direction: row;
+        text-align: left;
     }
 }
 

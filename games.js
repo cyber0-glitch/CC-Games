@@ -19,12 +19,12 @@ function initBullseye() {
     console.log('Target created:', target);
 
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -43,7 +43,7 @@ function initBullseye() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -168,17 +168,17 @@ function initAroundWorld() {
         zone.style.background = colors[i];
 
         // Position zones in a circle - INCREASED RADIUS and REDUCED SIZE for better spacing
-        const radius = 280; // Increased for better spacing
+        const radius = 392; // Increased for better spacing
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
         const x = Math.cos(angleRad) * radius * 0.65;
         const y = Math.sin(angleRad) * radius * 0.65;
 
-        zone.style.width = '70px'; // Further reduced to prevent overlap
-        zone.style.height = '70px';
-        zone.style.left = `calc(50% + ${x}px - 35px)`;
-        zone.style.top = `calc(50% + ${y}px - 35px)`;
+        zone.style.width = '98px'; // Further reduced to prevent overlap
+        zone.style.height = '98px';
+        zone.style.left = `calc(50% + ${x}px - 49px)`;
+        zone.style.top = `calc(50% + ${y}px - 49px)`;
         zone.style.borderRadius = '50%';
-        zone.style.fontSize = '1.5rem'; // Adjusted font size
+        zone.style.fontSize = '2rem'; // Adjusted font size
         zone.textContent = i + 1;
 
         zone.addEventListener('click', (e) => {
@@ -1006,12 +1006,12 @@ function init21Game() {
     target.className = 'target-bullseye';
 
     const rings = [
-        { size: 60, color: '#FFD700', points: 7, label: '7' },
-        { size: 120, color: '#ff6b6b', points: 5, label: '5' },
-        { size: 180, color: '#fff', points: 3, label: '3' },
-        { size: 240, color: '#000', points: 2, label: '2' },
-        { size: 300, color: '#f0a500', points: 1, label: '1' },
-        { size: 360, color: '#1a1a2e', points: 0, label: '0' }
+        { size: 82, color: '#FFD700', points: 7, label: '7' },
+        { size: 165, color: '#ff6b6b', points: 5, label: '5' },
+        { size: 248, color: '#fff', points: 3, label: '3' },
+        { size: 330, color: '#000', points: 2, label: '2' },
+        { size: 412, color: '#f0a500', points: 1, label: '1' },
+        { size: 495, color: '#1a1a2e', points: 0, label: '0' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -1030,7 +1030,7 @@ function init21Game() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (7 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -1200,16 +1200,16 @@ function renderKnockoutBoard() {
             const marks = ['', '/', 'X', '⊗'][Math.min(hits, 3)];
 
             cell.textContent = marks;
-            cell.style.fontSize = '2.5rem';
+            cell.style.fontSize = '3.5rem';
             cell.style.fontWeight = 'bold';
             cell.style.padding = '0';
             cell.style.background = hits >= 3 ? '#4ecdc4' : 'rgba(42, 42, 62, 0.8)';
             cell.style.color = hits >= 3 ? '#1a1a2e' : '#fff';
-            cell.style.border = '2px solid #555';
+            cell.style.border = '3px solid #555';
             cell.style.borderRadius = '50%';
             cell.style.cursor = 'pointer';
-            cell.style.width = '80px';
-            cell.style.height = '80px';
+            cell.style.width = '112px';
+            cell.style.height = '112px';
             cell.style.display = 'flex';
             cell.style.alignItems = 'center';
             cell.style.justifyContent = 'center';
@@ -2058,27 +2058,27 @@ function renderEmojiFrenzy() {
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '600px';
-    container.style.height = '500px';
+    container.style.maxWidth = '840px';
+    container.style.height = '700px';
     container.style.margin = '0 auto';
     container.style.background = '#1a1a2e';
     container.style.borderRadius = '20px';
     container.style.border = '3px solid #f0a500';
-    
+
     // Round and target display
     const header = document.createElement('div');
     header.style.textAlign = 'center';
     header.style.padding = '20px';
-    header.style.fontSize = '1.8rem';
+    header.style.fontSize = '2.5rem';
     header.style.fontWeight = 'bold';
-    header.innerHTML = `Round ${GameState.gameData.currentRound}/${GameState.settings.emojiRoundsPerGame}<br>TARGET: <span style="font-size: 3rem">${GameState.gameData.targetEmoji}</span>`;
+    header.innerHTML = `Round ${GameState.gameData.currentRound}/${GameState.settings.emojiRoundsPerGame}<br>TARGET: <span style="font-size: 4.2rem">${GameState.gameData.targetEmoji}</span>`;
     container.appendChild(header);
-    
+
     // Emoji area
     const emojiArea = document.createElement('div');
     emojiArea.style.position = 'relative';
     emojiArea.style.width = '100%';
-    emojiArea.style.height = '350px';
+    emojiArea.style.height = '490px';
     
     GameState.gameData.emojis.forEach((emoji, index) => {
         const emojiDiv = document.createElement('div');
@@ -2087,11 +2087,11 @@ function renderEmojiFrenzy() {
         emojiDiv.style.position = 'absolute';
         emojiDiv.style.left = emoji.x + '%';
         emojiDiv.style.top = emoji.y + '%';
-        emojiDiv.style.fontSize = '3rem';
+        emojiDiv.style.fontSize = '4.2rem';
         emojiDiv.style.cursor = 'pointer';
         emojiDiv.style.transition = 'transform 0.2s';
         emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'translate(-50%, -50%) scale(1.2)' : 'translate(-50%, -50%) scale(1)';
-        emojiDiv.style.filter = emoji.type === GameState.gameData.targetEmoji ? 'drop-shadow(0 0 10px #f0a500)' : 'none';
+        emojiDiv.style.filter = emoji.type === GameState.gameData.targetEmoji ? 'drop-shadow(0 0 15px #f0a500)' : 'none';
 
         emojiDiv.addEventListener('click', () => handleEmojiClick(index));
         emojiDiv.addEventListener('mouseenter', () => {
@@ -2210,12 +2210,12 @@ function initBadAxe() {
     target.className = 'target-bullseye';
     
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -2234,7 +2234,7 @@ function initBadAxe() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -2757,12 +2757,12 @@ function renderInfectionMode() {
     target.style.marginTop = '30px';
 
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -2780,7 +2780,7 @@ function renderInfectionMode() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3040,12 +3040,12 @@ function renderLandminesBoard() {
     target.className = 'target-bullseye';
 
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3063,7 +3063,7 @@ function renderLandminesBoard() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3205,12 +3205,12 @@ function renderThrowRoyale() {
     target.className = 'target-bullseye';
     
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3228,7 +3228,7 @@ function renderThrowRoyale() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3374,12 +3374,12 @@ function renderDateNight() {
     target.style.filter = 'hue-rotate(330deg)'; // Make it more pink
     
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: '50' },
-        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 180, color: '#fff', points: 15, label: '15' },
-        { size: 240, color: '#000', points: 10, label: '10' },
-        { size: 300, color: '#f0a500', points: 5, label: '5' },
-        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 82, color: '#FFD700', points: 50, label: '50' },
+        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 248, color: '#fff', points: 15, label: '15' },
+        { size: 330, color: '#000', points: 10, label: '10' },
+        { size: 412, color: '#f0a500', points: 5, label: '5' },
+        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3397,7 +3397,7 @@ function renderDateNight() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 60) {
+        if (ring.size === 82) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3443,11 +3443,11 @@ function renderDateNight() {
 
         // Visual indicator background
         const indicator = document.createElement('div');
-        indicator.style.width = '60px';
-        indicator.style.height = '60px';
+        indicator.style.width = '84px';
+        indicator.style.height = '84px';
         indicator.style.background = 'radial-gradient(circle, rgba(255, 105, 180, 0.3), rgba(255, 20, 147, 0.1))';
         indicator.style.borderRadius = '50%';
-        indicator.style.border = '2px solid #ff69b4';
+        indicator.style.border = '3px solid #ff69b4';
         indicator.style.display = 'flex';
         indicator.style.alignItems = 'center';
         indicator.style.justifyContent = 'center';
@@ -3455,7 +3455,7 @@ function renderDateNight() {
 
         const heart = document.createElement('div');
         heart.textContent = '💕';
-        heart.style.fontSize = '2rem';
+        heart.style.fontSize = '2.8rem';
 
         indicator.appendChild(heart);
         heartContainer.appendChild(indicator);
@@ -3672,8 +3672,8 @@ function renderXmasTreeWithGifts() {
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '600px';
-    container.style.height = '600px';
+    container.style.maxWidth = '840px';
+    container.style.height = '840px';
     container.style.margin = '20px auto';
     container.style.display = 'flex';
     container.style.justifyContent = 'center';
@@ -3682,20 +3682,20 @@ function renderXmasTreeWithGifts() {
     // Create large Christmas tree using text/emoji layers
     const tree = document.createElement('div');
     tree.style.position = 'relative';
-    tree.style.fontSize = '28rem';
+    tree.style.fontSize = '39.2rem';
     tree.style.lineHeight = '1';
     tree.style.textAlign = 'center';
-    tree.style.filter = 'drop-shadow(0 0 20px rgba(76, 175, 80, 0.6))';
+    tree.style.filter = 'drop-shadow(0 0 30px rgba(76, 175, 80, 0.6))';
     tree.textContent = '🎄';
 
     // Add twinkling star on top
     const star = document.createElement('div');
     star.textContent = '⭐';
     star.style.position = 'absolute';
-    star.style.top = '-40px';
+    star.style.top = '-56px';
     star.style.left = '50%';
     star.style.transform = 'translateX(-50%)';
-    star.style.fontSize = '4rem';
+    star.style.fontSize = '5.6rem';
     star.style.animation = 'twinkle 1.5s ease-in-out infinite';
     star.style.filter = 'drop-shadow(0 0 10px #FFD700)';
     tree.appendChild(star);
@@ -3812,8 +3812,8 @@ function renderXmasGiftHunt() {
     container.className = 'xmas-gift-container';
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '600px';
-    container.style.height = '500px';
+    container.style.maxWidth = '840px';
+    container.style.height = '700px';
     container.style.margin = '20px auto';
     container.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #0f3a2e 100%)';
     container.style.borderRadius = '20px';
@@ -3827,14 +3827,14 @@ function renderXmasGiftHunt() {
         giftDiv.style.position = 'absolute';
         giftDiv.style.left = present.x + '%';
         giftDiv.style.top = present.y + '%';
-        giftDiv.style.fontSize = '3rem';
+        giftDiv.style.fontSize = '4.2rem';
         giftDiv.style.cursor = 'pointer';
         giftDiv.style.transition = 'transform 0.2s';
-        giftDiv.style.filter = 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))';
-        
+        giftDiv.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.5))';
+
         const valueLabel = document.createElement('div');
         valueLabel.textContent = present.value;
-        valueLabel.style.fontSize = '0.8rem';
+        valueLabel.style.fontSize = '1.12rem';
         valueLabel.style.background = '#f0a500';
         valueLabel.style.color = '#000';
         valueLabel.style.padding = '2px 6px';
