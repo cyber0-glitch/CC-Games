@@ -3755,6 +3755,4 @@ function handleXmasGiftClick(index) {
 
     renderXmasTreeWithGifts();
     updateScoreboard();
-        }
-    }
 }
