@@ -646,8 +646,15 @@ function spawnZombie() {
     }
     GameState.gameData.zombieTimeouts.push(timeoutId);
 
-    // Remove zombie after some time if not clicked (longer time if movement disabled)
-    const despawnTime = GameState.settings.movingTargets ? 5000 : 8000;
+    // Remove zombie after some time if not clicked
+    // Calculate despawn time to allow at least 2-3 full movement cycles
+    let despawnTime;
+    if (GameState.settings.movingTargets) {
+        const cycleTime = (GameState.settings.moveDuration + GameState.settings.staticDuration) * 1000;
+        despawnTime = cycleTime * 2.5; // Allow 2.5 full cycles
+    } else {
+        despawnTime = 8000; // 8 seconds for static zombies
+    }
     setTimeout(() => {
         if (zombie.parentElement && !zombie.classList.contains('hit')) {
             zombie.remove();
