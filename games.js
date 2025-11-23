@@ -1556,9 +1556,15 @@ function checkCascades(player, comboCount = 0) {
         comboNotif.style.fontWeight = 'bold';
         comboNotif.style.zIndex = '1000';
         comboNotif.style.boxShadow = '0 0 30px rgba(244, 67, 54, 0.8)';
-        comboNotif.style.animation = 'pulse 0.3s ease-in-out';
+        comboNotif.style.opacity = '0';
         comboNotif.innerHTML = `🔥 COMBO! x ${comboCount} 🔥`;
         canvas.appendChild(comboNotif);
+
+        // Ensure element is fully positioned before showing it
+        requestAnimationFrame(() => {
+            comboNotif.style.transition = 'opacity 0.3s ease-in-out';
+            comboNotif.style.opacity = '1';
+        });
 
         setTimeout(() => comboNotif.remove(), 1200);
     }
@@ -1982,8 +1988,8 @@ function initEmojiFrenzy() {
         [positions[i], positions[j]] = [positions[j], positions[i]];
     }
 
-    // Create 15 emojis using the shuffled positions
-    const numEmojis = 15;
+    // Create 12 emojis using the shuffled positions (reduced from 15 to prevent overlap)
+    const numEmojis = 12;
     const cellWidth = 100 / gridCols;
     const cellHeight = 100 / gridRows;
 
@@ -2809,12 +2815,47 @@ function renderLandminesBoard() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
 
-    const container = document.createElement('div');
-    container.style.display = 'flex';
-    container.style.gap = '20px';
-    container.style.maxWidth = '1200px';
-    container.style.margin = '0 auto';
-    container.style.alignItems = 'flex-start';
+    const mainContainer = document.createElement('div');
+    mainContainer.style.display = 'flex';
+    mainContainer.style.flexDirection = 'column';
+    mainContainer.style.gap = '20px';
+    mainContainer.style.maxWidth = '1200px';
+    mainContainer.style.margin = '0 auto';
+    mainContainer.style.alignItems = 'center';
+
+    // Combined scoreboard at the top
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    const nextCheckpoint = Math.ceil(currentPlayer.score / GameState.gameData.checkpointInterval) * GameState.gameData.checkpointInterval;
+    const pointsToCheckpoint = nextCheckpoint - currentPlayer.score;
+    const upcomingLandmines = GameState.gameData.landmineScores.filter(m => m > currentPlayer.score && m <= currentPlayer.score + 50);
+
+    let landmineWarning = '';
+    if (upcomingLandmines.length > 0) {
+        landmineWarning = `<div style="color: #f44336; margin-top: 10px; font-weight: bold;">⚠️ Landmines ahead: ${upcomingLandmines.join(', ')} 💣</div>`;
+    }
+
+    const scoreIndicator = document.createElement('div');
+    scoreIndicator.style.background = '#2a2a3e';
+    scoreIndicator.style.padding = '20px';
+    scoreIndicator.style.borderRadius = '15px';
+    scoreIndicator.style.border = '3px solid #f0a500';
+    scoreIndicator.style.textAlign = 'center';
+    scoreIndicator.style.minWidth = '400px';
+    scoreIndicator.innerHTML = `
+        <div style="font-size: 1.2rem; color: #f0a500; font-weight: bold;">${currentPlayer.name}'s Turn</div>
+        <div style="font-size: 2rem; color: #4CAF50; font-weight: bold; margin: 10px 0;">Current Score: ${currentPlayer.score}</div>
+        <div style="font-size: 1rem; color: #aaa;">Next Checkpoint: ${nextCheckpoint} (${pointsToCheckpoint} points away)</div>
+        <div style="font-size: 1rem; color: #aaa;">Target: ${GameState.gameData.targetScore}</div>
+        ${landmineWarning}
+    `;
+    mainContainer.appendChild(scoreIndicator);
+
+    // Content container with ladder and target
+    const contentContainer = document.createElement('div');
+    contentContainer.style.display = 'flex';
+    contentContainer.style.gap = '20px';
+    contentContainer.style.alignItems = 'flex-start';
+    contentContainer.style.width = '100%';
 
     // Ladder visualization
     const ladder = document.createElement('div');
@@ -2827,18 +2868,14 @@ function renderLandminesBoard() {
     ladder.style.maxHeight = '600px';
     ladder.style.overflowY = 'auto';
     ladder.style.position = 'relative';
-    // Custom scrollbar styling to match settings/help menus
     ladder.style.scrollbarWidth = 'thin';
     ladder.style.scrollbarColor = '#f0a500 #2a2a3e';
 
     const targetScore = GameState.gameData.targetScore;
     const landmines = GameState.gameData.landmineScores;
 
-    // Save current scroll position
     const existingLadder = document.getElementById('landminesLadder');
     const savedScrollTop = existingLadder ? existingLadder.scrollTop : 0;
-
-    let currentPlayerScore = GameState.players[GameState.currentPlayerIndex]?.score || 0;
 
     for (let score = 0; score <= targetScore; score += 5) {
         const rung = document.createElement('div');
@@ -2856,7 +2893,6 @@ function renderLandminesBoard() {
             rung.textContent = score;
         }
 
-        // Show player markers
         GameState.players.forEach(player => {
             if (player.score === score) {
                 const marker = document.createElement('span');
@@ -2866,10 +2902,9 @@ function renderLandminesBoard() {
             }
         });
 
-        ladder.insertBefore(rung, ladder.firstChild); // Insert at top
+        ladder.insertBefore(rung, ladder.firstChild);
     }
 
-    // Restore scroll position after render
     setTimeout(() => {
         if (savedScrollTop > 0) {
             ladder.scrollTop = savedScrollTop;
@@ -2880,38 +2915,8 @@ function renderLandminesBoard() {
     const targetArea = document.createElement('div');
     targetArea.style.flex = '1';
     targetArea.style.display = 'flex';
-    targetArea.style.flexDirection = 'column';
     targetArea.style.justifyContent = 'center';
     targetArea.style.alignItems = 'center';
-    targetArea.style.gap = '20px';
-
-    // Score indicator
-    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-    const scoreIndicator = document.createElement('div');
-    scoreIndicator.style.background = '#2a2a3e';
-    scoreIndicator.style.padding = '20px';
-    scoreIndicator.style.borderRadius = '15px';
-    scoreIndicator.style.border = '3px solid #f0a500';
-    scoreIndicator.style.textAlign = 'center';
-    scoreIndicator.style.minWidth = '300px';
-
-    const nextCheckpoint = Math.ceil(currentPlayer.score / GameState.gameData.checkpointInterval) * GameState.gameData.checkpointInterval;
-    const pointsToCheckpoint = nextCheckpoint - currentPlayer.score;
-    const upcomingLandmines = GameState.gameData.landmineScores.filter(m => m > currentPlayer.score && m <= currentPlayer.score + 50);
-
-    let landmineWarning = '';
-    if (upcomingLandmines.length > 0) {
-        landmineWarning = `<div style="color: #f44336; margin-top: 10px; font-weight: bold;">⚠️ Landmines ahead: ${upcomingLandmines.join(', ')} 💣</div>`;
-    }
-
-    scoreIndicator.innerHTML = `
-        <div style="font-size: 1.2rem; color: #f0a500; font-weight: bold;">${currentPlayer.name}'s Turn</div>
-        <div style="font-size: 2rem; color: #4CAF50; font-weight: bold; margin: 10px 0;">Current Score: ${currentPlayer.score}</div>
-        <div style="font-size: 1rem; color: #aaa;">Next Checkpoint: ${nextCheckpoint} (${pointsToCheckpoint} points away)</div>
-        <div style="font-size: 1rem; color: #aaa;">Target: ${GameState.gameData.targetScore}</div>
-        ${landmineWarning}
-    `;
-    targetArea.appendChild(scoreIndicator);
 
     const target = document.createElement('div');
     target.className = 'target-bullseye';
@@ -2944,9 +2949,10 @@ function renderLandminesBoard() {
 
     targetArea.appendChild(target);
 
-    container.appendChild(ladder);
-    container.appendChild(targetArea);
-    canvas.appendChild(container);
+    contentContainer.appendChild(ladder);
+    contentContainer.appendChild(targetArea);
+    mainContainer.appendChild(contentContainer);
+    canvas.appendChild(mainContainer);
 }
 
 function handleLandminesHit(points) {
@@ -3225,11 +3231,12 @@ function renderDateNight() {
         const heartContainer = document.createElement('div');
         heartContainer.style.position = 'absolute';
         heartContainer.style.cursor = 'pointer';
+        heartContainer.style.zIndex = '100'; // Ensure hearts are above all rings
         heartContainer.dataset.bonus = 'heart';
 
-        // Position at the outer edge of the inner bullseye (red ring)
+        // Position outside the bullseye for better visibility
         const angle = (360 / heartZones) * i;
-        const radius = 52; // Just inside the red ring edge (60px radius)
+        const radius = 200; // Position outside the target for visibility
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
 
@@ -3443,6 +3450,28 @@ function addChristmasDecorations(canvas) {
 function renderXmasTreeWithGifts() {
     const canvas = document.getElementById('gameCanvas');
 
+    // Clear existing game content (keep decorations)
+    const existingContainers = canvas.querySelectorAll('div:not([style*="position: absolute"])');
+    existingContainers.forEach(el => {
+        if (!el.textContent.includes('❄️')) {
+            el.remove();
+        }
+    });
+
+    // Add remaining throws display at the top
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+    const maxThrows = GameState.settings.xmasThrowsPerPlayer;
+    const throwsRemaining = maxThrows - (currentPlayer.data.throws || 0);
+
+    const throwsDisplay = document.createElement('div');
+    throwsDisplay.style.textAlign = 'center';
+    throwsDisplay.style.fontSize = '1.5rem';
+    throwsDisplay.style.fontWeight = 'bold';
+    throwsDisplay.style.color = '#f0a500';
+    throwsDisplay.style.marginBottom = '10px';
+    throwsDisplay.innerHTML = `Throws Remaining: ${throwsRemaining} / ${maxThrows}`;
+    canvas.appendChild(throwsDisplay);
+
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.width = '100%';
@@ -3489,6 +3518,9 @@ function renderXmasTreeWithGifts() {
     ];
 
     GameState.gameData.presents.forEach((present, index) => {
+        // Skip already collected presents
+        if (present.collected) return;
+
         const pos = treePositions[index];
         const giftDiv = document.createElement('div');
         giftDiv.textContent = present.emoji;
@@ -3629,18 +3661,16 @@ function handleXmasGiftClick(index) {
 
     if (currentPlayer.data.throws >= maxThrows) return;
 
+    const present = GameState.gameData.presents[index];
+    if (present.collected) return; // Don't allow clicking already collected gifts
+
     saveState();
 
-    const present = GameState.gameData.presents[index];
     currentPlayer.score += present.value;
     currentPlayer.data.throws++;
 
-    // Respawn present with new value and emoji
-    const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
-    GameState.gameData.presents[index] = {
-        value: giftValues[Math.floor(Math.random() * giftValues.length)],
-        emoji: ['🎁', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 4)]
-    };
+    // Mark present as collected instead of respawning it
+    GameState.gameData.presents[index].collected = true;
 
     renderXmasTreeWithGifts();
     updateScoreboard();
