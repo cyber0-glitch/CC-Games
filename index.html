@@ -219,7 +219,25 @@
                             <h3>Zombie Despawn Time (seconds)</h3>
                             <p>How long zombies stay on screen before disappearing</p>
                         </div>
-                        <input type="number" id="zombieDespawnTime" min="3" max="30" value="8" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieDespawnTime()">
+                        <input type="number" id="zombieDespawnTime" min="3" max="30" value="20" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieDespawnTime()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Max Zombies on Screen</h3>
+                            <p>Maximum number of zombies that can appear at once</p>
+                        </div>
+                        <input type="number" id="maxZombies" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMaxZombies()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Target Practice Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Max Targets on Screen</h3>
+                            <p>Maximum number of targets in Target Practice and Zombie Hunt games</p>
+                        </div>
+                        <input type="number" id="maxTargets" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMaxTargets()">
                     </div>
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
@@ -296,6 +314,18 @@
 
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal-content">
+                <h2 id="modalTitle">Confirm</h2>
+                <p id="modalMessage">Are you sure?</p>
+                <div class="modal-buttons">
+                    <button class="btn-primary" id="modalConfirm">OK</button>
+                    <button class="btn-secondary" id="modalCancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

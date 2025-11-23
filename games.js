@@ -398,7 +398,7 @@ function generateTargets() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
 
-    const numTargets = 5;
+    const numTargets = GameState.settings.maxTargets;
     const targetValues = [10, 20, 30, 50, 100];
 
     for (let i = 0; i < numTargets; i++) {
@@ -593,7 +593,7 @@ function spawnZombie() {
 
     // Limit maximum zombies on screen
     const currentZombies = canvas.querySelectorAll('.zombie:not(.hit)').length;
-    const maxZombies = 15; // Maximum zombies allowed on screen at once
+    const maxZombies = GameState.settings.maxZombies; // Maximum zombies allowed on screen at once
     if (currentZombies >= maxZombies) {
         // Try again later
         const retryDelay = 500;

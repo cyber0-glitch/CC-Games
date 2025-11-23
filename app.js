@@ -12,7 +12,9 @@ const GameState = {
         moveDuration: 3,
         staticDuration: 5,
         zombieCountdown: 60,
-        zombieDespawnTime: 8
+        zombieDespawnTime: 20,
+        maxZombies: 5,
+        maxTargets: 5
     }
 };
 
@@ -359,11 +361,49 @@ function saveState() {
     }
 }
 
+// Modal Functions
+function showConfirmModal(title, message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        if (onConfirm) onConfirm();
+    });
+
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+}
+
 // Exit Game
 function exitGame() {
-    if (confirm('Are you sure you want to exit the game?')) {
-        backToMenu();
-    }
+    showConfirmModal(
+        'Exit Game',
+        'Are you sure you want to exit the game?',
+        () => backToMenu()
+    );
 }
 
 // End Game
@@ -458,6 +498,8 @@ function showSettings() {
     document.getElementById('staticDuration').value = GameState.settings.staticDuration;
     document.getElementById('zombieCountdown').value = GameState.settings.zombieCountdown;
     document.getElementById('zombieDespawnTime').value = GameState.settings.zombieDespawnTime;
+    document.getElementById('maxZombies').value = GameState.settings.maxZombies;
+    document.getElementById('maxTargets').value = GameState.settings.maxTargets;
 }
 
 function toggleMovingTargets() {
@@ -535,6 +577,22 @@ function updateZombieDespawnTime() {
     if (value >= 3 && value <= 30) {
         GameState.settings.zombieDespawnTime = value;
         console.log('Zombie despawn time:', GameState.settings.zombieDespawnTime);
+    }
+}
+
+function updateMaxZombies() {
+    const value = parseInt(document.getElementById('maxZombies').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.maxZombies = value;
+        console.log('Max zombies:', GameState.settings.maxZombies);
+    }
+}
+
+function updateMaxTargets() {
+    const value = parseInt(document.getElementById('maxTargets').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.maxTargets = value;
+        console.log('Max targets:', GameState.settings.maxTargets);
     }
 }
 
