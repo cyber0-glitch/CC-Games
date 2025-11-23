@@ -1319,38 +1319,57 @@ function renderAxeCrushGrid() {
 function handleAxeCrushClick(row, col) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const maxThrows = GameState.settings.crushThrowsPerPlayer;
-    
+
     if (currentPlayer.data.throws >= maxThrows) {
         return;
     }
-    
+
     saveState();
-    
+
     currentPlayer.data.throws++;
-    
-    // Find connected group using BFS
+
+    // NEW MECHANIC: Axe Impact Zone
+    // The axe destroys the hit cell and matching icons in a cross pattern (up, down, left, right)
     const iconType = GameState.gameData.grid[row][col];
     if (iconType === null) return;
-    
-    const group = findConnectedGroup(row, col, iconType);
+
+    const impactZone = [[row, col]]; // Start with the hit cell
+    const rows = GameState.gameData.rows;
+    const cols = GameState.gameData.cols;
+
+    // Check in all 4 directions for matching icons
+    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]]; // up, down, left, right
+
+    for (const [dr, dc] of directions) {
+        let r = row + dr;
+        let c = col + dc;
+
+        // Continue in this direction while we find matching icons
+        while (r >= 0 && r < rows && c >= 0 && c < cols && GameState.gameData.grid[r][c] === iconType) {
+            impactZone.push([r, c]);
+            r += dr;
+            c += dc;
+        }
+    }
+
     const minGroupSize = GameState.settings.crushMinGroupSize;
-    
-    if (group.length >= minGroupSize) {
-        // Clear the group and award points
-        const points = group.length * 10;
+
+    if (impactZone.length >= minGroupSize) {
+        // Clear the impact zone and award points
+        const points = impactZone.length * 10;
         currentPlayer.score += points;
-        
+
         // Mark cells as empty
-        group.forEach(([r, c]) => {
+        impactZone.forEach(([r, c]) => {
             GameState.gameData.grid[r][c] = null;
         });
-        
+
         // Apply gravity
         applyGravity();
-        
+
         // Fill empty cells
         fillEmptyCells();
-        
+
         // Check for cascades if enabled
         if (GameState.settings.crushEnableCascades) {
             setTimeout(() => {
@@ -1358,18 +1377,26 @@ function handleAxeCrushClick(row, col) {
             }, 300);
         }
     } else {
-        // No match, award 1 point
+        // Still destroy the hit cell, but only award 1 point
         currentPlayer.score += 1;
+        GameState.gameData.grid[row][col] = null;
+        applyGravity();
+        fillEmptyCells();
     }
-    
+
     renderAxeCrushGrid();
     updateScoreboard();
-    
-    // Check if turn is over
+
+    // Check if turn is over and automatically advance
     if (currentPlayer.data.throws >= maxThrows) {
         const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
         if (allFinished) {
             setTimeout(() => endGame(), 500);
+        } else {
+            // Auto-advance to next player
+            setTimeout(() => {
+                nextPlayer();
+            }, 500);
         }
     }
 }
@@ -1438,34 +1465,54 @@ function fillEmptyCells() {
 }
 
 function checkCascades(player) {
-    // Auto-clear any new matches after gravity
+    // Auto-clear any new matches after gravity using cross-pattern logic
     let foundMatch = false;
     const minGroupSize = GameState.settings.crushMinGroupSize;
-    
-    for (let r = 0; r < GameState.gameData.rows; r++) {
-        for (let c = 0; c < GameState.gameData.cols; c++) {
-            const iconType = GameState.gameData.grid[r][c];
+    const rows = GameState.gameData.rows;
+    const cols = GameState.gameData.cols;
+    const checked = new Set();
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const key = `${row},${col}`;
+            if (checked.has(key)) continue;
+
+            const iconType = GameState.gameData.grid[row][col];
             if (iconType === null) continue;
-            
-            const group = findConnectedGroup(r, c, iconType);
-            if (group.length >= minGroupSize) {
+
+            // Check cross pattern for this cell
+            const impactZone = [[row, col]];
+            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+            for (const [dr, dc] of directions) {
+                let r = row + dr;
+                let c = col + dc;
+                while (r >= 0 && r < rows && c >= 0 && c < cols && GameState.gameData.grid[r][c] === iconType) {
+                    impactZone.push([r, c]);
+                    r += dr;
+                    c += dc;
+                }
+            }
+
+            if (impactZone.length >= minGroupSize) {
                 foundMatch = true;
-                const points = Math.floor(group.length * 5); // Smaller bonus for cascades
+                const points = Math.floor(impactZone.length * 5); // Smaller bonus for cascades
                 player.score += points;
-                
-                group.forEach(([r, c]) => {
+
+                impactZone.forEach(([r, c]) => {
                     GameState.gameData.grid[r][c] = null;
+                    checked.add(`${r},${c}`);
                 });
             }
         }
     }
-    
+
     if (foundMatch) {
         applyGravity();
         fillEmptyCells();
         renderAxeCrushGrid();
         updateScoreboard();
-        
+
         // Check for more cascades
         setTimeout(() => checkCascades(player), 300);
     }
@@ -1662,12 +1709,46 @@ function initAxeWordWack() {
         player.score = 0;
     });
     
-    // Word categories
+    // Expanded word categories with many more words
     const words = {
-        'Random': ['SKOPJE NIGHT', 'AXE THROWING', 'BULLSEYE TARGET', 'CHAMPION THROWER'],
-        'Movies': ['THE GODFATHER', 'PULP FICTION', 'FORREST GUMP', 'FIGHT CLUB'],
-        'Countries': ['MACEDONIA', 'AUSTRALIA', 'ARGENTINA', 'SWITZERLAND'],
-        'Skopje': ['STONE BRIDGE', 'ALEXANDER STATUE', 'OLD BAZAAR', 'MATKA CANYON']
+        'Random': [
+            'SKOPJE NIGHT', 'AXE THROWING', 'BULLSEYE TARGET', 'CHAMPION THROWER',
+            'WOODEN BOARD', 'SHARP BLADE', 'PERFECT SHOT', 'DOUBLE STRIKE',
+            'TARGET PRACTICE', 'VICTORY LAP', 'POINT LEADER', 'SKILLED PLAYER',
+            'THROWING ZONE', 'COMPETITION TIME', 'WINNING STREAK', 'GAME MASTER',
+            'CHALLENGE MODE', 'TROPHY HUNT', 'ULTIMATE BATTLE', 'PRECISION THROW',
+            'STEEL HATCHET', 'ROTATION SPIN', 'DIRECT HIT', 'SCORING ZONE',
+            'POWER STRIKE', 'GOLDEN MOMENT', 'FINAL ROUND', 'AMAZING SCORE'
+        ],
+        'Movies': [
+            'THE GODFATHER', 'PULP FICTION', 'FORREST GUMP', 'FIGHT CLUB',
+            'STAR WARS', 'TITANIC', 'GLADIATOR', 'INCEPTION',
+            'THE MATRIX', 'JURASSIC PARK', 'AVATAR', 'THE AVENGERS',
+            'DARK KNIGHT', 'LION KING', 'TOY STORY', 'FROZEN',
+            'SPIDER MAN', 'IRON MAN', 'HARRY POTTER', 'LORD RINGS',
+            'FINDING NEMO', 'SHREK', 'PIRATES CARIBBEAN', 'FAST FURIOUS',
+            'MISSION IMPOSSIBLE', 'JAMES BOND', 'INDIANA JONES', 'ROCKY',
+            'TERMINATOR', 'ALIEN', 'JAWS', 'BACK FUTURE'
+        ],
+        'Countries': [
+            'MACEDONIA', 'AUSTRALIA', 'ARGENTINA', 'SWITZERLAND',
+            'UNITED STATES', 'CANADA', 'BRAZIL', 'MEXICO',
+            'GERMANY', 'FRANCE', 'ITALY', 'SPAIN',
+            'UNITED KINGDOM', 'PORTUGAL', 'GREECE', 'TURKEY',
+            'RUSSIA', 'CHINA', 'JAPAN', 'INDIA',
+            'SOUTH KOREA', 'THAILAND', 'VIETNAM', 'INDONESIA',
+            'EGYPT', 'SOUTH AFRICA', 'MOROCCO', 'NIGERIA',
+            'NEW ZEALAND', 'ICELAND', 'NORWAY', 'SWEDEN',
+            'POLAND', 'CZECH REPUBLIC', 'AUSTRIA', 'BELGIUM'
+        ],
+        'Skopje': [
+            'STONE BRIDGE', 'ALEXANDER STATUE', 'OLD BAZAAR', 'MATKA CANYON',
+            'KALE FORTRESS', 'MILLENNIUM CROSS', 'CITY PARK', 'SKOPJE SQUARE',
+            'VARDAR RIVER', 'MOTHER TERESA', 'MOUNT VODNO', 'CITY MALL',
+            'MUSEUM MACEDONIA', 'TURKISH BATH', 'DAUT PASHA', 'MEMORIAL HOUSE',
+            'ARCHAEOLOGICAL MUSEUM', 'HOLOCAUST MUSEUM', 'OPERA BALLET', 'PHILIP ARENA',
+            'SHOPPING CENTER', 'CITY PLAZA', 'CABLE CAR', 'TVRDINA WALL'
+        ]
     };
     
     const category = GameState.settings.wordCategory;
@@ -1810,29 +1891,69 @@ function handleLetterClick(letter) {
 // ============================================
 function initEmojiFrenzy() {
     const canvas = document.getElementById('gameCanvas');
-    
+
     // Initialize player data
     GameState.players.forEach(player => {
         player.score = 0;
         player.data.roundsPlayed = 0;
     });
-    
+
     const emojis = ['😂', '😍', '🤡', '💀', '😎', '🥳', '😱', '🤩', '🥶', '🤯'];
-    
+
     GameState.gameData.emojis = [];
     GameState.gameData.currentRound = 1;
     GameState.gameData.targetEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     GameState.gameData.throwsThisRound = 0;
-    
-    // Create emoji objects with random positions
-    for (let i = 0; i < 15; i++) {
+
+    // Create emoji objects with grid-based positioning to prevent overlap
+    // Use a 5x3 grid with some randomness within each cell
+    const gridCols = 5;
+    const gridRows = 3;
+    const positions = [];
+
+    for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+            positions.push({ row, col });
+        }
+    }
+
+    // Shuffle positions
+    for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+
+    // Create 15 emojis using the shuffled positions
+    const numEmojis = 15;
+    const cellWidth = 100 / gridCols;
+    const cellHeight = 100 / gridRows;
+
+    // Ensure target emoji is included at least once
+    let targetIncluded = false;
+
+    for (let i = 0; i < numEmojis; i++) {
+        const pos = positions[i];
+
+        // Add random offset within the cell (but keep some margin)
+        const x = (pos.col * cellWidth) + (Math.random() * cellWidth * 0.6 + cellWidth * 0.2);
+        const y = (pos.row * cellHeight) + (Math.random() * cellHeight * 0.6 + cellHeight * 0.2);
+
+        // Force first emoji to be target emoji to guarantee it's on screen
+        let emojiType;
+        if (i === 0 && !targetIncluded) {
+            emojiType = GameState.gameData.targetEmoji;
+            targetIncluded = true;
+        } else {
+            emojiType = emojis[Math.floor(Math.random() * emojis.length)];
+        }
+
         GameState.gameData.emojis.push({
-            type: emojis[Math.floor(Math.random() * emojis.length)],
-            x: Math.random() * 80 + 10,
-            y: Math.random() * 80 + 10
+            type: emojiType,
+            x: Math.min(Math.max(x, 8), 85), // Clamp to safe bounds
+            y: Math.min(Math.max(y, 5), 85)
         });
     }
-    
+
     renderEmojiFrenzy();
 }
 
@@ -1913,10 +2034,32 @@ function handleEmojiClick(index) {
     // Respawn emoji if enabled
     if (GameState.settings.emojiRespawnHit) {
         const emojis = ['😂', '😍', '🤡', '💀', '😎', '🥳', '😱', '🤩', '🥶', '🤯'];
+
+        // Find a position that doesn't overlap with existing emojis
+        let x, y;
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        do {
+            x = Math.random() * 70 + 10; // Keep in safe bounds
+            y = Math.random() * 70 + 10;
+
+            // Check for overlap with other emojis
+            const tooClose = GameState.gameData.emojis.some((e, i) => {
+                if (i === index) return false; // Don't check against self
+                const dx = Math.abs(e.x - x);
+                const dy = Math.abs(e.y - y);
+                return dx < 15 && dy < 15; // Minimum distance of 15%
+            });
+
+            if (!tooClose || attempts >= maxAttempts) break;
+            attempts++;
+        } while (attempts < maxAttempts);
+
         GameState.gameData.emojis[index] = {
             type: emojis[Math.floor(Math.random() * emojis.length)],
-            x: Math.random() * 80 + 10,
-            y: Math.random() * 80 + 10
+            x: Math.min(Math.max(x, 8), 85),
+            y: Math.min(Math.max(y, 5), 85)
         };
     }
     
@@ -2061,19 +2204,44 @@ function handleBadAxeHit(ringLabel) {
         // Other player attempting to copy
         const attempter = GameState.players[GameState.gameData.currentAttempterId];
         const success = (ringLabel === GameState.gameData.currentShot.ring);
-        
-        if (!success) {
+
+        if (success) {
+            // Successful copy - award points and show feedback
+            attempter.score += 10;
+
+            // Show success message briefly
+            const existingUI = document.getElementById('badAxeShotUI');
+            if (existingUI) {
+                existingUI.innerHTML = `
+                    <h3 style="color: #4CAF50;">✓ Success!</h3>
+                    <p>${attempter.name} matched the ${GameState.gameData.currentShot.ring} ring!</p>
+                    <p style="margin-top: 10px; font-size: 1.5rem;">+10 points</p>
+                `;
+                setTimeout(() => updateBadAxeUI(), 1000);
+            }
+        } else {
             // Add a letter
             const letters = ['B', 'A', 'D', 'A', 'X', 'E'];
             const nextLetter = letters[attempter.data.letters.length];
             attempter.data.letters.push(nextLetter);
-            
+
+            // Show miss message
+            const existingUI = document.getElementById('badAxeShotUI');
+            if (existingUI) {
+                existingUI.innerHTML = `
+                    <h3 style="color: #ff6b6b;">✗ Miss!</h3>
+                    <p>${attempter.name} hit ${ringLabel} instead of ${GameState.gameData.currentShot.ring}</p>
+                    <p style="margin-top: 10px; font-size: 1.5rem;">+${nextLetter}</p>
+                `;
+                setTimeout(() => updateBadAxeUI(), 1000);
+            }
+
             // Check if eliminated
-            if (attempter.data.letters.length >= 6) {
+            if (attempter.data.letters.length >= GameState.settings.badaxeLettersToEliminate) {
                 attempter.data.eliminated = true;
             }
         }
-        
+
         updateScoreboard();
         
         // Move to next attempter
@@ -2119,7 +2287,7 @@ function handleBadAxeHit(ringLabel) {
 function updateBadAxeUI() {
     const existingUI = document.getElementById('badAxeShotUI');
     if (existingUI) existingUI.remove();
-    
+
     const canvas = document.getElementById('gameCanvas');
     const shotUI = document.createElement('div');
     shotUI.id = 'badAxeShotUI';
@@ -2133,7 +2301,7 @@ function updateBadAxeUI() {
     shotUI.style.border = '3px solid #f0a500';
     shotUI.style.zIndex = '100';
     shotUI.style.textAlign = 'center';
-    
+
     if (GameState.gameData.phase === 'copying') {
         const attempter = GameState.players[GameState.gameData.currentAttempterId];
         shotUI.innerHTML = `
@@ -2141,8 +2309,16 @@ function updateBadAxeUI() {
             <p>${attempter.name}'s turn to copy the shot!</p>
             <p style="margin-top: 10px; color: #aaa;">Letters: ${attempter.data.letters.join(' ') || 'None'}</p>
         `;
+
+        // Update current player index for display
+        GameState.currentPlayerIndex = GameState.gameData.currentAttempterId;
+        updateCurrentPlayerDisplay();
+    } else if (GameState.gameData.phase === 'selectingShot') {
+        // Update current player index for display
+        GameState.currentPlayerIndex = GameState.gameData.shotCallerId;
+        updateCurrentPlayerDisplay();
     }
-    
+
     canvas.appendChild(shotUI);
 }
 
@@ -2151,32 +2327,83 @@ function updateBadAxeUI() {
 // ============================================
 function initInfectionMode() {
     const canvas = document.getElementById('gameCanvas');
-    
+
     // Initialize teams
     const initialInfected = GameState.settings.infectionInitialInfected;
     GameState.players.forEach((player, index) => {
         player.data.team = index < initialInfected ? 'Infected' : 'Survivor';
         player.data.duelScore = 0;
+        player.data.duelWins = 0;
         player.score = 0;
     });
-    
+
     GameState.gameData.survivorIndex = initialInfected;
     GameState.gameData.infectedIndex = 0;
     GameState.gameData.duelPhase = 'survivor'; // survivor, infected
     GameState.gameData.throwsThisDuel = 0;
-    
+    GameState.gameData.survivorDuelWins = 0;
+    GameState.gameData.targetDuelWins = 10; // Survivors need 10 duel wins to win
+
+    // Initialize game timer (convert minutes to seconds)
+    GameState.gameData.gameTimeRemaining = GameState.settings.infectionGameTime * 60;
+    GameState.gameData.gameTimerInterval = setInterval(() => {
+        GameState.gameData.gameTimeRemaining--;
+        if (GameState.gameData.gameTimeRemaining <= 0) {
+            clearInterval(GameState.gameData.gameTimerInterval);
+            // Survivors win if any are left
+            const survivorCount = GameState.players.filter(p => p.data.team === 'Survivor').length;
+            if (survivorCount > 0) {
+                GameState.players.forEach(p => {
+                    if (p.data.team === 'Survivor') p.score = 100;
+                });
+                setTimeout(() => endGame(), 500);
+            }
+        } else {
+            renderInfectionMode();
+        }
+    }, 1000);
+
     renderInfectionMode();
 }
 
 function renderInfectionMode() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
-    
+
+    // Timer and Win Counter Display
+    const timerDisplay = document.createElement('div');
+    timerDisplay.style.textAlign = 'center';
+    timerDisplay.style.marginBottom = '20px';
+    timerDisplay.style.fontSize = '1.5rem';
+    timerDisplay.style.color = '#f0a500';
+
+    const minutes = Math.floor(GameState.gameData.gameTimeRemaining / 60);
+    const seconds = GameState.gameData.gameTimeRemaining % 60;
+    const timeColor = GameState.gameData.gameTimeRemaining < 60 ? '#f44336' : '#f0a500';
+
+    timerDisplay.innerHTML = `
+        <div style="display: flex; justify-content: center; gap: 40px; align-items: center;">
+            <div style="background: #2a2a3e; padding: 15px 30px; border-radius: 10px; border: 3px solid ${timeColor};">
+                <div style="font-size: 0.9rem; color: #aaa;">Time Remaining</div>
+                <div style="font-size: 2rem; font-weight: bold; color: ${timeColor};">
+                    ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}
+                </div>
+            </div>
+            <div style="background: #2a2a3e; padding: 15px 30px; border-radius: 10px; border: 3px solid #4CAF50;">
+                <div style="font-size: 0.9rem; color: #aaa;">Survivor Duel Wins</div>
+                <div style="font-size: 2rem; font-weight: bold; color: #4CAF50;">
+                    ${GameState.gameData.survivorDuelWins} / ${GameState.gameData.targetDuelWins}
+                </div>
+            </div>
+        </div>
+    `;
+    canvas.appendChild(timerDisplay);
+
     const container = document.createElement('div');
     container.style.display = 'flex';
     container.style.gap = '20px';
     container.style.justifyContent = 'center';
-    
+
     // Survivors column
     const survivorsCol = document.createElement('div');
     survivorsCol.style.flex = '1';
@@ -2184,9 +2411,9 @@ function renderInfectionMode() {
     survivorsCol.style.padding = '20px';
     survivorsCol.style.borderRadius = '15px';
     survivorsCol.style.border = '3px solid #4CAF50';
-    
+
     survivorsCol.innerHTML = '<h3 style="color: #4CAF50; text-align: center;">Survivors 🧑</h3>';
-    
+
     GameState.players.forEach((player, index) => {
         if (player.data.team === 'Survivor') {
             const playerDiv = document.createElement('div');
@@ -2199,7 +2426,7 @@ function renderInfectionMode() {
             survivorsCol.appendChild(playerDiv);
         }
     });
-    
+
     // Infected column
     const infectedCol = document.createElement('div');
     infectedCol.style.flex = '1';
@@ -2207,9 +2434,9 @@ function renderInfectionMode() {
     infectedCol.style.padding = '20px';
     infectedCol.style.borderRadius = '15px';
     infectedCol.style.border = '3px solid #f44336';
-    
+
     infectedCol.innerHTML = '<h3 style="color: #f44336; text-align: center;">Infected 🦠</h3>';
-    
+
     GameState.players.forEach((player, index) => {
         if (player.data.team === 'Infected') {
             const playerDiv = document.createElement('div');
@@ -2222,30 +2449,30 @@ function renderInfectionMode() {
             infectedCol.appendChild(playerDiv);
         }
     });
-    
+
     container.appendChild(survivorsCol);
     container.appendChild(infectedCol);
-    
+
     // Duel area with bullseye
     const duelArea = document.createElement('div');
     duelArea.style.textAlign = 'center';
     duelArea.style.marginTop = '20px';
-    
+
     const survivor = GameState.players.find((p, i) => p.data.team === 'Survivor' && i === GameState.gameData.survivorIndex);
     const infected = GameState.players.find((p, i) => p.data.team === 'Infected' && i === GameState.gameData.infectedIndex);
-    
+
     if (survivor && infected) {
         duelArea.innerHTML = `
             <h3>DUEL: ${survivor.name} vs ${infected.name}</h3>
             <p>Survivor: ${survivor.data.duelScore} | Infected: ${infected.data.duelScore}</p>
         `;
     }
-    
+
     // Simple target for dueling
     const target = document.createElement('div');
     target.className = 'target-bullseye';
     target.style.marginTop = '20px';
-    
+
     const rings = [
         { size: 60, color: '#FFD700', points: 50 },
         { size: 120, color: '#ff6b6b', points: 25 },
@@ -2254,7 +2481,7 @@ function renderInfectionMode() {
         { size: 300, color: '#f0a500', points: 5 },
         { size: 360, color: '#1a1a2e', points: 1 }
     ];
-    
+
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
@@ -2263,24 +2490,24 @@ function renderInfectionMode() {
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
-        
+
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();
             handleInfectionHit(ring.points);
         });
-        
+
         target.appendChild(ringDiv);
     });
-    
+
     duelArea.appendChild(target);
-    
+
     canvas.appendChild(container);
     canvas.appendChild(duelArea);
 }
 
 function handleInfectionHit(points) {
     const throwsPerDuel = GameState.settings.infectionThrowsPerDuel;
-    
+
     if (GameState.gameData.duelPhase === 'survivor') {
         const survivor = GameState.players[GameState.gameData.survivorIndex];
         survivor.data.duelScore += points;
@@ -2290,41 +2517,56 @@ function handleInfectionHit(points) {
         infected.data.duelScore += points;
         GameState.gameData.duelPhase = 'survivor';
     }
-    
+
     GameState.gameData.throwsThisDuel++;
-    
+
     // Check if duel is over
     if (GameState.gameData.throwsThisDuel >= throwsPerDuel * 2) {
         const survivor = GameState.players[GameState.gameData.survivorIndex];
         const infected = GameState.players[GameState.gameData.infectedIndex];
-        
+
         if (infected.data.duelScore > survivor.data.duelScore) {
             // Infected wins - convert survivor
             survivor.data.team = 'Infected';
+        } else if (survivor.data.duelScore > infected.data.duelScore) {
+            // Survivor wins - increment win counter
+            GameState.gameData.survivorDuelWins++;
+            survivor.data.duelWins++;
+
+            // Check if survivors reached target duel wins
+            if (GameState.gameData.survivorDuelWins >= GameState.gameData.targetDuelWins) {
+                clearInterval(GameState.gameData.gameTimerInterval);
+                GameState.players.forEach(p => {
+                    if (p.data.team === 'Survivor') p.score = 100;
+                });
+                setTimeout(() => endGame(), 500);
+                return;
+            }
         }
-        
+
         // Reset duel scores
         survivor.data.duelScore = 0;
         infected.data.duelScore = 0;
         GameState.gameData.throwsThisDuel = 0;
         GameState.gameData.duelPhase = 'survivor';
-        
+
         // Check win condition
         const survivorCount = GameState.players.filter(p => p.data.team === 'Survivor').length;
         if (survivorCount === 0) {
             // Infected win
+            clearInterval(GameState.gameData.gameTimerInterval);
             GameState.players.forEach(p => {
                 if (p.data.team === 'Infected') p.score = 100;
             });
             setTimeout(() => endGame(), 500);
             return;
         }
-        
+
         // Find next duel pair
         GameState.gameData.survivorIndex = GameState.players.findIndex(p => p.data.team === 'Survivor');
         GameState.gameData.infectedIndex = GameState.players.findIndex(p => p.data.team === 'Infected');
     }
-    
+
     renderInfectionMode();
 }
 
@@ -2354,30 +2596,35 @@ function initLandmines() {
 function renderLandminesBoard() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
-    
+
     const container = document.createElement('div');
     container.style.display = 'flex';
     container.style.gap = '20px';
-    
+    container.style.maxWidth = '1200px';
+    container.style.margin = '0 auto';
+    container.style.alignItems = 'flex-start';
+
     // Ladder visualization
     const ladder = document.createElement('div');
-    ladder.style.flex = '1';
+    ladder.style.flex = '0 0 250px';
     ladder.style.background = '#2a2a3e';
     ladder.style.padding = '20px';
     ladder.style.borderRadius = '15px';
     ladder.style.minHeight = '500px';
+    ladder.style.maxHeight = '600px';
+    ladder.style.overflowY = 'auto';
     ladder.style.position = 'relative';
-    
+
     const targetScore = GameState.gameData.targetScore;
     const landmines = GameState.gameData.landmineScores;
-    
+
     for (let score = 0; score <= targetScore; score += 5) {
         const rung = document.createElement('div');
         rung.style.padding = '10px';
         rung.style.margin = '5px 0';
         rung.style.borderRadius = '8px';
         rung.style.position = 'relative';
-        
+
         if (landmines.includes(score)) {
             rung.style.background = '#f44336';
             rung.innerHTML = `${score} 💣`;
@@ -2385,7 +2632,7 @@ function renderLandminesBoard() {
             rung.style.background = '#1a1a2e';
             rung.textContent = score;
         }
-        
+
         // Show player markers
         GameState.players.forEach(player => {
             if (player.score === score) {
@@ -2395,17 +2642,20 @@ function renderLandminesBoard() {
                 rung.appendChild(marker);
             }
         });
-        
+
         ladder.insertBefore(rung, ladder.firstChild); // Insert at top
     }
-    
+
     // Bullseye target
     const targetArea = document.createElement('div');
     targetArea.style.flex = '1';
-    
+    targetArea.style.display = 'flex';
+    targetArea.style.justifyContent = 'center';
+    targetArea.style.alignItems = 'center';
+
     const target = document.createElement('div');
     target.className = 'target-bullseye';
-    
+
     const rings = [
         { size: 60, color: '#FFD700', points: 50 },
         { size: 120, color: '#ff6b6b', points: 25 },
@@ -2414,7 +2664,7 @@ function renderLandminesBoard() {
         { size: 300, color: '#f0a500', points: 5 },
         { size: 360, color: '#1a1a2e', points: 1 }
     ];
-    
+
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
@@ -2423,17 +2673,17 @@ function renderLandminesBoard() {
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
-        
+
         ringDiv.addEventListener('click', (e) => {
             e.stopPropagation();
             handleLandminesHit(ring.points);
         });
-        
+
         target.appendChild(ringDiv);
     });
-    
+
     targetArea.appendChild(target);
-    
+
     container.appendChild(ladder);
     container.appendChild(targetArea);
     canvas.appendChild(container);
@@ -2497,16 +2747,16 @@ function initThrowRoyale() {
 function renderThrowRoyale() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
-    
+
     const container = document.createElement('div');
     container.style.textAlign = 'center';
-    
+
     // Round display
     const roundDiv = document.createElement('div');
     roundDiv.innerHTML = `<h2 style="color: #f0a500;">Round ${GameState.gameData.round}</h2>`;
     roundDiv.style.marginBottom = '20px';
     container.appendChild(roundDiv);
-    
+
     // Lives display
     const livesContainer = document.createElement('div');
     livesContainer.style.display = 'flex';
@@ -2514,26 +2764,31 @@ function renderThrowRoyale() {
     livesContainer.style.gap = '20px';
     livesContainer.style.marginBottom = '30px';
     livesContainer.style.flexWrap = 'wrap';
-    
-    GameState.players.forEach(player => {
+
+    const activePlayers = GameState.players.filter(p => !p.data.eliminated);
+    let activeIndex = 0;
+
+    GameState.players.forEach((player, index) => {
         if (!player.data.eliminated) {
+            const isCurrentThrower = activeIndex === GameState.gameData.currentThrower;
             const playerDiv = document.createElement('div');
-            playerDiv.style.background = '#2a2a3e';
+            playerDiv.style.background = isCurrentThrower ? '#f0a500' : '#2a2a3e';
             playerDiv.style.padding = '15px';
             playerDiv.style.borderRadius = '10px';
             playerDiv.style.minWidth = '120px';
-            
+            playerDiv.style.border = isCurrentThrower ? '3px solid #FFD700' : 'none';
+
             const hearts = '❤️'.repeat(player.data.lives);
             playerDiv.innerHTML = `
-                <div style="font-weight: bold;">${player.name}</div>
+                <div style="font-weight: bold; color: ${isCurrentThrower ? '#000' : '#fff'};">${player.name}${isCurrentThrower ? ' 🎯' : ''}</div>
                 <div style="font-size: 1.5rem; margin-top: 5px;">${hearts}</div>
-                <div style="color: #aaa; font-size: 0.9rem;">Score: ${player.data.roundScore}</div>
             `;
-            
+
             livesContainer.appendChild(playerDiv);
+            activeIndex++;
         }
     });
-    
+
     container.appendChild(livesContainer);
     
     // Bullseye target
@@ -2573,44 +2828,60 @@ function renderThrowRoyale() {
 function handleRoyaleHit(points) {
     const activePlayers = GameState.players.filter(p => !p.data.eliminated);
     const currentPlayer = activePlayers[GameState.gameData.currentThrower];
-    
+
     saveState();
-    
+
     currentPlayer.data.roundScore = points;
+    currentPlayer.score = points; // Update main score for scoreboard
+
+    // Update the current player index to show in scoreboard
+    GameState.currentPlayerIndex = GameState.players.indexOf(currentPlayer);
+    updateCurrentPlayerDisplay();
+    updateScoreboard();
+
     GameState.gameData.currentThrower++;
-    
+
     // Check if round is complete
     if (GameState.gameData.currentThrower >= activePlayers.length) {
         // Find lowest score(s)
         const scores = activePlayers.map(p => p.data.roundScore);
         const minScore = Math.min(...scores);
-        
+
         // Apply penalty
         activePlayers.forEach(player => {
             if (player.data.roundScore === minScore) {
                 player.data.lives--;
                 if (player.data.lives <= 0) {
                     player.data.eliminated = true;
+                    player.score = 0;
                 }
             }
             player.data.roundScore = 0;
         });
-        
+
         // Check win condition
         const remaining = GameState.players.filter(p => !p.data.eliminated).length;
         if (remaining <= 1) {
             GameState.players.forEach(p => {
                 if (!p.data.eliminated) p.score = 100;
             });
+            updateScoreboard();
             setTimeout(() => endGame(), 500);
             return;
         }
-        
+
         // Next round
         GameState.gameData.round++;
         GameState.gameData.currentThrower = 0;
+
+        // Update to first active player
+        const nextActivePlayers = GameState.players.filter(p => !p.data.eliminated);
+        if (nextActivePlayers.length > 0) {
+            GameState.currentPlayerIndex = GameState.players.indexOf(nextActivePlayers[0]);
+            updateCurrentPlayerDisplay();
+        }
     }
-    
+
     renderThrowRoyale();
 }
 
@@ -2619,13 +2890,36 @@ function handleRoyaleHit(points) {
 // ============================================
 function initDateNight() {
     const canvas = document.getElementById('gameCanvas');
-    
+
     // Initialize player data
     GameState.players.forEach(player => {
         player.data.throws = 0;
         player.score = 0;
     });
-    
+
+    // Date dare prompts
+    GameState.gameData.dateDares = [
+        "Take a selfie together!",
+        "Switch lanes with another couple!",
+        "Loser buys dessert!",
+        "Winner picks the next date!",
+        "Share your favorite memory together!",
+        "Give your partner a compliment!",
+        "Plan your next adventure!",
+        "Dance for 30 seconds!",
+        "Tell each other a secret!",
+        "Share a kiss!",
+        "Winner gets a back rub!",
+        "Loser does the dishes tonight!"
+    ];
+
+    renderDateNight();
+}
+
+function renderDateNight() {
+    const canvas = document.getElementById('gameCanvas');
+    canvas.innerHTML = '';
+
     // Create heart-themed bullseye
     const target = document.createElement('div');
     target.className = 'target-bullseye';
@@ -2657,60 +2951,156 @@ function initDateNight() {
         target.appendChild(ringDiv);
     });
     
-    // Add heart bonus zones
+    // Add heart bonus zones with visual indicators
     const heartZones = GameState.settings.dateHeartZones;
     for (let i = 0; i < heartZones; i++) {
-        const heart = document.createElement('div');
-        heart.textContent = '💕';
-        heart.style.position = 'absolute';
-        heart.style.fontSize = '2rem';
-        heart.style.cursor = 'pointer';
-        heart.dataset.bonus = 'heart';
-        
+        const heartContainer = document.createElement('div');
+        heartContainer.style.position = 'absolute';
+        heartContainer.style.cursor = 'pointer';
+        heartContainer.dataset.bonus = 'heart';
+
         // Random position around the target
         const angle = (360 / heartZones) * i;
-        const radius = 150;
+        const radius = 200;
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
-        
-        heart.style.left = `calc(50% + ${x}px)`;
-        heart.style.top = `calc(50% + ${y}px)`;
-        heart.style.transform = 'translate(-50%, -50%)';
-        
-        heart.addEventListener('click', (e) => {
+
+        heartContainer.style.left = `calc(50% + ${x}px)`;
+        heartContainer.style.top = `calc(50% + ${y}px)`;
+        heartContainer.style.transform = 'translate(-50%, -50%)';
+
+        // Visual indicator background
+        const indicator = document.createElement('div');
+        indicator.style.width = '60px';
+        indicator.style.height = '60px';
+        indicator.style.background = 'radial-gradient(circle, rgba(255, 105, 180, 0.3), rgba(255, 20, 147, 0.1))';
+        indicator.style.borderRadius = '50%';
+        indicator.style.border = '2px solid #ff69b4';
+        indicator.style.display = 'flex';
+        indicator.style.alignItems = 'center';
+        indicator.style.justifyContent = 'center';
+        indicator.style.animation = 'pulse 2s infinite';
+
+        const heart = document.createElement('div');
+        heart.textContent = '💕';
+        heart.style.fontSize = '2rem';
+
+        indicator.appendChild(heart);
+        heartContainer.appendChild(indicator);
+
+        heartContainer.addEventListener('click', (e) => {
             e.stopPropagation();
             handleDateNightHit(10, true);
         });
-        
-        target.appendChild(heart);
+
+        heartContainer.addEventListener('mouseenter', () => {
+            indicator.style.transform = 'scale(1.2)';
+            indicator.style.transition = 'transform 0.2s';
+        });
+
+        heartContainer.addEventListener('mouseleave', () => {
+            indicator.style.transform = 'scale(1)';
+        });
+
+        target.appendChild(heartContainer);
     }
-    
+
     canvas.appendChild(target);
+
+    // Add CSS animation for pulse effect if not already added
+    if (!document.getElementById('dateNightStyles')) {
+        const style = document.createElement('style');
+        style.id = 'dateNightStyles';
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 0 10px rgba(255, 105, 180, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(255, 105, 180, 0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 function handleDateNightHit(points, isHeart = false) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const maxThrows = GameState.settings.dateThrowsPerPlayer;
-    
+
     if (currentPlayer.data.throws >= maxThrows) return;
-    
+
     saveState();
-    
+
     let finalPoints = points;
     if (isHeart) {
         finalPoints = points * GameState.settings.dateHeartMultiplier;
+
+        // Show random date dare
+        const dares = GameState.gameData.dateDares;
+        const randomDare = dares[Math.floor(Math.random() * dares.length)];
+
+        // Create dare popup
+        const darePopup = document.createElement('div');
+        darePopup.style.position = 'fixed';
+        darePopup.style.top = '50%';
+        darePopup.style.left = '50%';
+        darePopup.style.transform = 'translate(-50%, -50%)';
+        darePopup.style.background = 'linear-gradient(135deg, #ff6b6b, #ff69b4)';
+        darePopup.style.padding = '30px 40px';
+        darePopup.style.borderRadius = '20px';
+        darePopup.style.border = '4px solid #fff';
+        darePopup.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+        darePopup.style.zIndex = '1000';
+        darePopup.style.textAlign = 'center';
+        darePopup.style.animation = 'popIn 0.3s ease-out';
+        darePopup.innerHTML = `
+            <h2 style="color: #fff; margin: 0 0 15px 0; font-size: 1.8rem;">💕 Date Dare! 💕</h2>
+            <p style="color: #fff; font-size: 1.3rem; margin: 0 0 20px 0;">${randomDare}</p>
+            <p style="color: #FFD700; font-size: 1.1rem; margin: 0;">Bonus: +${finalPoints} points!</p>
+        `;
+
+        document.body.appendChild(darePopup);
+
+        // Add pop-in animation
+        if (!document.getElementById('darePopupStyles')) {
+            const style = document.createElement('style');
+            style.id = 'darePopupStyles';
+            style.textContent = `
+                @keyframes popIn {
+                    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+                    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Remove popup after 3 seconds
+        setTimeout(() => {
+            darePopup.style.animation = 'popIn 0.3s ease-out reverse';
+            setTimeout(() => darePopup.remove(), 300);
+        }, 3000);
     }
-    
+
     currentPlayer.score += finalPoints;
     currentPlayer.data.throws++;
-    
+
     updateScoreboard();
-    
+
     // Check if turn is over
     if (currentPlayer.data.throws >= maxThrows) {
         const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
         if (allFinished) {
             setTimeout(() => endGame(), 500);
+            return;
+        }
+
+        // Switch to next player
+        let nextPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+        while (GameState.players[nextPlayerIndex].data.throws >= maxThrows && nextPlayerIndex !== GameState.currentPlayerIndex) {
+            nextPlayerIndex = (nextPlayerIndex + 1) % GameState.players.length;
+        }
+
+        if (GameState.players[nextPlayerIndex].data.throws < maxThrows) {
+            GameState.currentPlayerIndex = nextPlayerIndex;
+            updateCurrentPlayerDisplay();
         }
     }
 }
@@ -2720,64 +3110,26 @@ function handleDateNightHit(points, isHeart = false) {
 // ============================================
 function initMerryAxemas() {
     const canvas = document.getElementById('gameCanvas');
-    
+
     // Initialize player data
     GameState.players.forEach(player => {
         player.data.throws = 0;
         player.score = 0;
     });
-    
-    // Christmas background
+
+    // Christmas background with snow effect
     canvas.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #0f3a2e 100%)';
-    
+
+    // Add Christmas decorations
+    addChristmasDecorations(canvas);
+
     if (GameState.settings.xmasGameMode === 'Bullseye Mode') {
-        // Create Christmas-themed bullseye
-        const target = document.createElement('div');
-        target.className = 'target-bullseye';
-        
-        const rings = [
-            { size: 60, color: '#FFD700', points: 50, emoji: '⭐' },
-            { size: 120, color: '#ff6b6b', points: 25, emoji: '🎅' },
-            { size: 180, color: '#4CAF50', points: 15, emoji: '🎄' },
-            { size: 240, color: '#fff', points: 10, emoji: '❄️' },
-            { size: 300, color: '#f0a500', points: 5, emoji: '🔔' },
-            { size: 360, color: '#1a1a2e', points: 1, emoji: '🎁' }
-        ];
-        
-        rings.reverse().forEach((ring, index) => {
-            const ringDiv = document.createElement('div');
-            ringDiv.className = 'target-ring';
-            ringDiv.style.width = ring.size + 'px';
-            ringDiv.style.height = ring.size + 'px';
-            ringDiv.style.background = ring.color;
-            ringDiv.dataset.points = ring.points;
-            ringDiv.style.zIndex = String(index + 1);
-            
-            // Add Christmas emoji
-            const label = document.createElement('div');
-            label.textContent = ring.emoji;
-            label.style.position = 'absolute';
-            label.style.top = '50%';
-            label.style.left = '50%';
-            label.style.transform = 'translate(-50%, -50%)';
-            label.style.fontSize = '2rem';
-            label.style.pointerEvents = 'none';
-            ringDiv.appendChild(label);
-            
-            ringDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                handleXmasHit(ring.points);
-            });
-            
-            target.appendChild(ringDiv);
-        });
-        
-        canvas.appendChild(target);
+        renderXmasBullseye();
     } else {
         // Gift Hunt Mode
         GameState.gameData.presents = [];
         const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
-        
+
         for (let i = 0; i < 10; i++) {
             GameState.gameData.presents.push({
                 value: giftValues[Math.floor(Math.random() * giftValues.length)],
@@ -2786,25 +3138,117 @@ function initMerryAxemas() {
                 emoji: ['🎁', '🎄', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 5)]
             });
         }
-        
+
         renderXmasGiftHunt();
     }
 }
 
+function addChristmasDecorations(canvas) {
+    // Add snowflakes
+    for (let i = 0; i < 15; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.textContent = '❄️';
+        snowflake.style.position = 'absolute';
+        snowflake.style.fontSize = '1.5rem';
+        snowflake.style.opacity = '0.3';
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.top = Math.random() * 100 + '%';
+        snowflake.style.pointerEvents = 'none';
+        snowflake.style.animation = `float ${3 + Math.random() * 3}s ease-in-out infinite`;
+        canvas.appendChild(snowflake);
+    }
+
+    // Add CSS animation if not already added
+    if (!document.getElementById('xmasStyles')) {
+        const style = document.createElement('style');
+        style.id = 'xmasStyles';
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+            @keyframes twinkle {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function renderXmasBullseye() {
+    const canvas = document.getElementById('gameCanvas');
+
+    // Create Christmas-themed bullseye
+    const target = document.createElement('div');
+    target.className = 'target-bullseye';
+
+    const rings = [
+        { size: 60, color: '#FFD700', points: 50, emoji: '⭐', name: 'Star' },
+        { size: 120, color: '#ff6b6b', points: 25, emoji: '🎅', name: 'Santa' },
+        { size: 180, color: '#4CAF50', points: 15, emoji: '🎄', name: 'Tree' },
+        { size: 240, color: '#fff', points: 10, emoji: '❄️', name: 'Snow' },
+        { size: 300, color: '#f0a500', points: 5, emoji: '🔔', name: 'Bell' },
+        { size: 360, color: '#1a1a2e', points: 1, emoji: '🎁', name: 'Gift' }
+    ];
+
+    rings.reverse().forEach((ring, index) => {
+        const ringDiv = document.createElement('div');
+        ringDiv.className = 'target-ring';
+        ringDiv.style.width = ring.size + 'px';
+        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.background = ring.color;
+        ringDiv.dataset.points = ring.points;
+        ringDiv.style.zIndex = String(index + 1);
+
+        // Add Christmas emoji with twinkling effect
+        const label = document.createElement('div');
+        label.textContent = ring.emoji;
+        label.style.position = 'absolute';
+        label.style.top = '50%';
+        label.style.left = '50%';
+        label.style.transform = 'translate(-50%, -50%)';
+        label.style.fontSize = '2.5rem';
+        label.style.pointerEvents = 'none';
+        if (ring.emoji === '⭐') {
+            label.style.animation = 'twinkle 1.5s ease-in-out infinite';
+        }
+        ringDiv.appendChild(label);
+
+        ringDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleXmasHit(ring.points);
+        });
+
+        target.appendChild(ringDiv);
+    });
+
+    canvas.appendChild(target);
+}
+
 function renderXmasGiftHunt() {
     const canvas = document.getElementById('gameCanvas');
-    canvas.innerHTML = '';
-    
-    const container = document.createElement('div');
+    const existingContainer = canvas.querySelector('.xmas-gift-container');
+
+    // Only recreate if doesn't exist
+    if (!existingContainer) {
+        canvas.innerHTML = '';
+        addChristmasDecorations(canvas);
+    }
+
+    const container = existingContainer || document.createElement('div');
+    container.className = 'xmas-gift-container';
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.maxWidth = '600px';
     container.style.height = '500px';
-    container.style.margin = '0 auto';
+    container.style.margin = '20px auto';
     container.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #0f3a2e 100%)';
     container.style.borderRadius = '20px';
     container.style.border = '3px solid #4CAF50';
-    
+    container.style.boxShadow = '0 0 20px rgba(76, 175, 80, 0.3)';
+    container.innerHTML = ''; // Clear previous gifts
+
     GameState.gameData.presents.forEach((present, index) => {
         const giftDiv = document.createElement('div');
         giftDiv.textContent = present.emoji;
@@ -2814,6 +3258,7 @@ function renderXmasGiftHunt() {
         giftDiv.style.fontSize = '3rem';
         giftDiv.style.cursor = 'pointer';
         giftDiv.style.transition = 'transform 0.2s';
+        giftDiv.style.filter = 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))';
         
         const valueLabel = document.createElement('div');
         valueLabel.textContent = present.value;
@@ -2845,20 +3290,32 @@ function renderXmasGiftHunt() {
 function handleXmasHit(points) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const maxThrows = GameState.settings.xmasThrowsPerPlayer;
-    
+
     if (currentPlayer.data.throws >= maxThrows) return;
-    
+
     saveState();
-    
+
     currentPlayer.score += points;
     currentPlayer.data.throws++;
-    
+
     updateScoreboard();
-    
+
     if (currentPlayer.data.throws >= maxThrows) {
         const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
         if (allFinished) {
             setTimeout(() => endGame(), 500);
+            return;
+        }
+
+        // Switch to next player
+        let nextPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+        while (GameState.players[nextPlayerIndex].data.throws >= maxThrows && nextPlayerIndex !== GameState.currentPlayerIndex) {
+            nextPlayerIndex = (nextPlayerIndex + 1) % GameState.players.length;
+        }
+
+        if (GameState.players[nextPlayerIndex].data.throws < maxThrows) {
+            GameState.currentPlayerIndex = nextPlayerIndex;
+            updateCurrentPlayerDisplay();
         }
     }
 }
@@ -2866,15 +3323,15 @@ function handleXmasHit(points) {
 function handleXmasGiftClick(index) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
     const maxThrows = GameState.settings.xmasThrowsPerPlayer;
-    
+
     if (currentPlayer.data.throws >= maxThrows) return;
-    
+
     saveState();
-    
+
     const present = GameState.gameData.presents[index];
     currentPlayer.score += present.value;
     currentPlayer.data.throws++;
-    
+
     // Remove present and spawn new one
     const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
     GameState.gameData.presents[index] = {
@@ -2883,14 +3340,26 @@ function handleXmasGiftClick(index) {
         y: Math.random() * 80 + 10,
         emoji: ['🎁', '🎄', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 5)]
     };
-    
+
     renderXmasGiftHunt();
     updateScoreboard();
-    
+
     if (currentPlayer.data.throws >= maxThrows) {
         const allFinished = GameState.players.every(p => p.data.throws >= maxThrows);
         if (allFinished) {
             setTimeout(() => endGame(), 500);
+            return;
+        }
+
+        // Switch to next player
+        let nextPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+        while (GameState.players[nextPlayerIndex].data.throws >= maxThrows && nextPlayerIndex !== GameState.currentPlayerIndex) {
+            nextPlayerIndex = (nextPlayerIndex + 1) % GameState.players.length;
+        }
+
+        if (GameState.players[nextPlayerIndex].data.throws < maxThrows) {
+            GameState.currentPlayerIndex = nextPlayerIndex;
+            updateCurrentPlayerDisplay();
         }
     }
 }
