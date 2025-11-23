@@ -23,7 +23,7 @@ const GameState = {
         crushThrowsPerPlayer: 12,
         crushEnableCascades: true,
         // Axe Memory settings
-        memoryGridSize: 36,
+        memoryGridSize: 16,
         memoryExtraTurnOnMatch: true,
         memoryRevealDuration: 1.5,
         // Axe Word Wack settings
@@ -348,7 +348,11 @@ function updateScoreboard() {
         scoreboard.style.display = 'none';
         return;
     }
-    scoreboard.style.display = 'grid';
+    scoreboard.style.display = 'flex';
+    scoreboard.style.flexDirection = 'row';
+    scoreboard.style.justifyContent = 'space-around';
+    scoreboard.style.flexWrap = 'wrap';
+    scoreboard.style.gap = '15px';
 
     GameState.players.forEach((player, index) => {
         const scoreDiv = document.createElement('div');

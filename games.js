@@ -1486,7 +1486,7 @@ function fillEmptyCells() {
     }
 }
 
-function checkCascades(player) {
+function checkCascades(player, comboCount = 0) {
     // Auto-clear any new matches after gravity using cross-pattern logic
     let foundMatch = false;
     const minGroupSize = GameState.settings.crushMinGroupSize;
@@ -1535,7 +1535,13 @@ function checkCascades(player) {
         renderAxeCrushGrid();
         updateScoreboard();
 
-        // Show combo notification
+        // Increment combo count
+        comboCount++;
+
+        // Check for more cascades
+        setTimeout(() => checkCascades(player, comboCount), 300);
+    } else if (comboCount > 0) {
+        // No more cascades, show final combo notification
         const canvas = document.getElementById('gameCanvas');
         const comboNotif = document.createElement('div');
         comboNotif.style.position = 'fixed';
@@ -1551,13 +1557,10 @@ function checkCascades(player) {
         comboNotif.style.zIndex = '1000';
         comboNotif.style.boxShadow = '0 0 30px rgba(244, 67, 54, 0.8)';
         comboNotif.style.animation = 'pulse 0.3s ease-in-out';
-        comboNotif.innerHTML = '🔥 COMBO! 🔥';
+        comboNotif.innerHTML = `🔥 COMBO! x ${comboCount} 🔥`;
         canvas.appendChild(comboNotif);
 
-        setTimeout(() => comboNotif.remove(), 800);
-
-        // Check for more cascades
-        setTimeout(() => checkCascades(player), 300);
+        setTimeout(() => comboNotif.remove(), 1200);
     }
 }
 
@@ -1739,16 +1742,17 @@ function handleMemoryTileClick(row, col) {
             setTimeout(() => {
                 firstTile.state = 'faceDown';
                 secondTile.state = 'faceDown';
-                
+
                 GameState.gameData.turnThrows = 0;
                 GameState.gameData.firstTile = null;
                 GameState.gameData.secondTile = null;
-                
+
                 renderAxeMemoryGrid();
-                
+
                 // Move to next player
                 GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
                 updateCurrentPlayerDisplay();
+                updateScoreboard();
             }, GameState.settings.memoryRevealDuration * 1000);
         }
     }
@@ -2046,17 +2050,17 @@ function renderEmojiFrenzy() {
         emojiDiv.style.fontSize = '3rem';
         emojiDiv.style.cursor = 'pointer';
         emojiDiv.style.transition = 'transform 0.2s';
-        emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'scale(1.2)' : 'scale(1)';
+        emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'translate(-50%, -50%) scale(1.2)' : 'translate(-50%, -50%) scale(1)';
         emojiDiv.style.filter = emoji.type === GameState.gameData.targetEmoji ? 'drop-shadow(0 0 10px #f0a500)' : 'none';
-        
+
         emojiDiv.addEventListener('click', () => handleEmojiClick(index));
         emojiDiv.addEventListener('mouseenter', () => {
-            emojiDiv.style.transform = 'scale(1.3)';
+            emojiDiv.style.transform = 'translate(-50%, -50%) scale(1.3)';
         });
         emojiDiv.addEventListener('mouseleave', () => {
-            emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'scale(1.2)' : 'scale(1)';
+            emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'translate(-50%, -50%) scale(1.2)' : 'translate(-50%, -50%) scale(1)';
         });
-        
+
         emojiArea.appendChild(emojiDiv);
     });
     
@@ -2099,7 +2103,7 @@ function handleEmojiClick(index) {
                 if (i === index) return false; // Don't check against self
                 const dx = Math.abs(e.x - x);
                 const dy = Math.abs(e.y - y);
-                return dx < 15 && dy < 15; // Minimum distance of 15%
+                return dx < 20 && dy < 20; // Minimum distance of 20%
             });
 
             if (!tooClose || attempts >= maxAttempts) break;
@@ -2155,6 +2159,7 @@ function initBadAxe() {
     GameState.gameData.shotCallerId = 0;
     GameState.gameData.currentAttempterId = -1;
     GameState.gameData.phase = 'selectingShot'; // selectingShot, shotCalling, copying
+    GameState.gameData.attemptedPlayers = new Set();
     
     // Create bullseye target (reuse from classic bullseye)
     const target = document.createElement('div');
@@ -2257,7 +2262,7 @@ function showBadAxeShotSelection() {
     const shotUI = document.createElement('div');
     shotUI.id = 'badAxeShotUI';
     shotUI.style.position = 'absolute';
-    shotUI.style.top = '20px';
+    shotUI.style.bottom = '20px';
     shotUI.style.left = '50%';
     shotUI.style.transform = 'translateX(-50%)';
     shotUI.style.background = '#2a2a3e';
@@ -2266,15 +2271,16 @@ function showBadAxeShotSelection() {
     shotUI.style.border = '3px solid #f0a500';
     shotUI.style.zIndex = '100';
     shotUI.style.textAlign = 'center';
-    
+    shotUI.style.maxWidth = '90%';
+
     const caller = GameState.players[GameState.gameData.shotCallerId];
-    
+
     shotUI.innerHTML = `
         <h3 style="margin-bottom: 15px;">${caller.name}'s Turn to Set the Shot</h3>
         <p style="margin-bottom: 10px;">Select a ring, then throw to set the challenge!</p>
         <div style="font-size: 0.9rem; color: #aaa;">When you hit a ring, that becomes the challenge for everyone else.</div>
     `;
-    
+
     canvas.appendChild(shotUI);
 }
 
@@ -2291,10 +2297,10 @@ function handleBadAxeHit(ringLabel, quadrant = null) {
             callerId: GameState.gameData.shotCallerId
         };
 
-        // Award points to shot caller for making the shot
-        caller.score += 10;
+        // Don't award points to shot caller - they're setting the challenge, not scoring
 
         GameState.gameData.phase = 'copying';
+        GameState.gameData.attemptedPlayers = new Set(); // Reset for new round
         GameState.gameData.currentAttempterId = (GameState.gameData.shotCallerId + 1) % GameState.players.length;
 
         // Skip eliminated players
@@ -2304,7 +2310,7 @@ function handleBadAxeHit(ringLabel, quadrant = null) {
             // Safety: if all eliminated except caller, end game
             const activeCount = GameState.players.filter(p => !p.data.eliminated).length;
             if (activeCount <= 1) {
-                setTimeout(() => endGame(), 500);
+                setTimeout(() => endGame(), 2500);
                 return;
             }
         }
@@ -2374,43 +2380,53 @@ function handleBadAxeHit(ringLabel, quadrant = null) {
         }
 
         updateScoreboard();
-        
+
+        // Track who has attempted this shot
+        if (!GameState.gameData.attemptedPlayers) {
+            GameState.gameData.attemptedPlayers = new Set();
+        }
+        GameState.gameData.attemptedPlayers.add(GameState.gameData.currentAttempterId);
+
         // Move to next attempter
         GameState.gameData.currentAttempterId = (GameState.gameData.currentAttempterId + 1) % GameState.players.length;
-        
-        // Skip eliminated and shot caller
+
+        // Skip eliminated players and shot caller
         let found = false;
         for (let i = 0; i < GameState.players.length; i++) {
             const player = GameState.players[GameState.gameData.currentAttempterId];
-            if (!player.data.eliminated && GameState.gameData.currentAttempterId !== GameState.gameData.shotCallerId) {
+            // Check if this player hasn't attempted yet, isn't eliminated, and isn't the shot caller
+            if (!player.data.eliminated &&
+                GameState.gameData.currentAttempterId !== GameState.gameData.shotCallerId &&
+                !GameState.gameData.attemptedPlayers.has(GameState.gameData.currentAttempterId)) {
                 found = true;
                 break;
             }
             GameState.gameData.currentAttempterId = (GameState.gameData.currentAttempterId + 1) % GameState.players.length;
         }
-        
+
         if (!found) {
             // Round complete, move to next shot caller
+            GameState.gameData.attemptedPlayers = new Set(); // Reset for next round
             GameState.gameData.shotCallerId = (GameState.gameData.shotCallerId + 1) % GameState.players.length;
-            
+
             // Skip eliminated
             while (GameState.players[GameState.gameData.shotCallerId].data.eliminated) {
                 GameState.gameData.shotCallerId = (GameState.gameData.shotCallerId + 1) % GameState.players.length;
             }
-            
+
             GameState.gameData.phase = 'selectingShot';
             GameState.gameData.currentShot = null;
-            
+
             // Check win condition
             const activeCount = GameState.players.filter(p => !p.data.eliminated).length;
             if (activeCount <= 1) {
-                setTimeout(() => endGame(), 500);
+                setTimeout(() => endGame(), 2500);
                 return;
             }
-            
+
             showBadAxeShotSelection();
         }
-        
+
         updateBadAxeUI();
     }
 }
@@ -2423,7 +2439,7 @@ function updateBadAxeUI() {
     const shotUI = document.createElement('div');
     shotUI.id = 'badAxeShotUI';
     shotUI.style.position = 'absolute';
-    shotUI.style.top = '20px';
+    shotUI.style.bottom = '20px';
     shotUI.style.left = '50%';
     shotUI.style.transform = 'translateX(-50%)';
     shotUI.style.background = '#2a2a3e';
@@ -2432,6 +2448,7 @@ function updateBadAxeUI() {
     shotUI.style.border = '3px solid #f0a500';
     shotUI.style.zIndex = '100';
     shotUI.style.textAlign = 'center';
+    shotUI.style.maxWidth = '90%';
 
     if (GameState.gameData.phase === 'copying') {
         const attempter = GameState.players[GameState.gameData.currentAttempterId];
@@ -2514,15 +2531,17 @@ function initInfectionMode() {
     renderInfectionMode();
 }
 
-function renderInfectionMode() {
-    const canvas = document.getElementById('gameCanvas');
-    canvas.innerHTML = '';
+function updateInfectionModeScoreboard() {
+    const scoreboard = document.getElementById('scoreboard');
+    scoreboard.innerHTML = '';
+    scoreboard.style.display = 'flex';
+    scoreboard.style.flexDirection = 'column';
+    scoreboard.style.gap = '15px';
 
     // Timer and Win Counter Display
     const timerDisplay = document.createElement('div');
     timerDisplay.style.textAlign = 'center';
-    timerDisplay.style.marginBottom = '20px';
-    timerDisplay.style.fontSize = '1.5rem';
+    timerDisplay.style.fontSize = '1.2rem';
     timerDisplay.style.color = '#f0a500';
 
     const minutes = Math.floor(GameState.gameData.gameTimeRemaining / 60);
@@ -2530,22 +2549,60 @@ function renderInfectionMode() {
     const timeColor = GameState.gameData.gameTimeRemaining < 60 ? '#f44336' : '#f0a500';
 
     timerDisplay.innerHTML = `
-        <div style="display: flex; justify-content: center; gap: 40px; align-items: center;">
-            <div style="background: #2a2a3e; padding: 15px 30px; border-radius: 10px; border: 3px solid ${timeColor};">
-                <div style="font-size: 0.9rem; color: #aaa;">Time Remaining</div>
-                <div style="font-size: 2rem; font-weight: bold; color: ${timeColor};">
+        <div style="display: flex; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <div style="background: #2a2a3e; padding: 10px 20px; border-radius: 10px; border: 3px solid ${timeColor};">
+                <div style="font-size: 0.8rem; color: #aaa;">Time Remaining</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: ${timeColor};">
                     ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}
                 </div>
             </div>
-            <div style="background: #2a2a3e; padding: 15px 30px; border-radius: 10px; border: 3px solid #4CAF50;">
-                <div style="font-size: 0.9rem; color: #aaa;">Survivor Duel Wins</div>
-                <div style="font-size: 2rem; font-weight: bold; color: #4CAF50;">
+            <div style="background: #2a2a3e; padding: 10px 20px; border-radius: 10px; border: 3px solid #4CAF50;">
+                <div style="font-size: 0.8rem; color: #aaa;">Survivor Duel Wins</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: #4CAF50;">
                     ${GameState.gameData.survivorDuelWins} / ${GameState.gameData.targetDuelWins}
                 </div>
             </div>
         </div>
     `;
-    canvas.appendChild(timerDisplay);
+    scoreboard.appendChild(timerDisplay);
+
+    // Duel Info Display
+    const survivor = GameState.players.find((p, i) => p.data.team === 'Survivor' && i === GameState.gameData.survivorIndex);
+    const infected = GameState.players.find((p, i) => p.data.team === 'Infected' && i === GameState.gameData.infectedIndex);
+
+    if (survivor && infected) {
+        const currentTurn = GameState.gameData.duelPhase === 'survivor' ? survivor.name : infected.name;
+        const currentTeam = GameState.gameData.duelPhase === 'survivor' ? 'Survivor' : 'Infected';
+        const teamColor = GameState.gameData.duelPhase === 'survivor' ? '#4CAF50' : '#f44336';
+
+        const duelInfo = document.createElement('div');
+        duelInfo.style.textAlign = 'center';
+        duelInfo.style.padding = '10px';
+        duelInfo.style.background = '#2a2a3e';
+        duelInfo.style.borderRadius = '10px';
+        duelInfo.style.border = '2px solid #f0a500';
+
+        duelInfo.innerHTML = `
+            <div style="font-size: 1rem; margin-bottom: 5px;">
+                <strong>DUEL:</strong> ${survivor.name} vs ${infected.name}
+            </div>
+            <div style="font-size: 0.9rem; margin-bottom: 5px;">
+                Survivor: ${survivor.data.duelScore} | Infected: ${infected.data.duelScore}
+            </div>
+            <div style="padding: 8px; background: ${teamColor}; border-radius: 8px; color: #fff; font-weight: bold; font-size: 0.9rem;">
+                Current Turn: ${currentTurn} (${currentTeam})
+            </div>
+        `;
+        scoreboard.appendChild(duelInfo);
+    }
+}
+
+function renderInfectionMode() {
+    // Update custom scoreboard
+    updateInfectionModeScoreboard();
+
+    const canvas = document.getElementById('gameCanvas');
+    canvas.innerHTML = '';
 
     const container = document.createElement('div');
     container.style.display = 'flex';
@@ -2601,32 +2658,12 @@ function renderInfectionMode() {
     container.appendChild(survivorsCol);
     container.appendChild(infectedCol);
 
-    // Duel area with bullseye
-    const duelArea = document.createElement('div');
-    duelArea.style.textAlign = 'center';
-    duelArea.style.marginTop = '20px';
-
-    const survivor = GameState.players.find((p, i) => p.data.team === 'Survivor' && i === GameState.gameData.survivorIndex);
-    const infected = GameState.players.find((p, i) => p.data.team === 'Infected' && i === GameState.gameData.infectedIndex);
-
-    if (survivor && infected) {
-        const currentTurn = GameState.gameData.duelPhase === 'survivor' ? survivor.name : infected.name;
-        const currentTeam = GameState.gameData.duelPhase === 'survivor' ? 'Survivor' : 'Infected';
-        const teamColor = GameState.gameData.duelPhase === 'survivor' ? '#4CAF50' : '#f44336';
-
-        duelArea.innerHTML = `
-            <h3>DUEL: ${survivor.name} vs ${infected.name}</h3>
-            <p>Survivor: ${survivor.data.duelScore} | Infected: ${infected.data.duelScore}</p>
-            <div style="margin-top: 15px; padding: 10px; background: ${teamColor}; border-radius: 10px; color: #fff; font-weight: bold;">
-                Current Turn: ${currentTurn} (${currentTeam})
-            </div>
-        `;
-    }
+    canvas.appendChild(container);
 
     // Simple target for dueling
     const target = document.createElement('div');
     target.className = 'target-bullseye';
-    target.style.marginTop = '20px';
+    target.style.marginTop = '30px';
 
     const rings = [
         { size: 60, color: '#FFD700', points: 50 },
@@ -2654,10 +2691,7 @@ function renderInfectionMode() {
         target.appendChild(ringDiv);
     });
 
-    duelArea.appendChild(target);
-
-    canvas.appendChild(container);
-    canvas.appendChild(duelArea);
+    canvas.appendChild(target);
 }
 
 function handleInfectionHit(points) {
