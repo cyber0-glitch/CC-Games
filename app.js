@@ -229,6 +229,15 @@ function initializeGame(gameType, preserveState = false) {
     const newCanvas = gameCanvas.cloneNode(false);
     gameCanvas.parentNode.replaceChild(newCanvas, gameCanvas);
 
+    // Reset scoreboard styles to prevent contamination from previous games
+    const scoreboard = document.getElementById('scoreboard');
+    if (scoreboard) {
+        scoreboard.style.display = '';
+        scoreboard.style.flexDirection = '';
+        scoreboard.style.gap = '';
+        scoreboard.innerHTML = '';
+    }
+
     // Clear game data only if not preserving state (e.g., for undo)
     if (!preserveState) {
         GameState.gameData = {};

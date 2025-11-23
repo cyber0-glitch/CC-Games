@@ -2109,7 +2109,7 @@ function handleEmojiClick(index) {
                 if (i === index) return false; // Don't check against self
                 const dx = Math.abs(e.x - x);
                 const dy = Math.abs(e.y - y);
-                return dx < 20 && dy < 20; // Minimum distance of 20%
+                return dx < 25 && dy < 25; // Minimum distance of 25% to reduce overlap
             });
 
             if (!tooClose || attempts >= maxAttempts) break;
@@ -2836,17 +2836,21 @@ function renderLandminesBoard() {
 
     const scoreIndicator = document.createElement('div');
     scoreIndicator.style.background = '#2a2a3e';
-    scoreIndicator.style.padding = '20px';
+    scoreIndicator.style.padding = '15px 20px';
     scoreIndicator.style.borderRadius = '15px';
     scoreIndicator.style.border = '3px solid #f0a500';
-    scoreIndicator.style.textAlign = 'center';
-    scoreIndicator.style.minWidth = '400px';
+    scoreIndicator.style.display = 'flex';
+    scoreIndicator.style.alignItems = 'center';
+    scoreIndicator.style.justifyContent = 'space-between';
+    scoreIndicator.style.gap = '30px';
+    scoreIndicator.style.width = '100%';
+    scoreIndicator.style.flexWrap = 'wrap';
     scoreIndicator.innerHTML = `
         <div style="font-size: 1.2rem; color: #f0a500; font-weight: bold;">${currentPlayer.name}'s Turn</div>
-        <div style="font-size: 2rem; color: #4CAF50; font-weight: bold; margin: 10px 0;">Current Score: ${currentPlayer.score}</div>
-        <div style="font-size: 1rem; color: #aaa;">Next Checkpoint: ${nextCheckpoint} (${pointsToCheckpoint} points away)</div>
+        <div style="font-size: 1.8rem; color: #4CAF50; font-weight: bold;">Score: ${currentPlayer.score}</div>
+        <div style="font-size: 1rem; color: #aaa;">Next: ${nextCheckpoint} (${pointsToCheckpoint} pts)</div>
         <div style="font-size: 1rem; color: #aaa;">Target: ${GameState.gameData.targetScore}</div>
-        ${landmineWarning}
+        ${upcomingLandmines.length > 0 ? `<div style="color: #f44336; font-weight: bold; font-size: 1rem;">⚠️ Landmines: ${upcomingLandmines.join(', ')} 💣</div>` : ''}
     `;
     mainContainer.appendChild(scoreIndicator);
 
@@ -3234,9 +3238,9 @@ function renderDateNight() {
         heartContainer.style.zIndex = '100'; // Ensure hearts are above all rings
         heartContainer.dataset.bonus = 'heart';
 
-        // Position outside the bullseye for better visibility
+        // Position inside the bullseye for better gameplay
         const angle = (360 / heartZones) * i;
-        const radius = 200; // Position outside the target for visibility
+        const radius = 100; // Position inside the target near the outer ring
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
 
@@ -3669,8 +3673,12 @@ function handleXmasGiftClick(index) {
     currentPlayer.score += present.value;
     currentPlayer.data.throws++;
 
-    // Mark present as collected instead of respawning it
-    GameState.gameData.presents[index].collected = true;
+    // Spawn a new present to replace the collected one
+    const giftValues = GameState.settings.xmasGiftValues.split(',').map(v => parseInt(v.trim()));
+    GameState.gameData.presents[index] = {
+        value: giftValues[Math.floor(Math.random() * giftValues.length)],
+        emoji: ['🎁', '⭐', '🔔', '🎅'][Math.floor(Math.random() * 4)]
+    };
 
     renderXmasTreeWithGifts();
     updateScoreboard();
