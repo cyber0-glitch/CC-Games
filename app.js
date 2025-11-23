@@ -8,7 +8,7 @@ const GameState = {
     settings: {
         movingTargets: true,
         zombieTimer: true,
-        hardMode: true,
+        hardMode: false,
         moveDuration: 3,
         staticDuration: 5,
         zombieCountdown: 60,
