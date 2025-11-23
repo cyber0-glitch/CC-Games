@@ -11,7 +11,8 @@ const GameState = {
         hardMode: true,
         moveDuration: 3,
         staticDuration: 5,
-        zombieCountdown: 60
+        zombieCountdown: 60,
+        zombieDespawnTime: 8
     }
 };
 
@@ -456,6 +457,7 @@ function showSettings() {
     document.getElementById('moveDuration').value = GameState.settings.moveDuration;
     document.getElementById('staticDuration').value = GameState.settings.staticDuration;
     document.getElementById('zombieCountdown').value = GameState.settings.zombieCountdown;
+    document.getElementById('zombieDespawnTime').value = GameState.settings.zombieDespawnTime;
 }
 
 function toggleMovingTargets() {
@@ -525,6 +527,14 @@ function updateZombieCountdown() {
     if (value >= 10 && value <= 300) {
         GameState.settings.zombieCountdown = value;
         console.log('Zombie countdown:', GameState.settings.zombieCountdown);
+    }
+}
+
+function updateZombieDespawnTime() {
+    const value = parseInt(document.getElementById('zombieDespawnTime').value);
+    if (value >= 3 && value <= 30) {
+        GameState.settings.zombieDespawnTime = value;
+        console.log('Zombie despawn time:', GameState.settings.zombieDespawnTime);
     }
 }
 

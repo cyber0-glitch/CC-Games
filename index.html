@@ -213,6 +213,14 @@
                         </div>
                         <input type="number" id="zombieCountdown" min="10" max="300" value="60" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieCountdown()">
                     </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Zombie Despawn Time (seconds)</h3>
+                            <p>How long zombies stay on screen before disappearing</p>
+                        </div>
+                        <input type="number" id="zombieDespawnTime" min="3" max="30" value="8" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieDespawnTime()">
+                    </div>
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
             </div>
