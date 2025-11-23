@@ -2174,14 +2174,14 @@ function initBadAxe() {
     target.className = 'target-bullseye';
     
     const rings = [
-        { size: 60, color: '#FFD700', points: 50, label: 'Bullseye' },
-        { size: 120, color: '#ff6b6b', points: 25, label: 'Red' },
-        { size: 180, color: '#fff', points: 15, label: 'White' },
-        { size: 240, color: '#000', points: 10, label: 'Black' },
-        { size: 300, color: '#f0a500', points: 5, label: 'Orange' },
-        { size: 360, color: '#1a1a2e', points: 1, label: 'Outer' }
+        { size: 60, color: '#FFD700', points: 50, label: '50' },
+        { size: 120, color: '#ff6b6b', points: 25, label: '25' },
+        { size: 180, color: '#fff', points: 15, label: '15' },
+        { size: 240, color: '#000', points: 10, label: '10' },
+        { size: 300, color: '#f0a500', points: 5, label: '5' },
+        { size: 360, color: '#1a1a2e', points: 1, label: '1' }
     ];
-    
+
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
@@ -2192,6 +2192,28 @@ function initBadAxe() {
         ringDiv.dataset.label = ring.label;
         ringDiv.style.zIndex = String(index + 1);
 
+        // Create label element positioned on the ring edge
+        const label = document.createElement('div');
+        label.className = 'ring-label';
+        label.textContent = ring.label;
+        label.style.position = 'absolute';
+        // Center the label for the smallest ring (50 points), move others up
+        if (ring.size === 60) {
+            label.style.top = '50%';
+            label.style.transform = 'translate(-50%, -50%)';
+        } else {
+            label.style.top = '5px';
+            label.style.transform = 'translateX(-50%)';
+        }
+        label.style.left = '50%';
+        label.style.fontSize = '1.2rem';
+        label.style.fontWeight = 'bold';
+        label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
+        label.style.pointerEvents = 'none';
+        label.style.zIndex = '10';
+        label.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+
+        ringDiv.appendChild(label);
         target.appendChild(ringDiv);
     });
 
