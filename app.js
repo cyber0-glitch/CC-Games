@@ -493,7 +493,7 @@ function undoLastHit() {
             renderAxeMemoryGrid();
             break;
         case 'axeWordWack':
-            renderAxeWordWack();
+            renderWordWackBoard();
             break;
         case 'emojiFrenzy':
             renderEmojiFrenzy();
