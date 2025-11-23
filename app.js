@@ -14,7 +14,63 @@ const GameState = {
         zombieCountdown: 60,
         zombieDespawnTime: 20,
         maxZombies: 5,
-        maxTargets: 5
+        maxTargets: 5,
+        // Axe Crush settings
+        crushGridCols: 7,
+        crushGridRows: 8,
+        crushIconTypes: 5,
+        crushMinGroupSize: 3,
+        crushThrowsPerPlayer: 12,
+        crushEnableCascades: true,
+        // Axe Memory settings
+        memoryGridSize: 36,
+        memoryExtraTurnOnMatch: true,
+        memoryRevealDuration: 1.5,
+        // Axe Word Wack settings
+        wordCategory: 'Random',
+        wordPointsPerLetter: 10,
+        wordFullWordBonus: 50,
+        wordWrongLetterPenalty: 0,
+        wordAllowFullGuess: true,
+        wordMaxRounds: 26,
+        // Emoji Frenzy settings
+        emojiRoundsPerGame: 8,
+        emojiTargetPoints: 20,
+        emojiNonTargetPoints: 5,
+        emojiPenaltyMode: false,
+        emojiRespawnHit: true,
+        emojiEnableMoving: false,
+        // BAD AXE settings
+        badaxeShotZoneType: 'Ring + Quadrant',
+        badaxeAllowMicroZones: false,
+        badaxeLettersToEliminate: 6,
+        // Infection Mode settings
+        infectionInitialInfected: 1,
+        infectionThrowsPerDuel: 2,
+        infectionGameTime: 20,
+        infectionVictoryCondition: 'Timer Only',
+        infectionPairingMode: 'Round-Robin',
+        // Landmines settings
+        landminesTargetScore: 50,
+        landminesScores: '13,26,39',
+        landminesCheckpointInterval: 10,
+        landminesThrowsPerTurn: 1,
+        landminesOverTargetRule: 'Allow Over Target',
+        // Throw Royale settings
+        royaleStartingLives: 3,
+        royaleTieRule: 'All Lowest Lose 1 Life',
+        royaleMinPlayers: 3,
+        // Date Night settings
+        dateHeartMultiplier: 2,
+        dateHeartZones: 4,
+        dateEnableDares: true,
+        dateThrowsPerPlayer: 10,
+        // Merry Axe-mas settings
+        xmasGameMode: 'Bullseye Mode',
+        xmasEnableMoving: false,
+        xmasGiftValues: '10,20,30,50',
+        xmasThrowsPerPlayer: 10,
+        xmasSeasonalOnly: false
     }
 };
 
@@ -35,7 +91,17 @@ const GAME_PLAYER_LIMITS = {
     'targetPractice': { min: 1, max: 4, name: 'Target Practice' },
     'zombieHunt': { min: 1, max: 4, name: 'Zombie Hunt' },
     '21': { min: 1, max: 4, name: '21 Game' },
-    'knockout': { min: 2, max: 4, name: 'Cricket' }
+    'knockout': { min: 2, max: 4, name: 'Cricket' },
+    'axeCrush': { min: 2, max: 4, name: 'Axe Crush' },
+    'axeMemory': { min: 2, max: 4, name: 'Axe Memory' },
+    'axeWordWack': { min: 2, max: 4, name: 'Axe Word Wack' },
+    'emojiFrenzy': { min: 2, max: 6, name: 'Emoji Frenzy' },
+    'badAxe': { min: 2, max: 6, name: 'BAD AXE' },
+    'infectionMode': { min: 4, max: 10, name: 'Infection Mode' },
+    'landmines': { min: 2, max: 6, name: 'Landmines' },
+    'throwRoyale': { min: 3, max: 10, name: 'Throw Royale' },
+    'dateNight': { min: 2, max: 4, name: 'Date Night Mode' },
+    'merryAxemas': { min: 1, max: 4, name: 'Merry Axe-mas' }
 };
 
 // Main Menu Functions
@@ -205,6 +271,56 @@ function initializeGame(gameType, preserveState = false) {
             gameTitle.textContent = 'Cricket';
             gameInstructions.textContent = 'Hit each number 3 times to close it. Score points after closing!';
             initKnockout();
+            break;
+        case 'axeCrush':
+            gameTitle.textContent = 'Axe Crush';
+            gameInstructions.textContent = 'Match 3 or more icons to clear them and score points!';
+            initAxeCrush();
+            break;
+        case 'axeMemory':
+            gameTitle.textContent = 'Axe Memory';
+            gameInstructions.textContent = 'Find matching pairs by hitting tiles. Each turn you get two throws!';
+            initAxeMemory();
+            break;
+        case 'axeWordWack':
+            gameTitle.textContent = 'Axe Word Wack';
+            gameInstructions.textContent = 'Hit letters to reveal the hidden word or phrase!';
+            initAxeWordWack();
+            break;
+        case 'emojiFrenzy':
+            gameTitle.textContent = 'Emoji Frenzy';
+            gameInstructions.textContent = 'Hit the target emoji for big points!';
+            initEmojiFrenzy();
+            break;
+        case 'badAxe':
+            gameTitle.textContent = 'BAD AXE';
+            gameInstructions.textContent = 'Set a trick shot challenge. Miss it and earn a letter!';
+            initBadAxe();
+            break;
+        case 'infectionMode':
+            gameTitle.textContent = 'Infection Mode';
+            gameInstructions.textContent = 'Survivors vs Infected! Win duels to stay human!';
+            initInfectionMode();
+            break;
+        case 'landmines':
+            gameTitle.textContent = 'Landmines';
+            gameInstructions.textContent = 'Race to the top score but avoid the landmines!';
+            initLandmines();
+            break;
+        case 'throwRoyale':
+            gameTitle.textContent = 'Throw Royale';
+            gameInstructions.textContent = 'Battle royale! Lowest score each round loses a life!';
+            initThrowRoyale();
+            break;
+        case 'dateNight':
+            gameTitle.textContent = 'Date Night Mode';
+            gameInstructions.textContent = 'Romantic mode with heart bonus zones!';
+            initDateNight();
+            break;
+        case 'merryAxemas':
+            gameTitle.textContent = 'Merry Axe-mas';
+            gameInstructions.textContent = 'Festive holiday mode with presents and snowmen!';
+            initMerryAxemas();
             break;
     }
 }
