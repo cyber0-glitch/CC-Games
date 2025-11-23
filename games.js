@@ -1822,10 +1822,10 @@ function initAxeWordWack() {
     const solution = wordList[Math.floor(Math.random() * wordList.length)];
     
     GameState.gameData.solution = solution;
-    GameState.gameData.revealedLetters = new Set([' ']); // Always reveal spaces
-    GameState.gameData.usedLetters = new Set();
+    GameState.gameData.revealedLetters = [' ']; // Always reveal spaces (use array for proper undo)
+    GameState.gameData.usedLetters = []; // Use array for proper undo
     GameState.gameData.category = category;
-    
+
     renderWordWackBoard();
 }
 
@@ -1853,7 +1853,7 @@ function renderWordWackBoard() {
     
     let displayText = '';
     for (const char of GameState.gameData.solution) {
-        if (GameState.gameData.revealedLetters.has(char)) {
+        if (GameState.gameData.revealedLetters.includes(char)) {
             displayText += char;
         } else {
             displayText += '_';
@@ -1877,7 +1877,7 @@ function renderWordWackBoard() {
         letterBtn.textContent = letter;
         letterBtn.className = 'word-letter';
         letterBtn.style.aspectRatio = '1';
-        letterBtn.style.background = GameState.gameData.usedLetters.has(letter) ? '#555' : '#2a2a3e';
+        letterBtn.style.background = GameState.gameData.usedLetters.includes(letter) ? '#555' : '#2a2a3e';
         letterBtn.style.border = '2px solid #f0a500';
         letterBtn.style.borderRadius = '10px';
         letterBtn.style.display = 'flex';
@@ -1885,11 +1885,11 @@ function renderWordWackBoard() {
         letterBtn.style.justifyContent = 'center';
         letterBtn.style.fontSize = '1.5rem';
         letterBtn.style.fontWeight = 'bold';
-        letterBtn.style.cursor = GameState.gameData.usedLetters.has(letter) ? 'default' : 'pointer';
-        letterBtn.style.opacity = GameState.gameData.usedLetters.has(letter) ? '0.3' : '1';
+        letterBtn.style.cursor = GameState.gameData.usedLetters.includes(letter) ? 'default' : 'pointer';
+        letterBtn.style.opacity = GameState.gameData.usedLetters.includes(letter) ? '0.3' : '1';
         letterBtn.style.transition = 'all 0.2s';
-        
-        if (!GameState.gameData.usedLetters.has(letter)) {
+
+        if (!GameState.gameData.usedLetters.includes(letter)) {
             letterBtn.addEventListener('click', () => handleLetterClick(letter));
             letterBtn.addEventListener('mouseenter', () => {
                 letterBtn.style.background = '#f0a500';
@@ -1910,19 +1910,21 @@ function renderWordWackBoard() {
 
 function handleLetterClick(letter) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-    
-    if (GameState.gameData.usedLetters.has(letter)) return;
-    
+
+    if (GameState.gameData.usedLetters.includes(letter)) return;
+
     saveState();
-    
-    GameState.gameData.usedLetters.add(letter);
-    
+
+    GameState.gameData.usedLetters.push(letter);
+
     // Check if letter is in solution
     let occurrences = 0;
     for (const char of GameState.gameData.solution) {
         if (char === letter) {
             occurrences++;
-            GameState.gameData.revealedLetters.add(letter);
+            if (!GameState.gameData.revealedLetters.includes(letter)) {
+                GameState.gameData.revealedLetters.push(letter);
+            }
         }
     }
     
@@ -1939,8 +1941,8 @@ function handleLetterClick(letter) {
     updateScoreboard();
     
     // Check if word is complete
-    const allRevealed = [...GameState.gameData.solution].every(char => 
-        GameState.gameData.revealedLetters.has(char)
+    const allRevealed = [...GameState.gameData.solution].every(char =>
+        GameState.gameData.revealedLetters.includes(char)
     );
     
     if (allRevealed) {
@@ -3126,43 +3128,52 @@ function handleRoyaleHit(points) {
 
     // Check if round is complete
     if (GameState.gameData.currentThrower >= activePlayers.length) {
-        // Find lowest score(s)
-        const scores = activePlayers.map(p => p.data.roundScore);
-        const minScore = Math.min(...scores);
+        // Render first to show all scores
+        renderThrowRoyale();
 
-        // Apply penalty
-        activePlayers.forEach(player => {
-            if (player.data.roundScore === minScore) {
-                player.data.lives--;
-                if (player.data.lives <= 0) {
-                    player.data.eliminated = true;
-                    player.score = 0;
+        // Then process round results after a delay
+        setTimeout(() => {
+            // Find lowest score(s)
+            const scores = activePlayers.map(p => p.data.roundScore);
+            const minScore = Math.min(...scores);
+
+            // Apply penalty
+            activePlayers.forEach(player => {
+                if (player.data.roundScore === minScore) {
+                    player.data.lives--;
+                    if (player.data.lives <= 0) {
+                        player.data.eliminated = true;
+                        player.score = 0;
+                    }
                 }
-            }
-            player.data.roundScore = 0;
-        });
-
-        // Check win condition
-        const remaining = GameState.players.filter(p => !p.data.eliminated).length;
-        if (remaining <= 1) {
-            GameState.players.forEach(p => {
-                if (!p.data.eliminated) p.score = 100;
+                player.data.roundScore = 0;
             });
-            updateScoreboard();
-            setTimeout(() => endGame(), 500);
-            return;
-        }
 
-        // Next round
-        GameState.gameData.round++;
-        GameState.gameData.currentThrower = 0;
+            // Check win condition
+            const remaining = GameState.players.filter(p => !p.data.eliminated).length;
+            if (remaining <= 1) {
+                GameState.players.forEach(p => {
+                    if (!p.data.eliminated) p.score = 100;
+                });
+                updateScoreboard();
+                setTimeout(() => endGame(), 500);
+                return;
+            }
 
-        // Update to first active player
-        const nextActivePlayers = GameState.players.filter(p => !p.data.eliminated);
-        if (nextActivePlayers.length > 0) {
-            GameState.currentPlayerIndex = GameState.players.indexOf(nextActivePlayers[0]);
-            updateCurrentPlayerDisplay();
-        }
+            // Next round
+            GameState.gameData.round++;
+            GameState.gameData.currentThrower = 0;
+
+            // Update to first active player
+            const nextActivePlayers = GameState.players.filter(p => !p.data.eliminated);
+            if (nextActivePlayers.length > 0) {
+                GameState.currentPlayerIndex = GameState.players.indexOf(nextActivePlayers[0]);
+                updateCurrentPlayerDisplay();
+            }
+
+            renderThrowRoyale();
+        }, 2000); // 2 second delay to show all scores
+        return;
     }
 
     renderThrowRoyale();

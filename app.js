@@ -41,7 +41,7 @@ const GameState = {
         emojiRespawnHit: true,
         emojiEnableMoving: false,
         // BAD AXE settings
-        badaxeShotZoneType: 'Ring + Quadrant',
+        badaxeShotZoneType: 'Ring only',
         badaxeAllowMicroZones: false,
         badaxeLettersToEliminate: 6,
         // Infection Mode settings
@@ -452,7 +452,7 @@ function nextPlayer() {
 // Undo Last Hit
 function undoLastHit() {
     if (GameState.history.length === 0) {
-        alert('Nothing to undo!');
+        showInfoModal('Undo', 'Nothing to undo!');
         return;
     }
 
@@ -576,6 +576,40 @@ function showConfirmModal(title, message, onConfirm) {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.classList.remove('active');
+        }
+    });
+}
+
+// Info Modal (for single-button alerts)
+function showInfoModal(title, message) {
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+
+    // Hide cancel button for info modals
+    cancelBtn.style.display = 'none';
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    // Add new event listener
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        cancelBtn.style.display = ''; // Restore cancel button visibility
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            cancelBtn.style.display = ''; // Restore cancel button visibility
         }
     });
 }
