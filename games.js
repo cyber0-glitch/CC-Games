@@ -3350,8 +3350,9 @@ function renderDateNight() {
         heartContainer.style.zIndex = '100'; // Ensure hearts are above all rings
         heartContainer.dataset.bonus = 'heart';
 
-        // Position at outer rim of the bullseye for better gameplay
-        const angle = (360 / heartZones) * i;
+        // Position at corners (diagonal positions) for better gameplay
+        const cornerAngles = [45, 135, 225, 315]; // Top-right, Top-left, Bottom-left, Bottom-right
+        const angle = cornerAngles[i % 4];
         const radius = 150; // Position at the outer rim of the orange ring
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
