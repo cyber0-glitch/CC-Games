@@ -110,7 +110,7 @@ function handleBullseyeHit(points) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
 
     if (currentPlayer.data.throws >= 5) {
-        alert('You have used all your throws!');
+        showInfoModal('No More Throws', 'You have used all your throws!');
         return;
     }
 
@@ -128,9 +128,7 @@ function handleBullseyeHit(points) {
             if (allFinished) {
                 endGame();
             } else {
-                if (confirm(`${currentPlayer.name} has finished! Next player?`)) {
-                    nextPlayer();
-                }
+                nextPlayer();
             }
         }, 500);
     }
@@ -218,17 +216,11 @@ function handleAroundWorldHit(zoneNumber, zoneElement) {
 
         // Check if player completed all zones
         if (currentPlayer.data.currentZone > 12) {
-            // Mark player as finished but continue game for other players
-            currentPlayer.data.finished = true;
-
-            // Check if all players are finished
-            const allFinished = GameState.players.every(p => p.data.finished || p.data.currentZone > 12);
-            if (allFinished) {
-                setTimeout(() => {
-                    endGame();
-                }, 500);
-                return;
-            }
+            // Player wins immediately upon completing all zones
+            setTimeout(() => {
+                endGame();
+            }, 500);
+            return;
         }
     } else {
         // Wrong zone - visual feedback
@@ -391,7 +383,51 @@ function initTargetPractice() {
         }
     });
 
+    // Add miss button
+    const controlButtons = document.querySelector('.control-buttons');
+    const undoBtn = document.getElementById('undoBtn');
+
+    // Check if miss button already exists
+    let missBtn = document.getElementById('missBtn');
+    if (!missBtn) {
+        missBtn = document.createElement('button');
+        missBtn.id = 'missBtn';
+        missBtn.className = 'btn-control';
+        missBtn.textContent = 'Miss';
+        missBtn.onclick = handleTargetPracticeMiss;
+        controlButtons.insertBefore(missBtn, undoBtn);
+    }
+    missBtn.style.display = 'inline-block';
+
     generateTargets();
+}
+
+function handleTargetPracticeMiss() {
+    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
+
+    if (currentPlayer.data.throws >= 10) {
+        showInfoModal('No More Throws', 'You have used all your throws!');
+        return;
+    }
+
+    saveState();
+
+    // Count as a throw with 0 points
+    currentPlayer.data.throws = (currentPlayer.data.throws || 0) + 1;
+
+    updateScoreboard();
+
+    // Check if player has finished
+    if (currentPlayer.data.throws >= 10) {
+        setTimeout(() => {
+            const allFinished = GameState.players.every(p => p.data.throws >= 10);
+            if (allFinished) {
+                endGame();
+            } else {
+                nextPlayer();
+            }
+        }, 500);
+    }
 }
 
 function generateTargets() {
@@ -475,7 +511,7 @@ function handleTargetPracticeHit(points, target) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
 
     if (currentPlayer.data.throws >= 10) {
-        alert('You have used all your throws!');
+        showInfoModal('No More Throws', 'You have used all your throws!');
         return;
     }
 
@@ -504,9 +540,7 @@ function handleTargetPracticeHit(points, target) {
             if (allFinished) {
                 endGame();
             } else {
-                if (confirm(`${currentPlayer.name} has finished! Next player?`)) {
-                    nextPlayer();
-                }
+                nextPlayer();
             }
         }, 500);
     }
@@ -1046,18 +1080,18 @@ function handle21GameHit(points) {
     if (currentPlayer.score > 21) {
         if (GameState.settings.hardMode) {
             // Hard mode: reset to 0
-            alert(`${currentPlayer.name} went over 21! Setting score to 0.`);
+            showInfoModal('Over 21!', `${currentPlayer.name} went over 21! Setting score to 0.`);
             currentPlayer.score = 0;
         } else {
             // Easy mode: keep previous score
-            alert(`${currentPlayer.name} went over 21! Score remains at ${previousScore}.`);
+            showInfoModal('Over 21!', `${currentPlayer.name} went over 21! Score remains at ${previousScore}.`);
             currentPlayer.score = previousScore;
         }
         // Move to next player
         updateScoreboard();
         setTimeout(() => {
             nextPlayer();
-        }, 500);
+        }, 1000);
         return;
     } else if (currentPlayer.score === 21) {
         updateScoreboard();
@@ -1775,45 +1809,43 @@ function initAxeWordWack() {
         player.score = 0;
     });
     
-    // Expanded word categories with many more words
+    // Expanded word categories with single words only
     const words = {
         'Random': [
-            'SKOPJE NIGHT', 'AXE THROWING', 'BULLSEYE TARGET', 'CHAMPION THROWER',
-            'WOODEN BOARD', 'SHARP BLADE', 'PERFECT SHOT', 'DOUBLE STRIKE',
-            'TARGET PRACTICE', 'VICTORY LAP', 'POINT LEADER', 'SKILLED PLAYER',
-            'THROWING ZONE', 'COMPETITION TIME', 'WINNING STREAK', 'GAME MASTER',
-            'CHALLENGE MODE', 'TROPHY HUNT', 'ULTIMATE BATTLE', 'PRECISION THROW',
-            'STEEL HATCHET', 'ROTATION SPIN', 'DIRECT HIT', 'SCORING ZONE',
-            'POWER STRIKE', 'GOLDEN MOMENT', 'FINAL ROUND', 'AMAZING SCORE'
+            'SKOPJE', 'THROWING', 'BULLSEYE', 'CHAMPION',
+            'WOODEN', 'SHARP', 'PERFECT', 'DOUBLE',
+            'TARGET', 'VICTORY', 'LEADER', 'SKILLED',
+            'ZONE', 'COMPETITION', 'WINNING', 'MASTER',
+            'CHALLENGE', 'TROPHY', 'ULTIMATE', 'PRECISION',
+            'STEEL', 'ROTATION', 'DIRECT', 'SCORING',
+            'POWER', 'GOLDEN', 'FINAL', 'AMAZING'
         ],
         'Movies': [
-            'THE GODFATHER', 'PULP FICTION', 'FORREST GUMP', 'FIGHT CLUB',
-            'STAR WARS', 'TITANIC', 'GLADIATOR', 'INCEPTION',
-            'THE MATRIX', 'JURASSIC PARK', 'AVATAR', 'THE AVENGERS',
-            'DARK KNIGHT', 'LION KING', 'TOY STORY', 'FROZEN',
-            'SPIDER MAN', 'IRON MAN', 'HARRY POTTER', 'LORD RINGS',
-            'FINDING NEMO', 'SHREK', 'PIRATES CARIBBEAN', 'FAST FURIOUS',
-            'MISSION IMPOSSIBLE', 'JAMES BOND', 'INDIANA JONES', 'ROCKY',
-            'TERMINATOR', 'ALIEN', 'JAWS', 'BACK FUTURE'
+            'GODFATHER', 'INCEPTION', 'GLADIATOR', 'TITANIC',
+            'AVATAR', 'FROZEN', 'SHREK', 'ROCKY',
+            'TERMINATOR', 'ALIEN', 'JAWS', 'CARS',
+            'COCO', 'BRAVE', 'RATATOUILLE', 'TANGLED',
+            'MOANA', 'ENCANTO', 'BAMBI', 'DUMBO',
+            'PINOCCHIO', 'ALADDIN', 'HERCULES', 'MULAN',
+            'POCAHONTAS', 'CINDERELLA', 'FANTASIA', 'ZOOTOPIA'
         ],
         'Countries': [
             'MACEDONIA', 'AUSTRALIA', 'ARGENTINA', 'SWITZERLAND',
-            'UNITED STATES', 'CANADA', 'BRAZIL', 'MEXICO',
-            'GERMANY', 'FRANCE', 'ITALY', 'SPAIN',
-            'UNITED KINGDOM', 'PORTUGAL', 'GREECE', 'TURKEY',
-            'RUSSIA', 'CHINA', 'JAPAN', 'INDIA',
-            'SOUTH KOREA', 'THAILAND', 'VIETNAM', 'INDONESIA',
-            'EGYPT', 'SOUTH AFRICA', 'MOROCCO', 'NIGERIA',
-            'NEW ZEALAND', 'ICELAND', 'NORWAY', 'SWEDEN',
-            'POLAND', 'CZECH REPUBLIC', 'AUSTRIA', 'BELGIUM'
+            'CANADA', 'BRAZIL', 'MEXICO', 'GERMANY',
+            'FRANCE', 'ITALY', 'SPAIN', 'PORTUGAL',
+            'GREECE', 'TURKEY', 'RUSSIA', 'CHINA',
+            'JAPAN', 'INDIA', 'THAILAND', 'VIETNAM',
+            'INDONESIA', 'EGYPT', 'MOROCCO', 'NIGERIA',
+            'ICELAND', 'NORWAY', 'SWEDEN', 'POLAND',
+            'AUSTRIA', 'BELGIUM', 'DENMARK', 'FINLAND'
         ],
         'Skopje': [
-            'STONE BRIDGE', 'ALEXANDER STATUE', 'OLD BAZAAR', 'MATKA CANYON',
-            'KALE FORTRESS', 'MILLENNIUM CROSS', 'CITY PARK', 'SKOPJE SQUARE',
-            'VARDAR RIVER', 'MOTHER TERESA', 'MOUNT VODNO', 'CITY MALL',
-            'MUSEUM MACEDONIA', 'TURKISH BATH', 'DAUT PASHA', 'MEMORIAL HOUSE',
-            'ARCHAEOLOGICAL MUSEUM', 'HOLOCAUST MUSEUM', 'OPERA BALLET', 'PHILIP ARENA',
-            'SHOPPING CENTER', 'CITY PLAZA', 'CABLE CAR', 'TVRDINA WALL'
+            'BRIDGE', 'ALEXANDER', 'BAZAAR', 'MATKA',
+            'KALE', 'MILLENNIUM', 'PARK', 'SQUARE',
+            'VARDAR', 'TERESA', 'VODNO', 'MALL',
+            'MUSEUM', 'FORTRESS', 'CATHEDRAL', 'MEMORIAL',
+            'ARCHAEOLOGICAL', 'OPERA', 'ARENA', 'SHOPPING',
+            'PLAZA', 'CANYON', 'RIVER', 'CROSS'
         ]
     };
     
@@ -2079,20 +2111,21 @@ function renderEmojiFrenzy() {
 function handleEmojiClick(index) {
     const emoji = GameState.gameData.emojis[index];
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-    
+
     saveState();
-    
+
     let points = 0;
-    if (emoji.type === GameState.gameData.targetEmoji) {
+    const isTargetHit = emoji.type === GameState.gameData.targetEmoji;
+    if (isTargetHit) {
         points = GameState.settings.emojiTargetPoints;
     } else {
-        points = GameState.settings.emojiPenaltyMode ? 
-            -GameState.settings.emojiNonTargetPoints : 
+        points = GameState.settings.emojiPenaltyMode ?
+            -GameState.settings.emojiNonTargetPoints :
             GameState.settings.emojiNonTargetPoints;
     }
-    
+
     currentPlayer.score += points;
-    
+
     // Respawn emoji if enabled
     if (GameState.settings.emojiRespawnHit) {
         const emojis = ['😂', '😍', '🤡', '💀', '😎', '🥳', '😱', '🤩', '🥶', '🤯'];
@@ -2118,14 +2151,20 @@ function handleEmojiClick(index) {
             attempts++;
         } while (attempts < maxAttempts);
 
+        // If target emoji was hit, respawn it with same type to ensure target is always on screen
+        const respawnType = isTargetHit ? emoji.type : emojis[Math.floor(Math.random() * emojis.length)];
+
         GameState.gameData.emojis[index] = {
-            type: emojis[Math.floor(Math.random() * emojis.length)],
+            type: respawnType,
             x: Math.min(Math.max(x, 12), 82), // Tighter bounds to match init
             y: Math.min(Math.max(y, 15), 80)
         };
     }
 
     GameState.gameData.throwsThisRound++;
+
+    // Move to next player BEFORE checking round end
+    GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
 
     // Check if round is over
     if (GameState.gameData.throwsThisRound >= GameState.players.length) {
@@ -2141,12 +2180,9 @@ function handleEmojiClick(index) {
             GameState.gameData.targetEmoji = spawnedEmojiTypes[Math.floor(Math.random() * spawnedEmojiTypes.length)];
         }
     }
-    
+
     renderEmojiFrenzy();
     updateScoreboard();
-    
-    // Move to next player
-    GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
     updateCurrentPlayerDisplay();
 }
 
@@ -2525,17 +2561,34 @@ function updateBadAxeUI() {
 function initInfectionMode() {
     const canvas = document.getElementById('gameCanvas');
 
-    // Initialize teams
+    // Initialize teams - randomize who starts as infected
     const initialInfected = GameState.settings.infectionInitialInfected;
+
+    // Create array of player indices and shuffle
+    const playerIndices = GameState.players.map((_, i) => i);
+    for (let i = playerIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playerIndices[i], playerIndices[j]] = [playerIndices[j], playerIndices[i]];
+    }
+
+    // Assign teams based on shuffled indices
     GameState.players.forEach((player, index) => {
-        player.data.team = index < initialInfected ? 'Infected' : 'Survivor';
+        player.data.team = playerIndices.indexOf(index) < initialInfected ? 'Infected' : 'Survivor';
         player.data.duelScore = 0;
         player.data.duelWins = 0;
         player.score = 0;
     });
 
-    GameState.gameData.survivorIndex = initialInfected;
-    GameState.gameData.infectedIndex = 0;
+    // Initialize team turn tracking for rotation
+    GameState.gameData.survivorTurnIndex = 0; // Which survivor's turn
+    GameState.gameData.infectedTurnIndex = 0; // Which infected's turn
+
+    // Get first duel pair
+    const survivors = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Survivor');
+    const infected = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Infected');
+
+    GameState.gameData.survivorIndex = survivors[0].index;
+    GameState.gameData.infectedIndex = infected[0].index;
     GameState.gameData.duelPhase = 'survivor'; // survivor, infected
     GameState.gameData.throwsThisDuel = 0;
     GameState.gameData.survivorDuelWins = 0;
@@ -2825,8 +2878,10 @@ function handleInfectionHit(points) {
         GameState.gameData.duelPhase = 'survivor';
 
         // Check win condition
-        const survivorCount = GameState.players.filter(p => p.data.team === 'Survivor').length;
-        if (survivorCount === 0) {
+        const survivorsList = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Survivor');
+        const infectedList = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Infected');
+
+        if (survivorsList.length === 0) {
             // Infected win
             clearInterval(GameState.gameData.gameTimerInterval);
             GameState.players.forEach(p => {
@@ -2836,9 +2891,12 @@ function handleInfectionHit(points) {
             return;
         }
 
-        // Find next duel pair
-        GameState.gameData.survivorIndex = GameState.players.findIndex(p => p.data.team === 'Survivor');
-        GameState.gameData.infectedIndex = GameState.players.findIndex(p => p.data.team === 'Infected');
+        // Rotate to next duel pair - cycle through all players on each team
+        GameState.gameData.survivorTurnIndex = (GameState.gameData.survivorTurnIndex + 1) % survivorsList.length;
+        GameState.gameData.infectedTurnIndex = (GameState.gameData.infectedTurnIndex + 1) % infectedList.length;
+
+        GameState.gameData.survivorIndex = survivorsList[GameState.gameData.survivorTurnIndex].index;
+        GameState.gameData.infectedIndex = infectedList[GameState.gameData.infectedTurnIndex].index;
     }
 
     renderInfectionMode();
@@ -3057,18 +3115,18 @@ function handleLandminesHit(points) {
     } else {
         currentPlayer.score = newScore;
     }
-    
-    renderLandminesBoard();
-    updateScoreboard();
-    
+
     // Check win
     if (currentPlayer.score >= targetScore) {
         setTimeout(() => endGame(), 500);
         return;
     }
-    
-    // Next player
+
+    // Next player (advance BEFORE rendering so board shows correct player's turn)
     GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
+
+    renderLandminesBoard();
+    updateScoreboard();
     updateCurrentPlayerDisplay();
 }
 

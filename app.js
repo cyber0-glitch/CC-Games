@@ -6,8 +6,8 @@ const GameState = {
     gameData: {},
     history: [],
     settings: {
-        movingTargets: true,
-        zombieTimer: true,
+        movingTargets: false,
+        zombieTimer: false,
         hardMode: false,
         moveDuration: 3,
         staticDuration: 5,
@@ -246,6 +246,12 @@ function initializeGame(gameType, preserveState = false) {
     // Update reference
     const canvas = document.getElementById('gameCanvas');
 
+    // Hide miss button by default (only shown for Target Practice)
+    const missBtn = document.getElementById('missBtn');
+    if (missBtn) {
+        missBtn.style.display = 'none';
+    }
+
     // Initialize specific game
     switch(gameType) {
         case 'bullseye':
@@ -379,8 +385,8 @@ function updateScoreboard() {
             const maxThrows = GameState.currentGame === 'bullseye' ? 5 : 10;
             extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Throws: ${throws}/${maxThrows}</div>`;
         } else if (GameState.currentGame === 'aroundWorld') {
-            const zone = player.data.currentZone || 1;
-            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zone: ${zone}/12</div>`;
+            const completedZones = (player.data.completedZones || []).length;
+            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zones: ${completedZones}/12</div>`;
         } else if (GameState.currentGame === 'zombieHunt') {
             const zombies = player.data.zombiesKilled || 0;
             const time = player.data.timeRemaining || 0;
@@ -625,50 +631,81 @@ function exitGame() {
 
 // End Game
 function endGame() {
-    showScreen('gameOver');
-
     // Sort players by score (descending)
     const sortedPlayers = [...GameState.players].sort((a, b) => b.score - a.score);
 
-    const winnerDisplay = document.getElementById('winnerDisplay');
-    const finalScores = document.getElementById('finalScores');
-
+    let winnerText = '';
     // Check for tie
     if (sortedPlayers[0].score === sortedPlayers[1]?.score) {
         const winners = sortedPlayers.filter(p => p.score === sortedPlayers[0].score);
-        winnerDisplay.innerHTML = `It's a Tie!<br>${winners.map(w => w.name).join(' & ')}`;
+        winnerText = `It's a Tie!<br>${winners.map(w => w.name).join(' & ')}`;
     } else {
-        winnerDisplay.innerHTML = `Winner: ${sortedPlayers[0].name}!`;
+        winnerText = `Winner: ${sortedPlayers[0].name}!`;
     }
 
     // Show the completed word for Axe Word Wack
+    let wordRevealHtml = '';
     if (GameState.currentGame === 'axeWordWack' && GameState.gameData.solution) {
-        const wordReveal = document.createElement('div');
-        wordReveal.style.marginTop = '20px';
-        wordReveal.style.fontSize = '1.8rem';
-        wordReveal.style.color = '#f0a500';
-        wordReveal.style.fontWeight = 'bold';
-        wordReveal.innerHTML = `The word was: <span style="color: #4CAF50;">${GameState.gameData.solution}</span>`;
-        winnerDisplay.appendChild(wordReveal);
+        wordRevealHtml = `<div style="margin-top: 20px; font-size: 1.5rem; color: #f0a500; font-weight: bold;">The word was: <span style="color: #4CAF50;">${GameState.gameData.solution}</span></div>`;
     }
 
-    finalScores.innerHTML = '';
-
+    // Build final scores HTML
+    let finalScoresHtml = '';
     // For Throw Royale, only show the winner, not scores
-    if (GameState.currentGame === 'throwRoyale') {
-        finalScores.style.display = 'none';
-    } else {
-        finalScores.style.display = 'block';
+    if (GameState.currentGame !== 'throwRoyale') {
+        finalScoresHtml = '<div style="margin-top: 20px;">';
         sortedPlayers.forEach((player, index) => {
-            const scoreDiv = document.createElement('div');
-            scoreDiv.className = 'final-score-item';
-            if (index === 0) {
-                scoreDiv.classList.add('winner');
-            }
-            scoreDiv.innerHTML = `${index + 1}. ${player.name}: ${player.score} points`;
-            finalScores.appendChild(scoreDiv);
+            const color = index === 0 ? '#4CAF50' : '#fff';
+            finalScoresHtml += `<div style="font-size: 1.2rem; margin: 8px 0; color: ${color};">${index + 1}. ${player.name}: ${player.score} points</div>`;
         });
+        finalScoresHtml += '</div>';
     }
+
+    // Show winning modal
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = 'Game Over!';
+    modalMessage.innerHTML = `
+        <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 15px;">${winnerText}</div>
+        ${wordRevealHtml}
+        ${finalScoresHtml}
+    `;
+    modal.classList.add('active');
+
+    // Update button text
+    confirmBtn.textContent = 'Play Again';
+    cancelBtn.textContent = 'Main Menu';
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        playAgain();
+    });
+
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        backToMenu();
+    });
+
+    // Close on overlay click
+    const modalClickHandler = (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            backToMenu();
+            modal.removeEventListener('click', modalClickHandler);
+        }
+    };
+    modal.addEventListener('click', modalClickHandler);
 }
 
 // Play Again
