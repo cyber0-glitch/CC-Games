@@ -4,16 +4,18 @@ Interactive web-based axe throwing games designed for Chop Chop Axe Throwing Bar
 
 ## Overview
 
-This application provides 8 different axe throwing games that run on Android tablets connected to projectors. Players manually click on the tablet to mark where their axe hit the projected target.
+This application provides 18 different axe throwing games that run on Android tablets connected to projectors. Players manually click on the tablet to mark where their axe hit the projected target.
 
 ## Features
 
-- **8 Different Games**: Classic Bullseye, Around the World, Tic-Tac-Toe, Target Practice, Zombie Hunt, Connect Four, 21 Game, and Knockout
-- **Multi-Player Support**: 1-8 players per game
+- **18 Different Games**: Classic games, party modes, competitive challenges, and seasonal specials
+- **Multi-Player Support**: 1-4 players per game (some games require specific player counts)
 - **Touch-Optimized**: Designed specifically for tablet touchscreens
 - **Projector-Friendly**: High-contrast visuals that project well
 - **Score Tracking**: Automatic scoring and winner determination
 - **Undo Functionality**: Undo last action if mistakes are made
+- **Customizable Settings**: Adjust difficulty, rules, and gameplay options
+- **In-Game Modals**: Smooth user experience with custom modal dialogs
 
 ## Installation
 
@@ -24,51 +26,83 @@ This application provides 8 different axe throwing games that run on Android tab
 
 ## How to Use
 
-1. **Select a Game** from the main menu
-2. **Set Up Players** - Choose number of players (1-8) and enter names
+1. **Select a Game** from the main menu (organized by player count and game type)
+2. **Set Up Players** - Choose number of players (1-4) and enter names
 3. **Play the Game** - Click on the screen where the axe hit
-4. **View Results** - Winners are displayed at the end
+4. **Use Controls** - Undo mistakes, advance turns, or exit game
+5. **View Results** - Winners are displayed at the end
+6. **Customize Settings** - Access settings from main menu to adjust game rules
 
 ## Games Description
 
-### 1. Classic Bullseye 🎯
-Hit the center for maximum points. Each player gets 5 throws.
-- Bullseye (50 pts) - Gold center
-- 25 pts - Red ring
-- 15 pts - White ring
-- 10 pts - Black ring
-- 5 pts - Orange ring
-- 1 pt - Outer ring
+### 2-Player Games
 
-### 2. Around the World 🌍
-Hit all 12 zones in numerical order. First player to complete all zones wins!
+#### Tic-Tac-Toe ❌
+Classic tic-tac-toe with axes. Get three in a row to win!
 
-### 3. Tic-Tac-Toe ❌⭕
-Classic tic-tac-toe with axes. Get three in a row to win 100 points.
+#### Connect Four 🔴
+Drop discs into columns. Get four in a row to win!
 
-### 4. Target Practice 🎪
-Hit moving targets for points. Each player gets 10 throws.
-- Targets worth 10, 20, 30, 50, or 100 points
-- Targets move around the screen
+### 2-4 Player Games
 
-### 5. Zombie Hunt 🧟
-60-second survival mode. Click on zombies to eliminate them.
-- 10 points per zombie
-- Zombies spawn faster as you progress
+#### Classic Bullseye 🎯
+Hit the center for maximum points. 5 throws per player.
+- Scoring: Bullseye (50), Red (25), White (15), Black (10), Orange (5), Outer (1)
 
-### 6. Connect Four 🔴🟡
-Classic connect four game. First to get 4 in a row wins 100 points.
+#### Around the World 🌍
+Hit all 12 zones in numerical order. First to complete wins!
 
-### 7. 21 Game 🎲
-First player to reach exactly 21 points wins.
-- Going over 21 resets your score to 0
-- Hit high-value zones strategically
+#### Target Practice 🎪
+Hit moving targets for points. 10 throws per player.
+- Targets worth 10-100 points
 
-### 8. Knockout 💥
-Eliminate opponent's numbers to win.
-- Each player has numbers: 15, 16, 17, 18, 19, 20, 25
-- 3 lives per player
-- Hit opponent's numbers to eliminate them
+#### Zombie Hunt 🧟
+Timed survival mode. Click zombies to eliminate them.
+- Customizable timer and spawn settings
+
+#### 21 Game 🎲
+Race to exactly 21 points. Going over resets to 0 (hard mode) or keeps previous score (easy mode).
+
+#### Cricket 💥
+Close all numbers (15-20, 25) with 3 hits each. Score points after closing!
+
+### Party Games
+
+#### Axe Crush 💎
+Match-3 puzzle game. Clear groups of 3+ matching icons for points!
+- Combo cascades for bonus points
+
+#### Axe Memory 🎴
+Find matching pairs. Each turn you get two throws.
+- Extra turns on successful matches (optional)
+
+#### Axe Word Wack 🔤
+Reveal hidden words by hitting letters. Earn points for each occurrence!
+- Multiple word categories available
+
+#### Emoji Frenzy 😂
+Hit the target emoji for big points! Multiple rounds of emoji-matching fun.
+
+#### BAD AXE 🏀
+Axe throwing HORSE game. Call your trick shot - miss it and earn a letter!
+- Default: Ring only (customizable to include quadrants)
+
+#### Infection Mode 🦠
+Survivors vs Infected! Win duels to stay human or convert others.
+- Team-based competitive gameplay
+
+#### Landmines 💣
+Climb the score ladder but avoid landmines! Hit a mine and fall back to last checkpoint.
+
+#### Throw Royale 👑
+Battle royale! Lowest score each round loses a life. Last player standing wins!
+- Scores display for 2 seconds after all players throw
+
+#### Date Night Mode 💕
+Romantic couples mode with heart bonus zones and optional date dares!
+
+#### Merry Axe-mas 🎄
+Festive holiday mode! Hit presents and ornaments on the Christmas tree for points.
 
 ## Technical Details
 
@@ -82,20 +116,28 @@ Eliminate opponent's numbers to win.
 
 ```
 CC-Games/
-├── index.html      # Main HTML structure
-├── styles.css      # All styling and animations
-├── app.js          # Core app logic and player management
-├── games.js        # All 8 game implementations
+├── index.html      # Main HTML structure and game interface
+├── styles.css      # All styling, animations, and responsive design
+├── app.js          # Core app logic, player management, and settings
+├── games.js        # All 18 game implementations
 └── README.md       # This file
 ```
 
 ## Customization
 
-You can easily customize:
-- **Colors**: Edit CSS variables in `styles.css`
-- **Point Values**: Modify scoring in `games.js`
-- **Number of Throws**: Change max throws in game functions
-- **Game Rules**: Adjust game logic in respective game functions
+### Via Settings Menu
+Access the settings menu from the main menu to customize:
+- **Target Movement**: Enable/disable moving targets and zombies
+- **Timer Settings**: Adjust countdown times and durations
+- **Difficulty Modes**: Toggle hard mode for 21 Game
+- **Game-Specific Rules**: Customize grid sizes, point values, and gameplay mechanics for each game
+
+### Via Code
+You can also customize by editing the source files:
+- **Colors & Themes**: Edit CSS variables in `styles.css`
+- **Point Values**: Modify scoring constants in `games.js`
+- **Default Settings**: Change default values in `app.js` (lines 8-75)
+- **Game Rules**: Adjust game logic in respective game functions in `games.js`
 
 ## Browser Support
 
@@ -114,15 +156,24 @@ You can easily customize:
 4. **Player Names**: Use short names for better display on scoreboard
 5. **Browser**: Use fullscreen mode (F11) for immersive experience
 
-## Future Enhancements
+## Recent Updates
 
-Potential features to add:
-- Sound effects
-- More game modes
-- Tournament mode
-- Statistics tracking
-- Leaderboards
-- Custom themes
+- ✅ 18 total games (up from original 8)
+- ✅ In-game modal dialogs for better UX
+- ✅ Comprehensive settings menu
+- ✅ Undo functionality with proper state restoration
+- ✅ Multiple game categories (2-player, multiplayer, party games)
+- ✅ Seasonal/themed games (Date Night, Merry Axe-mas)
+- ✅ Improved visual feedback (score displays, animations)
+
+## Potential Future Enhancements
+
+- Sound effects and audio feedback
+- Tournament mode with brackets
+- Persistent statistics tracking
+- All-time leaderboards
+- Additional seasonal themes
+- Multiplayer online mode
 
 ## Credits
 

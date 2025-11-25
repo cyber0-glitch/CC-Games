@@ -70,6 +70,66 @@
                         <h3>Cricket</h3>
                         <p>Close all numbers and score points</p>
                     </button>
+
+                    <button class="game-card" onclick="selectGame('axeCrush')">
+                        <div class="game-icon">💎</div>
+                        <h3>Axe Crush</h3>
+                        <p>Match-3 puzzle with axes</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('axeMemory')">
+                        <div class="game-icon">🎴</div>
+                        <h3>Axe Memory</h3>
+                        <p>Find matching pairs</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('axeWordWack')">
+                        <div class="game-icon">🔤</div>
+                        <h3>Axe Word Wack</h3>
+                        <p>Reveal the hidden word</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('emojiFrenzy')">
+                        <div class="game-icon">😂</div>
+                        <h3>Emoji Frenzy</h3>
+                        <p>Hit the target emoji</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('badAxe')">
+                        <div class="game-icon">🏀</div>
+                        <h3>BAD AXE</h3>
+                        <p>Trick-shot HORSE game</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('infectionMode')">
+                        <div class="game-icon">🦠</div>
+                        <h3>Infection Mode</h3>
+                        <p>Team conversion battle</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('landmines')">
+                        <div class="game-icon">💣</div>
+                        <h3>Landmines</h3>
+                        <p>Climb the ladder, avoid mines</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('throwRoyale')">
+                        <div class="game-icon">👑</div>
+                        <h3>Throw Royale</h3>
+                        <p>Battle royale elimination</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('dateNight')">
+                        <div class="game-icon">💕</div>
+                        <h3>Date Night Mode</h3>
+                        <p>Romantic couples mode</p>
+                    </button>
+
+                    <button class="game-card" onclick="selectGame('merryAxemas')">
+                        <div class="game-icon">🎄</div>
+                        <h3>Merry Axe-mas</h3>
+                        <p>Festive Christmas mode</p>
+                    </button>
                 </div>
 
                 <div class="menu-buttons">
@@ -159,7 +219,7 @@
                             <p>Enable or disable target movement in Target Practice and Zombie Hunt</p>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="movingTargetsToggle" checked onchange="toggleMovingTargets()">
+                            <input type="checkbox" id="movingTargetsToggle" onchange="toggleMovingTargets()">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -170,9 +230,424 @@
                             <p>Show countdown timer in Zombie Hunt game</p>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="zombieTimerToggle" checked onchange="toggleZombieTimer()">
+                            <input type="checkbox" id="zombieTimerToggle" onchange="toggleZombieTimer()">
                             <span class="toggle-slider"></span>
                         </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>21 Game - Hard Mode</h3>
+                            <p>Hard Mode: Score resets to 0 if you go over 21. Easy Mode: Score stays the same if you go over 21.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hardModeToggle" checked onchange="toggleHardMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Movement Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Movement Duration (seconds)</h3>
+                            <p>How long targets move before becoming static</p>
+                        </div>
+                        <input type="number" id="moveDuration" min="1" max="10" value="3" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMoveDuration()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Static Duration (seconds)</h3>
+                            <p>How long targets stay static before moving again</p>
+                        </div>
+                        <input type="number" id="staticDuration" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateStaticDuration()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Zombie Hunt Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Zombie Hunt Countdown Time (seconds)</h3>
+                            <p>How long each player has in Zombie Hunt</p>
+                        </div>
+                        <input type="number" id="zombieCountdown" min="10" max="300" value="60" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieCountdown()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Zombie Despawn Time (seconds)</h3>
+                            <p>How long zombies stay on screen before disappearing</p>
+                        </div>
+                        <input type="number" id="zombieDespawnTime" min="3" max="30" value="20" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateZombieDespawnTime()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Max Zombies on Screen</h3>
+                            <p>Maximum number of zombies that can appear at once</p>
+                        </div>
+                        <input type="number" id="maxZombies" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMaxZombies()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Target Practice Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Max Targets on Screen</h3>
+                            <p>Maximum number of targets in Target Practice and Zombie Hunt games</p>
+                        </div>
+                        <input type="number" id="maxTargets" min="1" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMaxTargets()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Axe Crush Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Grid Size (Columns × Rows)</h3>
+                            <p>Size of the game grid</p>
+                        </div>
+                        <select id="crushGridSize" style="width: 120px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateCrushGridSize()">
+                            <option value="7,8">7 × 8</option>
+                            <option value="6,6">6 × 6</option>
+                            <option value="8,8">8 × 8</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Number of Icon Types</h3>
+                            <p>More icon types makes the game harder</p>
+                        </div>
+                        <input type="number" id="crushIconTypes" min="3" max="8" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateCrushIconTypes()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Minimum Group Size</h3>
+                            <p>Smallest group that will clear and score points</p>
+                        </div>
+                        <input type="number" id="crushMinGroupSize" min="2" max="5" value="3" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateCrushMinGroupSize()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Throws per Player</h3>
+                            <p>Total throws each player gets in Axe Crush</p>
+                        </div>
+                        <input type="number" id="crushThrowsPerPlayer" min="5" max="20" value="12" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateCrushThrowsPerPlayer()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Enable Combo Cascades</h3>
+                            <p>New matches created by falling icons automatically clear and grant bonus points</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="crushEnableCascades" checked onchange="updateCrushEnableCascades()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Axe Memory Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Grid Size (tiles)</h3>
+                            <p>Total number of tiles (must be an even number)</p>
+                        </div>
+                        <select id="memoryGridSize" style="width: 120px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMemoryGridSize()">
+                            <option value="16" selected>4 × 4 (16 tiles)</option>
+                            <option value="24">4 × 6 (24 tiles)</option>
+                            <option value="36">6 × 6 (36 tiles)</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Extra Turn on Match</h3>
+                            <p>Players who find a pair immediately take another turn</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="memoryExtraTurnOnMatch" checked onchange="updateMemoryExtraTurnOnMatch()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Reveal Duration (seconds)</h3>
+                            <p>How long unmatched tiles stay face-up before flipping back</p>
+                        </div>
+                        <input type="number" id="memoryRevealDuration" min="0.5" max="5" step="0.5" value="1.5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateMemoryRevealDuration()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Axe Word Wack Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Word Category</h3>
+                            <p>Category for word selection</p>
+                        </div>
+                        <select id="wordCategory" style="width: 150px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateWordCategory()">
+                            <option value="Random" selected>Random</option>
+                            <option value="Movies">Movies</option>
+                            <option value="Countries">Countries</option>
+                            <option value="Skopje">Skopje</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Points per Correct Letter</h3>
+                            <p>Base score per occurrence of a correct letter</p>
+                        </div>
+                        <input type="number" id="wordPointsPerLetter" min="1" max="50" value="10" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateWordPointsPerLetter()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Full Word Bonus</h3>
+                            <p>Extra points for guessing the whole word correctly</p>
+                        </div>
+                        <input type="number" id="wordFullWordBonus" min="0" max="200" value="50" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateWordFullWordBonus()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Wrong Letter Penalty</h3>
+                            <p>Points lost for hitting a letter not in the word</p>
+                        </div>
+                        <input type="number" id="wordWrongLetterPenalty" min="-20" max="0" value="0" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateWordWrongLetterPenalty()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Emoji Frenzy Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Rounds per Game</h3>
+                            <p>How many rounds are played before the game ends</p>
+                        </div>
+                        <input type="number" id="emojiRoundsPerGame" min="3" max="15" value="8" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateEmojiRoundsPerGame()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Emoji Points</h3>
+                            <p>Points awarded for hitting the target emoji</p>
+                        </div>
+                        <input type="number" id="emojiTargetPoints" min="10" max="100" value="20" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateEmojiTargetPoints()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Non-Target Emoji Points</h3>
+                            <p>Points for hitting any other emoji</p>
+                        </div>
+                        <input type="number" id="emojiNonTargetPoints" min="-10" max="20" value="5" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateEmojiNonTargetPoints()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Non-Target Penalty Mode</h3>
+                            <p>Non-target emojis subtract points instead of adding them</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emojiPenaltyMode" onchange="updateEmojiPenaltyMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Respawn Hit Emojis</h3>
+                            <p>Emojis that are hit are replaced with new ones in random positions</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emojiRespawnHit" checked onchange="updateEmojiRespawnHit()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">BAD AXE Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Shot Zone Type</h3>
+                            <p>How trick shots are defined</p>
+                        </div>
+                        <select id="badaxeShotZoneType" style="width: 200px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateBadaxeShotZoneType()">
+                            <option value="Ring only">Ring only</option>
+                            <option value="Quadrant only">Quadrant only</option>
+                            <option value="Ring + Quadrant" selected>Ring + Quadrant</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Letters to Eliminate</h3>
+                            <p>How many letters before a player is out</p>
+                        </div>
+                        <input type="number" id="badaxeLettersToEliminate" min="3" max="10" value="6" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateBadaxeLettersToEliminate()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Infection Mode Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Initial Infected Players</h3>
+                            <p>How many players start as Infected</p>
+                        </div>
+                        <input type="number" id="infectionInitialInfected" min="1" max="3" value="1" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateInfectionInitialInfected()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Throws per Player (per duel)</h3>
+                            <p>Number of throws each player gets in a duel</p>
+                        </div>
+                        <input type="number" id="infectionThrowsPerDuel" min="1" max="5" value="2" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateInfectionThrowsPerDuel()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Total Game Time (minutes)</h3>
+                            <p>Optional timer for the whole game</p>
+                        </div>
+                        <input type="number" id="infectionGameTime" min="5" max="60" value="20" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateInfectionGameTime()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Survivor Victory Condition</h3>
+                            <p>How survivors can win</p>
+                        </div>
+                        <select id="infectionVictoryCondition" style="width: 200px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateInfectionVictoryCondition()">
+                            <option value="Timer Only" selected>Timer Only</option>
+                            <option value="Duel Wins Target">Duel Wins Target (5 wins)</option>
+                            <option value="Timer OR Duel Wins">Timer OR Duel Wins</option>
+                        </select>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Landmines Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Target Score</h3>
+                            <p>Top of the ladder</p>
+                        </div>
+                        <input type="number" id="landminesTargetScore" min="30" max="200" value="100" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateLandminesTargetScore()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Landmine Scores (comma-separated)</h3>
+                            <p>Which scores act as landmines</p>
+                        </div>
+                        <input type="text" id="landminesScores" value="25,50,75" style="width: 150px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateLandminesScores()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Checkpoint Interval</h3>
+                            <p>Safe scores to fall back to</p>
+                        </div>
+                        <input type="number" id="landminesCheckpointInterval" min="5" max="25" value="10" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateLandminesCheckpointInterval()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Throws per Turn</h3>
+                            <p>Number of throws each player gets before passing the turn</p>
+                        </div>
+                        <input type="number" id="landminesThrowsPerTurn" min="1" max="5" value="1" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateLandminesThrowsPerTurn()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Throw Royale Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Starting Lives</h3>
+                            <p>Number of hearts each player begins with</p>
+                        </div>
+                        <input type="number" id="royaleStartingLives" min="1" max="5" value="3" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateRoyaleStartingLives()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Tie Rule</h3>
+                            <p>What happens when multiple players tie for lowest</p>
+                        </div>
+                        <select id="royaleTieRule" style="width: 200px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateRoyaleTieRule()">
+                            <option value="All Lowest Lose 1 Life" selected>All Lowest Lose 1 Life</option>
+                            <option value="Sudden-Death Tie-Breaker">Sudden-Death Tie-Breaker</option>
+                        </select>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Date Night Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Heart Zone Multiplier</h3>
+                            <p>Multiplier for points in heart zones</p>
+                        </div>
+                        <input type="number" id="dateHeartMultiplier" min="1" max="5" value="2" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateDateHeartMultiplier()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Number of Heart Zones</h3>
+                            <p>How many bonus heart areas appear on the board</p>
+                        </div>
+                        <input type="number" id="dateHeartZones" min="2" max="8" value="4" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateDateHeartZones()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Enable Date Dares</h3>
+                            <p>Hitting the special icon triggers fun on-screen prompts</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dateEnableDares" checked onchange="updateDateEnableDares()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Throws per Player</h3>
+                            <p>Total throws for each player during Date Night Mode</p>
+                        </div>
+                        <input type="number" id="dateThrowsPerPlayer" min="5" max="20" value="10" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateDateThrowsPerPlayer()">
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Merry Axe-mas Settings</h2>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Enable Merry Axe-mas</h3>
+                            <p>Show or hide the Merry Axe-mas game from the main menu</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="xmasEnabled" checked onchange="updateXmasEnabled()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Gift Values (comma-separated)</h3>
+                            <p>Point values for different presents/ornaments on the tree</p>
+                        </div>
+                        <input type="text" id="xmasGiftValues" value="10,20,30,50" style="width: 150px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateXmasGiftValues()">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Throws per Player</h3>
+                            <p>Total throws each player gets in Merry Axe-mas</p>
+                        </div>
+                        <input type="number" id="xmasThrowsPerPlayer" min="5" max="20" value="10" style="width: 80px; padding: 10px; font-size: 1rem; border: 2px solid #555; border-radius: 5px; background: #2a2a3e; color: #fff;" onchange="updateXmasThrowsPerPlayer()">
                     </div>
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
@@ -207,14 +682,14 @@
                         <h2>🎪 Target Practice</h2>
                         <p><strong>How to Play:</strong> Click on moving targets to hit them. Each player gets 10 throws.</p>
                         <p><strong>Scoring:</strong> Targets are worth 10, 20, 30, 50, or 100 points. Hit high-value targets for the win!</p>
-                        <p><strong>Settings:</strong> You can disable target movement in Settings</p>
+                        <p><strong>Settings:</strong> You can disable target movement, customize how long targets move and stay static, and adjust the maximum number of targets on screen (default: 5)</p>
                     </div>
 
                     <div class="help-section">
                         <h2>🧟 Zombie Hunt</h2>
-                        <p><strong>How to Play:</strong> Click on zombies to eliminate them. You have 60 seconds to get the highest score!</p>
+                        <p><strong>How to Play:</strong> Click on zombies to eliminate them. You have a countdown timer to get the highest score!</p>
                         <p><strong>Scoring:</strong> Each zombie is worth 10 points. Zombies spawn faster as you progress!</p>
-                        <p><strong>Settings:</strong> You can disable zombie movement in Settings</p>
+                        <p><strong>Settings:</strong> You can disable zombie movement, customize how long zombies move and stay static, change the countdown time, adjust zombie despawn time (default: 20s), and set the maximum number of zombies on screen (default: 5)</p>
                     </div>
 
                     <div class="help-section">
@@ -227,7 +702,9 @@
                         <h2>🎲 21 Game</h2>
                         <p><strong>How to Play:</strong> Click the target to score points. First player to reach exactly 21 wins!</p>
                         <p><strong>Scoring:</strong> Center (7), Red (5), White (3), Black (2), Orange (1), Outer (0)</p>
-                        <p><strong>Warning:</strong> Going over 21 resets your score to 0!</p>
+                        <p><strong>Easy Mode (Default):</strong> Going over 21 keeps your previous score and moves to the next player.</p>
+                        <p><strong>Hard Mode:</strong> Going over 21 resets your score to 0!</p>
+                        <p><strong>Settings:</strong> You can toggle between Easy and Hard mode in Settings</p>
                     </div>
 
                     <div class="help-section">
@@ -239,6 +716,78 @@
                     </div>
 
                     <div class="help-section">
+                        <h2>💎 Axe Crush</h2>
+                        <p><strong>How to Play:</strong> Hit any icon on the grid. If it's part of a group of 3 or more matching icons, the whole group explodes and you score points! New icons fall from the top to fill the gaps.</p>
+                        <p><strong>Scoring:</strong> Larger groups = more points. Example: 3 icons = 30 points, 5 icons = 50 points. Optional combo bonuses for chain reactions.</p>
+                        <p><strong>Winning:</strong> Each player gets X throws. Highest total score wins!</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>🎴 Axe Memory</h2>
+                        <p><strong>How to Play:</strong> Each turn you get two throws. Hit a tile to flip it and reveal the icon. Hit a second tile and try to find its matching pair.</p>
+                        <p><strong>Scoring:</strong> Every correct pair you find is worth 1 point and is removed from the board.</p>
+                        <p><strong>Winning:</strong> When all pairs are found, the player with the most pairs wins!</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>🔤 Axe Word Wack</h2>
+                        <p><strong>How to Play:</strong> Hit a letter tile to guess that letter in the secret word or phrase. If the letter appears, all matching spots are revealed and you score points.</p>
+                        <p><strong>Scoring:</strong> Each correct letter awards points for every time it appears. Bonus points for correctly guessing the whole word. Wrong letters can lose points (optional).</p>
+                        <p><strong>Winning:</strong> When the word is fully solved or time runs out, the player with the most points wins.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>😂 Emoji Frenzy</h2>
+                        <p><strong>How to Play:</strong> Each round, one emoji is chosen as the target. Aim for that emoji! Hit the correct emoji to earn big points. Other emojis score fewer points or may even lose points (depending on settings).</p>
+                        <p><strong>Scoring:</strong> Target emoji = high score. Non-target emojis = smaller score or penalty.</p>
+                        <p><strong>Winning:</strong> After X rounds, the player with the highest total score wins.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>🏀 BAD AXE</h2>
+                        <p><strong>How to Play:</strong> Players take turns calling a trick shot on the target. By default, you call which ring to hit (e.g., "Red ring"). If you make the shot, everyone else must copy it. Miss your own shot and you earn a letter.</p>
+                        <p><strong>Scoring:</strong> Each missed copy adds a letter: B, then A, then D, A, X, E. When you have all six letters, you're out.</p>
+                        <p><strong>Winning:</strong> Last player who hasn't spelled B-A-D-A-X-E wins.</p>
+                        <p><strong>Settings:</strong> You can change shot zone type to include quadrants or ring+quadrant combinations for more challenging gameplay.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>🦠 Infection Mode</h2>
+                        <p><strong>How to Play:</strong> Players are split into Survivors and Infected. Each round, a Survivor duels an Infected player in a standard scoring match.</p>
+                        <p><strong>Scoring:</strong> Both players throw a set number of axes. Highest total wins the duel.</p>
+                        <p><strong>Conversion:</strong> If the Infected player wins, the Survivor switches teams and becomes Infected. If the Survivor wins or ties, they stay human.</p>
+                        <p><strong>Winning:</strong> Infected win if everyone becomes Infected. Survivors win if at least one Survivor is left when time runs out or when they reach the target number of Survivor victories.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>💣 Landmines</h2>
+                        <p><strong>How to Play:</strong> Climb the score ladder by throwing axes at the Classic Bullseye. Each throw moves your marker up by the number of points you score.</p>
+                        <p><strong>Landmines:</strong> Some scores are marked as landmines. If you land exactly on a landmine, you get blown back to the last safe checkpoint.</p>
+                        <p><strong>Winning:</strong> First player to reach the top of the ladder (target score) wins!</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>👑 Throw Royale</h2>
+                        <p><strong>How to Play:</strong> Every round, all players throw once at the Classic Bullseye. The lowest score loses a life.</p>
+                        <p><strong>Scoring:</strong> Standard target scoring. Hearts show how many lives each player has left. After all players throw, scores are displayed for 2 seconds before processing the round results.</p>
+                        <p><strong>Winning:</strong> Keep your lives as long as possible. Last player with at least one life remaining wins.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>💕 Date Night Mode</h2>
+                        <p><strong>How to Play:</strong> Throw at the heart-themed target and try to land in the bonus heart zones for extra points. Play as a couple or couple vs couple – your points are added together.</p>
+                        <p><strong>Scoring:</strong> Standard Bullseye scoring plus bonus multipliers for heart zones. Optional "date dares" can appear when you hit the special icon.</p>
+                        <p><strong>Winning:</strong> Couple or team with the highest combined score at the end of the game wins.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h2>🎄 Merry Axe-mas</h2>
+                        <p><strong>How to Play:</strong> Celebrate the holidays with a festive Christmas tree! Hit the presents and ornaments hanging on the tree to score points. Each gift has a different point value.</p>
+                        <p><strong>Scoring:</strong> Points are awarded based on which gift or ornament you hit. Values can be customized in settings.</p>
+                        <p><strong>Winning:</strong> After all players have thrown, highest score wins.</p>
+                    </div>
+
+                    <div class="help-section">
                         <h2>🎮 General Controls</h2>
                         <p><strong>Next Player:</strong> Click this button when you're done with your turn (or game will auto-advance)</p>
                         <p><strong>Undo:</strong> Click to undo your last action if you made a mistake</p>
@@ -247,6 +796,18 @@
 
                 </div>
                 <button class="btn-primary" onclick="backToMenu()">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal-content">
+                <h2 id="modalTitle">Confirm</h2>
+                <p id="modalMessage">Are you sure?</p>
+                <div class="modal-buttons">
+                    <button class="btn-primary" id="modalConfirm">OK</button>
+                    <button class="btn-secondary" id="modalCancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

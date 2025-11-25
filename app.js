@@ -6,8 +6,72 @@ const GameState = {
     gameData: {},
     history: [],
     settings: {
-        movingTargets: true,
-        zombieTimer: true
+        movingTargets: false,
+        zombieTimer: false,
+        hardMode: false,
+        moveDuration: 3,
+        staticDuration: 5,
+        zombieCountdown: 60,
+        zombieDespawnTime: 20,
+        maxZombies: 5,
+        maxTargets: 5,
+        // Axe Crush settings
+        crushGridCols: 7,
+        crushGridRows: 8,
+        crushIconTypes: 5,
+        crushMinGroupSize: 3,
+        crushThrowsPerPlayer: 12,
+        crushEnableCascades: true,
+        // Axe Memory settings
+        memoryGridSize: 16,
+        memoryExtraTurnOnMatch: true,
+        memoryRevealDuration: 1.5,
+        // Axe Word Wack settings
+        wordCategory: 'Random',
+        wordPointsPerLetter: 10,
+        wordFullWordBonus: 50,
+        wordWrongLetterPenalty: 0,
+        wordAllowFullGuess: true,
+        wordMaxRounds: 26,
+        // Emoji Frenzy settings
+        emojiRoundsPerGame: 8,
+        emojiTargetPoints: 20,
+        emojiNonTargetPoints: 5,
+        emojiPenaltyMode: false,
+        emojiRespawnHit: true,
+        emojiEnableMoving: false,
+        // BAD AXE settings
+        badaxeShotZoneType: 'Ring only',
+        badaxeAllowMicroZones: false,
+        badaxeLettersToEliminate: 6,
+        // Infection Mode settings
+        infectionInitialInfected: 1,
+        infectionThrowsPerDuel: 2,
+        infectionGameTime: 20,
+        infectionVictoryCondition: 'Timer Only',
+        infectionPairingMode: 'Round-Robin',
+        // Landmines settings
+        landminesTargetScore: 100,
+        landminesScores: '25,50,75',
+        landminesCheckpointInterval: 10,
+        landminesThrowsPerTurn: 1,
+        landminesOverTargetRule: 'Allow Over Target',
+        // Throw Royale settings
+        royaleStartingLives: 3,
+        royaleTieRule: 'All Lowest Lose 1 Life',
+        royaleMinPlayers: 2,
+        // Date Night settings
+        dateHeartMultiplier: 2,
+        dateHeartZones: 4,
+        dateEnableDares: true,
+        dateThrowsPerPlayer: 10,
+        // Merry Axe-mas settings
+        xmasEnabled: true,
+        xmasGameMode: 'Bullseye Mode',
+        xmasEnableMoving: false,
+        xmasGiftValues: '10,20,30,50',
+        xmasThrowsPerPlayer: 10,
+        xmasSeasonalOnly: false
     }
 };
 
@@ -28,7 +92,17 @@ const GAME_PLAYER_LIMITS = {
     'targetPractice': { min: 1, max: 4, name: 'Target Practice' },
     'zombieHunt': { min: 1, max: 4, name: 'Zombie Hunt' },
     '21': { min: 1, max: 4, name: '21 Game' },
-    'knockout': { min: 2, max: 4, name: 'Cricket' }
+    'knockout': { min: 2, max: 4, name: 'Cricket' },
+    'axeCrush': { min: 2, max: 4, name: 'Axe Crush' },
+    'axeMemory': { min: 2, max: 4, name: 'Axe Memory' },
+    'axeWordWack': { min: 2, max: 4, name: 'Axe Word Wack' },
+    'emojiFrenzy': { min: 2, max: 4, name: 'Emoji Frenzy' },
+    'badAxe': { min: 2, max: 4, name: 'BAD AXE' },
+    'infectionMode': { min: 2, max: 4, name: 'Infection Mode' },
+    'landmines': { min: 2, max: 4, name: 'Landmines' },
+    'throwRoyale': { min: 2, max: 4, name: 'Throw Royale' },
+    'dateNight': { min: 2, max: 4, name: 'Date Night Mode' },
+    'merryAxemas': { min: 1, max: 4, name: 'Merry Axe-mas' }
 };
 
 // Main Menu Functions
@@ -140,9 +214,29 @@ function initializeGame(gameType, preserveState = false) {
     // CRITICAL: Clear previous game state and event listeners
     gameCanvas.innerHTML = '';
 
+    // Clear any running timers/intervals to prevent contamination
+    if (GameState.gameData && GameState.gameData.gameTimerInterval) {
+        clearInterval(GameState.gameData.gameTimerInterval);
+    }
+    if (GameState.gameData && GameState.gameData.spawnInterval) {
+        clearInterval(GameState.gameData.spawnInterval);
+    }
+    if (GameState.gameData && GameState.gameData.countdownInterval) {
+        clearInterval(GameState.gameData.countdownInterval);
+    }
+
     // Remove all event listeners by cloning and replacing the canvas
     const newCanvas = gameCanvas.cloneNode(false);
     gameCanvas.parentNode.replaceChild(newCanvas, gameCanvas);
+
+    // Reset scoreboard styles to prevent contamination from previous games
+    const scoreboard = document.getElementById('scoreboard');
+    if (scoreboard) {
+        scoreboard.style.display = '';
+        scoreboard.style.flexDirection = '';
+        scoreboard.style.gap = '';
+        scoreboard.innerHTML = '';
+    }
 
     // Clear game data only if not preserving state (e.g., for undo)
     if (!preserveState) {
@@ -151,6 +245,12 @@ function initializeGame(gameType, preserveState = false) {
 
     // Update reference
     const canvas = document.getElementById('gameCanvas');
+
+    // Hide miss button by default (only shown for Target Practice)
+    const missBtn = document.getElementById('missBtn');
+    if (missBtn) {
+        missBtn.style.display = 'none';
+    }
 
     // Initialize specific game
     switch(gameType) {
@@ -199,6 +299,56 @@ function initializeGame(gameType, preserveState = false) {
             gameInstructions.textContent = 'Hit each number 3 times to close it. Score points after closing!';
             initKnockout();
             break;
+        case 'axeCrush':
+            gameTitle.textContent = 'Axe Crush';
+            gameInstructions.textContent = 'Match 3 or more icons to clear them and score points!';
+            initAxeCrush();
+            break;
+        case 'axeMemory':
+            gameTitle.textContent = 'Axe Memory';
+            gameInstructions.textContent = 'Find matching pairs by hitting tiles. Each turn you get two throws!';
+            initAxeMemory();
+            break;
+        case 'axeWordWack':
+            gameTitle.textContent = 'Axe Word Wack';
+            gameInstructions.textContent = 'Hit letters to reveal the hidden word or phrase!';
+            initAxeWordWack();
+            break;
+        case 'emojiFrenzy':
+            gameTitle.textContent = 'Emoji Frenzy';
+            gameInstructions.textContent = 'Hit the target emoji for big points!';
+            initEmojiFrenzy();
+            break;
+        case 'badAxe':
+            gameTitle.textContent = 'BAD AXE';
+            gameInstructions.textContent = 'Set a trick shot challenge. Miss it and earn a letter!';
+            initBadAxe();
+            break;
+        case 'infectionMode':
+            gameTitle.textContent = 'Infection Mode';
+            gameInstructions.textContent = 'Survivors vs Infected! Win duels to stay human!';
+            initInfectionMode();
+            break;
+        case 'landmines':
+            gameTitle.textContent = 'Landmines';
+            gameInstructions.textContent = 'Race to the top score but avoid the landmines!';
+            initLandmines();
+            break;
+        case 'throwRoyale':
+            gameTitle.textContent = 'Throw Royale';
+            gameInstructions.textContent = 'Battle royale! Lowest score each round loses a life!';
+            initThrowRoyale();
+            break;
+        case 'dateNight':
+            gameTitle.textContent = 'Date Night Mode';
+            gameInstructions.textContent = 'Romantic mode with heart bonus zones!';
+            initDateNight();
+            break;
+        case 'merryAxemas':
+            gameTitle.textContent = 'Merry Axe-mas';
+            gameInstructions.textContent = 'Festive holiday mode with presents and snowmen!';
+            initMerryAxemas();
+            break;
     }
 }
 
@@ -206,6 +356,18 @@ function initializeGame(gameType, preserveState = false) {
 function updateScoreboard() {
     const scoreboard = document.getElementById('scoreboard');
     scoreboard.innerHTML = '';
+
+    // Hide scoreboard for games with custom scoreboards
+    const gamesWithCustomScoreboards = ['infectionMode', 'landmines', 'throwRoyale'];
+    if (gamesWithCustomScoreboards.includes(GameState.currentGame)) {
+        scoreboard.style.display = 'none';
+        return;
+    }
+    scoreboard.style.display = 'flex';
+    scoreboard.style.flexDirection = 'row';
+    scoreboard.style.justifyContent = 'space-around';
+    scoreboard.style.flexWrap = 'wrap';
+    scoreboard.style.gap = '15px';
 
     GameState.players.forEach((player, index) => {
         const scoreDiv = document.createElement('div');
@@ -223,8 +385,8 @@ function updateScoreboard() {
             const maxThrows = GameState.currentGame === 'bullseye' ? 5 : 10;
             extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Throws: ${throws}/${maxThrows}</div>`;
         } else if (GameState.currentGame === 'aroundWorld') {
-            const zone = player.data.currentZone || 1;
-            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zone: ${zone}/12</div>`;
+            const completedZones = (player.data.completedZones || []).length;
+            extraInfo = `<div style="font-size: 0.9rem; color: #aaa;">Zones: ${completedZones}/12</div>`;
         } else if (GameState.currentGame === 'zombieHunt') {
             const zombies = player.data.zombiesKilled || 0;
             const time = player.data.timeRemaining || 0;
@@ -296,7 +458,7 @@ function nextPlayer() {
 // Undo Last Hit
 function undoLastHit() {
     if (GameState.history.length === 0) {
-        alert('Nothing to undo!');
+        showInfoModal('Undo', 'Nothing to undo!');
         return;
     }
 
@@ -330,6 +492,40 @@ function undoLastHit() {
             // Update zone display
             updateAroundWorldDisplay();
             break;
+        case 'axeCrush':
+            renderAxeCrushGrid();
+            break;
+        case 'axeMemory':
+            renderAxeMemoryGrid();
+            break;
+        case 'axeWordWack':
+            renderWordWackBoard();
+            break;
+        case 'emojiFrenzy':
+            renderEmojiFrenzy();
+            break;
+        case 'badAxe':
+            if (GameState.gameData.phase === 'selectingShot') {
+                showBadAxeShotSelection();
+            } else {
+                updateBadAxeUI();
+            }
+            break;
+        case 'infectionMode':
+            renderInfectionMode();
+            break;
+        case 'landmines':
+            renderLandminesBoard();
+            break;
+        case 'throwRoyale':
+            renderThrowRoyale();
+            break;
+        case 'dateNight':
+            renderDateNight();
+            break;
+        case 'merryAxemas':
+            renderMerryAxemas();
+            break;
         case 'bullseye':
         case '21':
         case 'targetPractice':
@@ -354,41 +550,162 @@ function saveState() {
     }
 }
 
+// Modal Functions
+function showConfirmModal(title, message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        if (onConfirm) onConfirm();
+    });
+
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+}
+
+// Info Modal (for single-button alerts)
+function showInfoModal(title, message) {
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+
+    // Hide cancel button for info modals
+    cancelBtn.style.display = 'none';
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    // Add new event listener
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        cancelBtn.style.display = ''; // Restore cancel button visibility
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            cancelBtn.style.display = ''; // Restore cancel button visibility
+        }
+    });
+}
+
 // Exit Game
 function exitGame() {
-    if (confirm('Are you sure you want to exit the game?')) {
-        backToMenu();
-    }
+    showConfirmModal(
+        'Exit Game',
+        'Are you sure you want to exit the game?',
+        () => backToMenu()
+    );
 }
 
 // End Game
 function endGame() {
-    showScreen('gameOver');
-
     // Sort players by score (descending)
     const sortedPlayers = [...GameState.players].sort((a, b) => b.score - a.score);
 
-    const winnerDisplay = document.getElementById('winnerDisplay');
-    const finalScores = document.getElementById('finalScores');
-
+    let winnerText = '';
     // Check for tie
     if (sortedPlayers[0].score === sortedPlayers[1]?.score) {
         const winners = sortedPlayers.filter(p => p.score === sortedPlayers[0].score);
-        winnerDisplay.innerHTML = `It's a Tie!<br>${winners.map(w => w.name).join(' & ')}`;
+        winnerText = `It's a Tie!<br>${winners.map(w => w.name).join(' & ')}`;
     } else {
-        winnerDisplay.innerHTML = `Winner: ${sortedPlayers[0].name}!`;
+        winnerText = `Winner: ${sortedPlayers[0].name}!`;
     }
 
-    finalScores.innerHTML = '';
-    sortedPlayers.forEach((player, index) => {
-        const scoreDiv = document.createElement('div');
-        scoreDiv.className = 'final-score-item';
-        if (index === 0) {
-            scoreDiv.classList.add('winner');
-        }
-        scoreDiv.innerHTML = `${index + 1}. ${player.name}: ${player.score} points`;
-        finalScores.appendChild(scoreDiv);
+    // Show the completed word for Axe Word Wack
+    let wordRevealHtml = '';
+    if (GameState.currentGame === 'axeWordWack' && GameState.gameData.solution) {
+        wordRevealHtml = `<div style="margin-top: 20px; font-size: 1.5rem; color: #f0a500; font-weight: bold;">The word was: <span style="color: #4CAF50;">${GameState.gameData.solution}</span></div>`;
+    }
+
+    // Build final scores HTML
+    let finalScoresHtml = '';
+    // For Throw Royale, only show the winner, not scores
+    if (GameState.currentGame !== 'throwRoyale') {
+        finalScoresHtml = '<div style="margin-top: 20px;">';
+        sortedPlayers.forEach((player, index) => {
+            const color = index === 0 ? '#4CAF50' : '#fff';
+            finalScoresHtml += `<div style="font-size: 1.2rem; margin: 8px 0; color: ${color};">${index + 1}. ${player.name}: ${player.score} points</div>`;
+        });
+        finalScoresHtml += '</div>';
+    }
+
+    // Show winning modal
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirm');
+    const cancelBtn = document.getElementById('modalCancel');
+
+    modalTitle.textContent = 'Game Over!';
+    modalMessage.innerHTML = `
+        <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 15px;">${winnerText}</div>
+        ${wordRevealHtml}
+        ${finalScoresHtml}
+    `;
+    modal.classList.add('active');
+
+    // Update button text
+    confirmBtn.textContent = 'Play Again';
+    cancelBtn.textContent = 'Main Menu';
+
+    // Remove any existing event listeners by cloning and replacing
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        playAgain();
     });
+
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        backToMenu();
+    });
+
+    // Close on overlay click
+    const modalClickHandler = (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            backToMenu();
+            modal.removeEventListener('click', modalClickHandler);
+        }
+    };
+    modal.addEventListener('click', modalClickHandler);
 }
 
 // Play Again
@@ -448,6 +765,69 @@ function showSettings() {
     // Update toggle state from GameState
     document.getElementById('movingTargetsToggle').checked = GameState.settings.movingTargets;
     document.getElementById('zombieTimerToggle').checked = GameState.settings.zombieTimer;
+    document.getElementById('hardModeToggle').checked = GameState.settings.hardMode;
+    document.getElementById('moveDuration').value = GameState.settings.moveDuration;
+    document.getElementById('staticDuration').value = GameState.settings.staticDuration;
+    document.getElementById('zombieCountdown').value = GameState.settings.zombieCountdown;
+    document.getElementById('zombieDespawnTime').value = GameState.settings.zombieDespawnTime;
+    document.getElementById('maxZombies').value = GameState.settings.maxZombies;
+    document.getElementById('maxTargets').value = GameState.settings.maxTargets;
+
+    // Axe Crush settings
+    document.getElementById('crushGridSize').value = `${GameState.settings.crushGridCols},${GameState.settings.crushGridRows}`;
+    document.getElementById('crushIconTypes').value = GameState.settings.crushIconTypes;
+    document.getElementById('crushMinGroupSize').value = GameState.settings.crushMinGroupSize;
+    document.getElementById('crushThrowsPerPlayer').value = GameState.settings.crushThrowsPerPlayer;
+    document.getElementById('crushEnableCascades').checked = GameState.settings.crushEnableCascades;
+
+    // Axe Memory settings
+    document.getElementById('memoryGridSize').value = GameState.settings.memoryGridSize;
+    document.getElementById('memoryExtraTurnOnMatch').checked = GameState.settings.memoryExtraTurnOnMatch;
+    document.getElementById('memoryRevealDuration').value = GameState.settings.memoryRevealDuration;
+
+    // Axe Word Wack settings
+    document.getElementById('wordCategory').value = GameState.settings.wordCategory;
+    document.getElementById('wordPointsPerLetter').value = GameState.settings.wordPointsPerLetter;
+    document.getElementById('wordFullWordBonus').value = GameState.settings.wordFullWordBonus;
+    document.getElementById('wordWrongLetterPenalty').value = GameState.settings.wordWrongLetterPenalty;
+
+    // Emoji Frenzy settings
+    document.getElementById('emojiRoundsPerGame').value = GameState.settings.emojiRoundsPerGame;
+    document.getElementById('emojiTargetPoints').value = GameState.settings.emojiTargetPoints;
+    document.getElementById('emojiNonTargetPoints').value = GameState.settings.emojiNonTargetPoints;
+    document.getElementById('emojiPenaltyMode').checked = GameState.settings.emojiPenaltyMode;
+    document.getElementById('emojiRespawnHit').checked = GameState.settings.emojiRespawnHit;
+
+    // BAD AXE settings
+    document.getElementById('badaxeShotZoneType').value = GameState.settings.badaxeShotZoneType;
+    document.getElementById('badaxeLettersToEliminate').value = GameState.settings.badaxeLettersToEliminate;
+
+    // Infection Mode settings
+    document.getElementById('infectionInitialInfected').value = GameState.settings.infectionInitialInfected;
+    document.getElementById('infectionThrowsPerDuel').value = GameState.settings.infectionThrowsPerDuel;
+    document.getElementById('infectionGameTime').value = GameState.settings.infectionGameTime;
+    document.getElementById('infectionVictoryCondition').value = GameState.settings.infectionVictoryCondition;
+
+    // Landmines settings
+    document.getElementById('landminesTargetScore').value = GameState.settings.landminesTargetScore;
+    document.getElementById('landminesScores').value = GameState.settings.landminesScores;
+    document.getElementById('landminesCheckpointInterval').value = GameState.settings.landminesCheckpointInterval;
+    document.getElementById('landminesThrowsPerTurn').value = GameState.settings.landminesThrowsPerTurn;
+
+    // Throw Royale settings
+    document.getElementById('royaleStartingLives').value = GameState.settings.royaleStartingLives;
+    document.getElementById('royaleTieRule').value = GameState.settings.royaleTieRule;
+
+    // Date Night settings
+    document.getElementById('dateHeartMultiplier').value = GameState.settings.dateHeartMultiplier;
+    document.getElementById('dateHeartZones').value = GameState.settings.dateHeartZones;
+    document.getElementById('dateEnableDares').checked = GameState.settings.dateEnableDares;
+    document.getElementById('dateThrowsPerPlayer').value = GameState.settings.dateThrowsPerPlayer;
+
+    // Merry Axe-mas settings
+    document.getElementById('xmasGameMode').value = GameState.settings.xmasGameMode;
+    document.getElementById('xmasGiftValues').value = GameState.settings.xmasGiftValues;
+    document.getElementById('xmasThrowsPerPlayer').value = GameState.settings.xmasThrowsPerPlayer;
 }
 
 function toggleMovingTargets() {
@@ -489,6 +869,224 @@ function toggleMovingTargets() {
 function toggleZombieTimer() {
     GameState.settings.zombieTimer = document.getElementById('zombieTimerToggle').checked;
     console.log('Zombie timer:', GameState.settings.zombieTimer);
+}
+
+function toggleHardMode() {
+    GameState.settings.hardMode = document.getElementById('hardModeToggle').checked;
+    console.log('21 Game Hard Mode:', GameState.settings.hardMode);
+}
+
+function updateMoveDuration() {
+    const value = parseInt(document.getElementById('moveDuration').value);
+    if (value >= 1 && value <= 10) {
+        GameState.settings.moveDuration = value;
+        console.log('Move duration:', GameState.settings.moveDuration);
+    }
+}
+
+function updateStaticDuration() {
+    const value = parseInt(document.getElementById('staticDuration').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.staticDuration = value;
+        console.log('Static duration:', GameState.settings.staticDuration);
+    }
+}
+
+function updateZombieCountdown() {
+    const value = parseInt(document.getElementById('zombieCountdown').value);
+    if (value >= 10 && value <= 300) {
+        GameState.settings.zombieCountdown = value;
+        console.log('Zombie countdown:', GameState.settings.zombieCountdown);
+    }
+}
+
+function updateZombieDespawnTime() {
+    const value = parseInt(document.getElementById('zombieDespawnTime').value);
+    if (value >= 3 && value <= 30) {
+        GameState.settings.zombieDespawnTime = value;
+        console.log('Zombie despawn time:', GameState.settings.zombieDespawnTime);
+    }
+}
+
+function updateMaxZombies() {
+    const value = parseInt(document.getElementById('maxZombies').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.maxZombies = value;
+        console.log('Max zombies:', GameState.settings.maxZombies);
+    }
+}
+
+function updateMaxTargets() {
+    const value = parseInt(document.getElementById('maxTargets').value);
+    if (value >= 1 && value <= 20) {
+        GameState.settings.maxTargets = value;
+        console.log('Max targets:', GameState.settings.maxTargets);
+    }
+}
+
+// Axe Crush Settings
+function updateCrushGridSize() {
+    const value = document.getElementById('crushGridSize').value.split(',');
+    GameState.settings.crushGridCols = parseInt(value[0]);
+    GameState.settings.crushGridRows = parseInt(value[1]);
+}
+
+function updateCrushIconTypes() {
+    GameState.settings.crushIconTypes = parseInt(document.getElementById('crushIconTypes').value);
+}
+
+function updateCrushMinGroupSize() {
+    GameState.settings.crushMinGroupSize = parseInt(document.getElementById('crushMinGroupSize').value);
+}
+
+function updateCrushThrowsPerPlayer() {
+    GameState.settings.crushThrowsPerPlayer = parseInt(document.getElementById('crushThrowsPerPlayer').value);
+}
+
+function updateCrushEnableCascades() {
+    GameState.settings.crushEnableCascades = document.getElementById('crushEnableCascades').checked;
+}
+
+// Axe Memory Settings
+function updateMemoryGridSize() {
+    GameState.settings.memoryGridSize = parseInt(document.getElementById('memoryGridSize').value);
+}
+
+function updateMemoryExtraTurnOnMatch() {
+    GameState.settings.memoryExtraTurnOnMatch = document.getElementById('memoryExtraTurnOnMatch').checked;
+}
+
+function updateMemoryRevealDuration() {
+    GameState.settings.memoryRevealDuration = parseFloat(document.getElementById('memoryRevealDuration').value);
+}
+
+// Axe Word Wack Settings
+function updateWordCategory() {
+    GameState.settings.wordCategory = document.getElementById('wordCategory').value;
+}
+
+function updateWordPointsPerLetter() {
+    GameState.settings.wordPointsPerLetter = parseInt(document.getElementById('wordPointsPerLetter').value);
+}
+
+function updateWordFullWordBonus() {
+    GameState.settings.wordFullWordBonus = parseInt(document.getElementById('wordFullWordBonus').value);
+}
+
+function updateWordWrongLetterPenalty() {
+    GameState.settings.wordWrongLetterPenalty = parseInt(document.getElementById('wordWrongLetterPenalty').value);
+}
+
+// Emoji Frenzy Settings
+function updateEmojiRoundsPerGame() {
+    GameState.settings.emojiRoundsPerGame = parseInt(document.getElementById('emojiRoundsPerGame').value);
+}
+
+function updateEmojiTargetPoints() {
+    GameState.settings.emojiTargetPoints = parseInt(document.getElementById('emojiTargetPoints').value);
+}
+
+function updateEmojiNonTargetPoints() {
+    GameState.settings.emojiNonTargetPoints = parseInt(document.getElementById('emojiNonTargetPoints').value);
+}
+
+function updateEmojiPenaltyMode() {
+    GameState.settings.emojiPenaltyMode = document.getElementById('emojiPenaltyMode').checked;
+}
+
+function updateEmojiRespawnHit() {
+    GameState.settings.emojiRespawnHit = document.getElementById('emojiRespawnHit').checked;
+}
+
+// BAD AXE Settings
+function updateBadaxeShotZoneType() {
+    GameState.settings.badaxeShotZoneType = document.getElementById('badaxeShotZoneType').value;
+}
+
+function updateBadaxeLettersToEliminate() {
+    GameState.settings.badaxeLettersToEliminate = parseInt(document.getElementById('badaxeLettersToEliminate').value);
+}
+
+// Infection Mode Settings
+function updateInfectionInitialInfected() {
+    GameState.settings.infectionInitialInfected = parseInt(document.getElementById('infectionInitialInfected').value);
+}
+
+function updateInfectionThrowsPerDuel() {
+    GameState.settings.infectionThrowsPerDuel = parseInt(document.getElementById('infectionThrowsPerDuel').value);
+}
+
+function updateInfectionGameTime() {
+    GameState.settings.infectionGameTime = parseInt(document.getElementById('infectionGameTime').value);
+}
+
+function updateInfectionVictoryCondition() {
+    GameState.settings.infectionVictoryCondition = document.getElementById('infectionVictoryCondition').value;
+}
+
+// Landmines Settings
+function updateLandminesTargetScore() {
+    GameState.settings.landminesTargetScore = parseInt(document.getElementById('landminesTargetScore').value);
+}
+
+function updateLandminesScores() {
+    GameState.settings.landminesScores = document.getElementById('landminesScores').value;
+}
+
+function updateLandminesCheckpointInterval() {
+    GameState.settings.landminesCheckpointInterval = parseInt(document.getElementById('landminesCheckpointInterval').value);
+}
+
+function updateLandminesThrowsPerTurn() {
+    GameState.settings.landminesThrowsPerTurn = parseInt(document.getElementById('landminesThrowsPerTurn').value);
+}
+
+// Throw Royale Settings
+function updateRoyaleStartingLives() {
+    GameState.settings.royaleStartingLives = parseInt(document.getElementById('royaleStartingLives').value);
+}
+
+function updateRoyaleTieRule() {
+    GameState.settings.royaleTieRule = document.getElementById('royaleTieRule').value;
+}
+
+// Date Night Settings
+function updateDateHeartMultiplier() {
+    GameState.settings.dateHeartMultiplier = parseInt(document.getElementById('dateHeartMultiplier').value);
+}
+
+function updateDateHeartZones() {
+    GameState.settings.dateHeartZones = parseInt(document.getElementById('dateHeartZones').value);
+}
+
+function updateDateEnableDares() {
+    GameState.settings.dateEnableDares = document.getElementById('dateEnableDares').checked;
+}
+
+function updateDateThrowsPerPlayer() {
+    GameState.settings.dateThrowsPerPlayer = parseInt(document.getElementById('dateThrowsPerPlayer').value);
+}
+
+// Merry Axe-mas Settings
+function updateXmasEnabled() {
+    GameState.settings.xmasEnabled = document.getElementById('xmasEnabled').checked;
+    // Update menu visibility
+    const xmasCard = document.querySelector('button.game-card[onclick="selectGame(\'merryAxemas\')"]');
+    if (xmasCard) {
+        xmasCard.style.display = GameState.settings.xmasEnabled ? 'block' : 'none';
+    }
+}
+
+function updateXmasGameMode() {
+    GameState.settings.xmasGameMode = document.getElementById('xmasGameMode').value;
+}
+
+function updateXmasGiftValues() {
+    GameState.settings.xmasGiftValues = document.getElementById('xmasGiftValues').value;
+}
+
+function updateXmasThrowsPerPlayer() {
+    GameState.settings.xmasThrowsPerPlayer = parseInt(document.getElementById('xmasThrowsPerPlayer').value);
 }
 
 // Help Functions
