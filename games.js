@@ -18,20 +18,21 @@ function initBullseye() {
     target.className = 'target-bullseye';
     console.log('Target created:', target);
 
+    // Use percentages for responsive scaling
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: '15%', color: '#FFD700', points: 50, label: '50' },
+        { size: '30%', color: '#ff6b6b', points: 25, label: '25' },
+        { size: '45%', color: '#fff', points: 15, label: '15' },
+        { size: '60%', color: '#000', points: 10, label: '10' },
+        { size: '75%', color: '#f0a500', points: 5, label: '5' },
+        { size: '90%', color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.width = ring.size;
+        ringDiv.style.height = ring.size;
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         // Set z-index so smaller rings are on top (index 0 is largest, index 5 is smallest)
@@ -43,7 +44,7 @@ function initBullseye() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.points === 50) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -51,7 +52,7 @@ function initBullseye() {
             label.style.transform = 'translateX(-50%)';
         }
         label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
+        label.style.fontSize = 'min(1.2rem, 1.8vw, 1.8vh)';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -110,7 +111,7 @@ function handleBullseyeHit(points) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
 
     if (currentPlayer.data.throws >= 5) {
-        showInfoModal('No More Throws', 'You have used all your throws!');
+        alert('You have used all your throws!');
         return;
     }
 
@@ -128,7 +129,9 @@ function handleBullseyeHit(points) {
             if (allFinished) {
                 endGame();
             } else {
-                nextPlayer();
+                if (confirm(`${currentPlayer.name} has finished! Next player?`)) {
+                    nextPlayer();
+                }
             }
         }, 500);
     }
@@ -168,17 +171,17 @@ function initAroundWorld() {
         zone.style.background = colors[i];
 
         // Position zones in a circle - INCREASED RADIUS and REDUCED SIZE for better spacing
-        const radius = 392; // Increased for better spacing
+        const radius = 280; // Increased for better spacing
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
         const x = Math.cos(angleRad) * radius * 0.65;
         const y = Math.sin(angleRad) * radius * 0.65;
 
-        zone.style.width = '98px'; // Further reduced to prevent overlap
-        zone.style.height = '98px';
-        zone.style.left = `calc(50% + ${x}px - 49px)`;
-        zone.style.top = `calc(50% + ${y}px - 49px)`;
+        zone.style.width = '70px'; // Further reduced to prevent overlap
+        zone.style.height = '70px';
+        zone.style.left = `calc(50% + ${x}px - 35px)`;
+        zone.style.top = `calc(50% + ${y}px - 35px)`;
         zone.style.borderRadius = '50%';
-        zone.style.fontSize = '2rem'; // Adjusted font size
+        zone.style.fontSize = '1.5rem'; // Adjusted font size
         zone.textContent = i + 1;
 
         zone.addEventListener('click', (e) => {
@@ -216,11 +219,17 @@ function handleAroundWorldHit(zoneNumber, zoneElement) {
 
         // Check if player completed all zones
         if (currentPlayer.data.currentZone > 12) {
-            // Player wins immediately upon completing all zones
-            setTimeout(() => {
-                endGame();
-            }, 500);
-            return;
+            // Mark player as finished but continue game for other players
+            currentPlayer.data.finished = true;
+
+            // Check if all players are finished
+            const allFinished = GameState.players.every(p => p.data.finished || p.data.currentZone > 12);
+            if (allFinished) {
+                setTimeout(() => {
+                    endGame();
+                }, 500);
+                return;
+            }
         }
     } else {
         // Wrong zone - visual feedback
@@ -383,51 +392,7 @@ function initTargetPractice() {
         }
     });
 
-    // Add miss button
-    const controlButtons = document.querySelector('.control-buttons');
-    const undoBtn = document.getElementById('undoBtn');
-
-    // Check if miss button already exists
-    let missBtn = document.getElementById('missBtn');
-    if (!missBtn) {
-        missBtn = document.createElement('button');
-        missBtn.id = 'missBtn';
-        missBtn.className = 'btn-control';
-        missBtn.textContent = 'Miss';
-        missBtn.onclick = handleTargetPracticeMiss;
-        controlButtons.insertBefore(missBtn, undoBtn);
-    }
-    missBtn.style.display = 'inline-block';
-
     generateTargets();
-}
-
-function handleTargetPracticeMiss() {
-    const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-
-    if (currentPlayer.data.throws >= 10) {
-        showInfoModal('No More Throws', 'You have used all your throws!');
-        return;
-    }
-
-    saveState();
-
-    // Count as a throw with 0 points
-    currentPlayer.data.throws = (currentPlayer.data.throws || 0) + 1;
-
-    updateScoreboard();
-
-    // Check if player has finished
-    if (currentPlayer.data.throws >= 10) {
-        setTimeout(() => {
-            const allFinished = GameState.players.every(p => p.data.throws >= 10);
-            if (allFinished) {
-                endGame();
-            } else {
-                nextPlayer();
-            }
-        }, 500);
-    }
 }
 
 function generateTargets() {
@@ -511,7 +476,7 @@ function handleTargetPracticeHit(points, target) {
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
 
     if (currentPlayer.data.throws >= 10) {
-        showInfoModal('No More Throws', 'You have used all your throws!');
+        alert('You have used all your throws!');
         return;
     }
 
@@ -540,7 +505,9 @@ function handleTargetPracticeHit(points, target) {
             if (allFinished) {
                 endGame();
             } else {
-                nextPlayer();
+                if (confirm(`${currentPlayer.name} has finished! Next player?`)) {
+                    nextPlayer();
+                }
             }
         }, 500);
     }
@@ -1006,12 +973,12 @@ function init21Game() {
     target.className = 'target-bullseye';
 
     const rings = [
-        { size: 82, color: '#FFD700', points: 7, label: '7' },
-        { size: 165, color: '#ff6b6b', points: 5, label: '5' },
-        { size: 248, color: '#fff', points: 3, label: '3' },
-        { size: 330, color: '#000', points: 2, label: '2' },
-        { size: 412, color: '#f0a500', points: 1, label: '1' },
-        { size: 495, color: '#1a1a2e', points: 0, label: '0' }
+        { size: 60, color: '#FFD700', points: 7, label: '7' },
+        { size: 120, color: '#ff6b6b', points: 5, label: '5' },
+        { size: 180, color: '#fff', points: 3, label: '3' },
+        { size: 240, color: '#000', points: 2, label: '2' },
+        { size: 300, color: '#f0a500', points: 1, label: '1' },
+        { size: 360, color: '#1a1a2e', points: 0, label: '0' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -1030,7 +997,7 @@ function init21Game() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (7 points), move others up
-        if (ring.size === 82) {
+        if (ring.size === 60) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -1080,18 +1047,18 @@ function handle21GameHit(points) {
     if (currentPlayer.score > 21) {
         if (GameState.settings.hardMode) {
             // Hard mode: reset to 0
-            showInfoModal('Over 21!', `${currentPlayer.name} went over 21! Setting score to 0.`);
+            alert(`${currentPlayer.name} went over 21! Setting score to 0.`);
             currentPlayer.score = 0;
         } else {
             // Easy mode: keep previous score
-            showInfoModal('Over 21!', `${currentPlayer.name} went over 21! Score remains at ${previousScore}.`);
+            alert(`${currentPlayer.name} went over 21! Score remains at ${previousScore}.`);
             currentPlayer.score = previousScore;
         }
         // Move to next player
         updateScoreboard();
         setTimeout(() => {
             nextPlayer();
-        }, 1000);
+        }, 500);
         return;
     } else if (currentPlayer.score === 21) {
         updateScoreboard();
@@ -1132,7 +1099,8 @@ function renderKnockoutBoard() {
     boardDiv.style.left = '50%';
     boardDiv.style.transform = 'translate(-50%, -50%)';
     boardDiv.style.width = '95%';
-    boardDiv.style.maxWidth = '900px';
+    // Responsive sizing: fit within viewport
+    boardDiv.style.maxWidth = 'min(85vw, 900px)';
     boardDiv.style.overflowY = 'auto';
     boardDiv.style.maxHeight = '80vh';
 
@@ -1200,16 +1168,16 @@ function renderKnockoutBoard() {
             const marks = ['', '/', 'X', '⊗'][Math.min(hits, 3)];
 
             cell.textContent = marks;
-            cell.style.fontSize = '3.5rem';
+            cell.style.fontSize = '2.5rem';
             cell.style.fontWeight = 'bold';
             cell.style.padding = '0';
             cell.style.background = hits >= 3 ? '#4ecdc4' : 'rgba(42, 42, 62, 0.8)';
             cell.style.color = hits >= 3 ? '#1a1a2e' : '#fff';
-            cell.style.border = '3px solid #555';
+            cell.style.border = '2px solid #555';
             cell.style.borderRadius = '50%';
             cell.style.cursor = 'pointer';
-            cell.style.width = '112px';
-            cell.style.height = '112px';
+            cell.style.width = '80px';
+            cell.style.height = '80px';
             cell.style.display = 'flex';
             cell.style.alignItems = 'center';
             cell.style.justifyContent = 'center';
@@ -1331,7 +1299,8 @@ function renderAxeCrushGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '5px';
-    gridContainer.style.maxWidth = '600px';
+    // Responsive sizing: fit within viewport while maintaining aspect ratio
+    gridContainer.style.maxWidth = 'min(70vh, 85vw, 600px)';
     gridContainer.style.margin = '0 auto';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
@@ -1681,7 +1650,8 @@ function renderAxeMemoryGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '10px';
-    gridContainer.style.maxWidth = '600px';
+    // Responsive sizing: fit within viewport while maintaining aspect ratio
+    gridContainer.style.maxWidth = 'min(70vh, 85vw, 600px)';
     gridContainer.style.margin = '0 auto';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
@@ -1809,43 +1779,45 @@ function initAxeWordWack() {
         player.score = 0;
     });
     
-    // Expanded word categories with single words only
+    // Expanded word categories with many more words
     const words = {
         'Random': [
-            'SKOPJE', 'THROWING', 'BULLSEYE', 'CHAMPION',
-            'WOODEN', 'SHARP', 'PERFECT', 'DOUBLE',
-            'TARGET', 'VICTORY', 'LEADER', 'SKILLED',
-            'ZONE', 'COMPETITION', 'WINNING', 'MASTER',
-            'CHALLENGE', 'TROPHY', 'ULTIMATE', 'PRECISION',
-            'STEEL', 'ROTATION', 'DIRECT', 'SCORING',
-            'POWER', 'GOLDEN', 'FINAL', 'AMAZING'
+            'SKOPJE NIGHT', 'AXE THROWING', 'BULLSEYE TARGET', 'CHAMPION THROWER',
+            'WOODEN BOARD', 'SHARP BLADE', 'PERFECT SHOT', 'DOUBLE STRIKE',
+            'TARGET PRACTICE', 'VICTORY LAP', 'POINT LEADER', 'SKILLED PLAYER',
+            'THROWING ZONE', 'COMPETITION TIME', 'WINNING STREAK', 'GAME MASTER',
+            'CHALLENGE MODE', 'TROPHY HUNT', 'ULTIMATE BATTLE', 'PRECISION THROW',
+            'STEEL HATCHET', 'ROTATION SPIN', 'DIRECT HIT', 'SCORING ZONE',
+            'POWER STRIKE', 'GOLDEN MOMENT', 'FINAL ROUND', 'AMAZING SCORE'
         ],
         'Movies': [
-            'GODFATHER', 'INCEPTION', 'GLADIATOR', 'TITANIC',
-            'AVATAR', 'FROZEN', 'SHREK', 'ROCKY',
-            'TERMINATOR', 'ALIEN', 'JAWS', 'CARS',
-            'COCO', 'BRAVE', 'RATATOUILLE', 'TANGLED',
-            'MOANA', 'ENCANTO', 'BAMBI', 'DUMBO',
-            'PINOCCHIO', 'ALADDIN', 'HERCULES', 'MULAN',
-            'POCAHONTAS', 'CINDERELLA', 'FANTASIA', 'ZOOTOPIA'
+            'THE GODFATHER', 'PULP FICTION', 'FORREST GUMP', 'FIGHT CLUB',
+            'STAR WARS', 'TITANIC', 'GLADIATOR', 'INCEPTION',
+            'THE MATRIX', 'JURASSIC PARK', 'AVATAR', 'THE AVENGERS',
+            'DARK KNIGHT', 'LION KING', 'TOY STORY', 'FROZEN',
+            'SPIDER MAN', 'IRON MAN', 'HARRY POTTER', 'LORD RINGS',
+            'FINDING NEMO', 'SHREK', 'PIRATES CARIBBEAN', 'FAST FURIOUS',
+            'MISSION IMPOSSIBLE', 'JAMES BOND', 'INDIANA JONES', 'ROCKY',
+            'TERMINATOR', 'ALIEN', 'JAWS', 'BACK FUTURE'
         ],
         'Countries': [
             'MACEDONIA', 'AUSTRALIA', 'ARGENTINA', 'SWITZERLAND',
-            'CANADA', 'BRAZIL', 'MEXICO', 'GERMANY',
-            'FRANCE', 'ITALY', 'SPAIN', 'PORTUGAL',
-            'GREECE', 'TURKEY', 'RUSSIA', 'CHINA',
-            'JAPAN', 'INDIA', 'THAILAND', 'VIETNAM',
-            'INDONESIA', 'EGYPT', 'MOROCCO', 'NIGERIA',
-            'ICELAND', 'NORWAY', 'SWEDEN', 'POLAND',
-            'AUSTRIA', 'BELGIUM', 'DENMARK', 'FINLAND'
+            'UNITED STATES', 'CANADA', 'BRAZIL', 'MEXICO',
+            'GERMANY', 'FRANCE', 'ITALY', 'SPAIN',
+            'UNITED KINGDOM', 'PORTUGAL', 'GREECE', 'TURKEY',
+            'RUSSIA', 'CHINA', 'JAPAN', 'INDIA',
+            'SOUTH KOREA', 'THAILAND', 'VIETNAM', 'INDONESIA',
+            'EGYPT', 'SOUTH AFRICA', 'MOROCCO', 'NIGERIA',
+            'NEW ZEALAND', 'ICELAND', 'NORWAY', 'SWEDEN',
+            'POLAND', 'CZECH REPUBLIC', 'AUSTRIA', 'BELGIUM'
         ],
         'Skopje': [
-            'BRIDGE', 'ALEXANDER', 'BAZAAR', 'MATKA',
-            'KALE', 'MILLENNIUM', 'PARK', 'SQUARE',
-            'VARDAR', 'TERESA', 'VODNO', 'MALL',
-            'MUSEUM', 'FORTRESS', 'CATHEDRAL', 'MEMORIAL',
-            'ARCHAEOLOGICAL', 'OPERA', 'ARENA', 'SHOPPING',
-            'PLAZA', 'CANYON', 'RIVER', 'CROSS'
+            'STONE BRIDGE', 'ALEXANDER STATUE', 'OLD BAZAAR', 'MATKA CANYON',
+            'KALE FORTRESS', 'MILLENNIUM CROSS', 'CITY PARK', 'SKOPJE SQUARE',
+            'VARDAR RIVER', 'MOTHER TERESA', 'MOUNT VODNO', 'CITY MALL',
+            'MUSEUM MACEDONIA', 'TURKISH BATH', 'DAUT PASHA', 'MEMORIAL HOUSE',
+            'ARCHAEOLOGICAL MUSEUM', 'HOLOCAUST MUSEUM', 'OPERA BALLET', 'PHILIP ARENA',
+            'SHOPPING CENTER', 'CITY PLAZA', 'CABLE CAR', 'TVRDINA WALL'
         ]
     };
     
@@ -1900,7 +1872,8 @@ function renderWordWackBoard() {
     letterGrid.style.display = 'grid';
     letterGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
     letterGrid.style.gap = '10px';
-    letterGrid.style.maxWidth = '600px';
+    // Responsive sizing: fit within viewport while maintaining aspect ratio
+    letterGrid.style.maxWidth = 'min(70vh, 85vw, 600px)';
     letterGrid.style.margin = '0 auto';
     
     for (let i = 0; i < 26; i++) {
@@ -2058,27 +2031,27 @@ function renderEmojiFrenzy() {
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '840px';
-    container.style.height = '700px';
+    container.style.maxWidth = '600px';
+    container.style.height = '500px';
     container.style.margin = '0 auto';
     container.style.background = '#1a1a2e';
     container.style.borderRadius = '20px';
     container.style.border = '3px solid #f0a500';
-
+    
     // Round and target display
     const header = document.createElement('div');
     header.style.textAlign = 'center';
     header.style.padding = '20px';
-    header.style.fontSize = '2.5rem';
+    header.style.fontSize = '1.8rem';
     header.style.fontWeight = 'bold';
-    header.innerHTML = `Round ${GameState.gameData.currentRound}/${GameState.settings.emojiRoundsPerGame}<br>TARGET: <span style="font-size: 4.2rem">${GameState.gameData.targetEmoji}</span>`;
+    header.innerHTML = `Round ${GameState.gameData.currentRound}/${GameState.settings.emojiRoundsPerGame}<br>TARGET: <span style="font-size: 3rem">${GameState.gameData.targetEmoji}</span>`;
     container.appendChild(header);
-
+    
     // Emoji area
     const emojiArea = document.createElement('div');
     emojiArea.style.position = 'relative';
     emojiArea.style.width = '100%';
-    emojiArea.style.height = '490px';
+    emojiArea.style.height = '350px';
     
     GameState.gameData.emojis.forEach((emoji, index) => {
         const emojiDiv = document.createElement('div');
@@ -2087,11 +2060,11 @@ function renderEmojiFrenzy() {
         emojiDiv.style.position = 'absolute';
         emojiDiv.style.left = emoji.x + '%';
         emojiDiv.style.top = emoji.y + '%';
-        emojiDiv.style.fontSize = '4.2rem';
+        emojiDiv.style.fontSize = '3rem';
         emojiDiv.style.cursor = 'pointer';
         emojiDiv.style.transition = 'transform 0.2s';
         emojiDiv.style.transform = emoji.type === GameState.gameData.targetEmoji ? 'translate(-50%, -50%) scale(1.2)' : 'translate(-50%, -50%) scale(1)';
-        emojiDiv.style.filter = emoji.type === GameState.gameData.targetEmoji ? 'drop-shadow(0 0 15px #f0a500)' : 'none';
+        emojiDiv.style.filter = emoji.type === GameState.gameData.targetEmoji ? 'drop-shadow(0 0 10px #f0a500)' : 'none';
 
         emojiDiv.addEventListener('click', () => handleEmojiClick(index));
         emojiDiv.addEventListener('mouseenter', () => {
@@ -2111,21 +2084,20 @@ function renderEmojiFrenzy() {
 function handleEmojiClick(index) {
     const emoji = GameState.gameData.emojis[index];
     const currentPlayer = GameState.players[GameState.currentPlayerIndex];
-
+    
     saveState();
-
+    
     let points = 0;
-    const isTargetHit = emoji.type === GameState.gameData.targetEmoji;
-    if (isTargetHit) {
+    if (emoji.type === GameState.gameData.targetEmoji) {
         points = GameState.settings.emojiTargetPoints;
     } else {
-        points = GameState.settings.emojiPenaltyMode ?
-            -GameState.settings.emojiNonTargetPoints :
+        points = GameState.settings.emojiPenaltyMode ? 
+            -GameState.settings.emojiNonTargetPoints : 
             GameState.settings.emojiNonTargetPoints;
     }
-
+    
     currentPlayer.score += points;
-
+    
     // Respawn emoji if enabled
     if (GameState.settings.emojiRespawnHit) {
         const emojis = ['😂', '😍', '🤡', '💀', '😎', '🥳', '😱', '🤩', '🥶', '🤯'];
@@ -2151,20 +2123,14 @@ function handleEmojiClick(index) {
             attempts++;
         } while (attempts < maxAttempts);
 
-        // If target emoji was hit, respawn it with same type to ensure target is always on screen
-        const respawnType = isTargetHit ? emoji.type : emojis[Math.floor(Math.random() * emojis.length)];
-
         GameState.gameData.emojis[index] = {
-            type: respawnType,
+            type: emojis[Math.floor(Math.random() * emojis.length)],
             x: Math.min(Math.max(x, 12), 82), // Tighter bounds to match init
             y: Math.min(Math.max(y, 15), 80)
         };
     }
 
     GameState.gameData.throwsThisRound++;
-
-    // Move to next player BEFORE checking round end
-    GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
 
     // Check if round is over
     if (GameState.gameData.throwsThisRound >= GameState.players.length) {
@@ -2180,9 +2146,12 @@ function handleEmojiClick(index) {
             GameState.gameData.targetEmoji = spawnedEmojiTypes[Math.floor(Math.random() * spawnedEmojiTypes.length)];
         }
     }
-
+    
     renderEmojiFrenzy();
     updateScoreboard();
+    
+    // Move to next player
+    GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
     updateCurrentPlayerDisplay();
 }
 
@@ -2210,14 +2179,14 @@ function initBadAxe() {
     target.className = 'target-bullseye';
     
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: 60, color: '#FFD700', points: 50, label: 'Bullseye' },
+        { size: 120, color: '#ff6b6b', points: 25, label: 'Red' },
+        { size: 180, color: '#fff', points: 15, label: 'White' },
+        { size: 240, color: '#000', points: 10, label: 'Black' },
+        { size: 300, color: '#f0a500', points: 5, label: 'Orange' },
+        { size: 360, color: '#1a1a2e', points: 1, label: 'Outer' }
     ];
-
+    
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
@@ -2228,28 +2197,6 @@ function initBadAxe() {
         ringDiv.dataset.label = ring.label;
         ringDiv.style.zIndex = String(index + 1);
 
-        // Create label element positioned on the ring edge
-        const label = document.createElement('div');
-        label.className = 'ring-label';
-        label.textContent = ring.label;
-        label.style.position = 'absolute';
-        // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
-            label.style.top = '50%';
-            label.style.transform = 'translate(-50%, -50%)';
-        } else {
-            label.style.top = '5px';
-            label.style.transform = 'translateX(-50%)';
-        }
-        label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
-        label.style.fontWeight = 'bold';
-        label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
-        label.style.pointerEvents = 'none';
-        label.style.zIndex = '10';
-        label.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-
-        ringDiv.appendChild(label);
         target.appendChild(ringDiv);
     });
 
@@ -2561,34 +2508,17 @@ function updateBadAxeUI() {
 function initInfectionMode() {
     const canvas = document.getElementById('gameCanvas');
 
-    // Initialize teams - randomize who starts as infected
+    // Initialize teams
     const initialInfected = GameState.settings.infectionInitialInfected;
-
-    // Create array of player indices and shuffle
-    const playerIndices = GameState.players.map((_, i) => i);
-    for (let i = playerIndices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [playerIndices[i], playerIndices[j]] = [playerIndices[j], playerIndices[i]];
-    }
-
-    // Assign teams based on shuffled indices
     GameState.players.forEach((player, index) => {
-        player.data.team = playerIndices.indexOf(index) < initialInfected ? 'Infected' : 'Survivor';
+        player.data.team = index < initialInfected ? 'Infected' : 'Survivor';
         player.data.duelScore = 0;
         player.data.duelWins = 0;
         player.score = 0;
     });
 
-    // Initialize team turn tracking for rotation
-    GameState.gameData.survivorTurnIndex = 0; // Which survivor's turn
-    GameState.gameData.infectedTurnIndex = 0; // Which infected's turn
-
-    // Get first duel pair
-    const survivors = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Survivor');
-    const infected = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Infected');
-
-    GameState.gameData.survivorIndex = survivors[0].index;
-    GameState.gameData.infectedIndex = infected[0].index;
+    GameState.gameData.survivorIndex = initialInfected;
+    GameState.gameData.infectedIndex = 0;
     GameState.gameData.duelPhase = 'survivor'; // survivor, infected
     GameState.gameData.throwsThisDuel = 0;
     GameState.gameData.survivorDuelWins = 0;
@@ -2756,20 +2686,21 @@ function renderInfectionMode() {
     target.className = 'target-bullseye';
     target.style.marginTop = '30px';
 
+    // Use percentages for responsive scaling
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: '15%', color: '#FFD700', points: 50, label: '50' },
+        { size: '30%', color: '#ff6b6b', points: 25, label: '25' },
+        { size: '45%', color: '#fff', points: 15, label: '15' },
+        { size: '60%', color: '#000', points: 10, label: '10' },
+        { size: '75%', color: '#f0a500', points: 5, label: '5' },
+        { size: '90%', color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.width = ring.size;
+        ringDiv.style.height = ring.size;
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
@@ -2780,7 +2711,7 @@ function renderInfectionMode() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.points === 50) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -2788,7 +2719,7 @@ function renderInfectionMode() {
             label.style.transform = 'translateX(-50%)';
         }
         label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
+        label.style.fontSize = 'min(1.2rem, 1.8vw, 1.8vh)';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -2878,10 +2809,8 @@ function handleInfectionHit(points) {
         GameState.gameData.duelPhase = 'survivor';
 
         // Check win condition
-        const survivorsList = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Survivor');
-        const infectedList = GameState.players.map((p, i) => ({player: p, index: i})).filter(p => p.player.data.team === 'Infected');
-
-        if (survivorsList.length === 0) {
+        const survivorCount = GameState.players.filter(p => p.data.team === 'Survivor').length;
+        if (survivorCount === 0) {
             // Infected win
             clearInterval(GameState.gameData.gameTimerInterval);
             GameState.players.forEach(p => {
@@ -2891,12 +2820,9 @@ function handleInfectionHit(points) {
             return;
         }
 
-        // Rotate to next duel pair - cycle through all players on each team
-        GameState.gameData.survivorTurnIndex = (GameState.gameData.survivorTurnIndex + 1) % survivorsList.length;
-        GameState.gameData.infectedTurnIndex = (GameState.gameData.infectedTurnIndex + 1) % infectedList.length;
-
-        GameState.gameData.survivorIndex = survivorsList[GameState.gameData.survivorTurnIndex].index;
-        GameState.gameData.infectedIndex = infectedList[GameState.gameData.infectedTurnIndex].index;
+        // Find next duel pair
+        GameState.gameData.survivorIndex = GameState.players.findIndex(p => p.data.team === 'Survivor');
+        GameState.gameData.infectedIndex = GameState.players.findIndex(p => p.data.team === 'Infected');
     }
 
     renderInfectionMode();
@@ -3039,20 +2965,21 @@ function renderLandminesBoard() {
     const target = document.createElement('div');
     target.className = 'target-bullseye';
 
+    // Use percentages for responsive scaling
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: '15%', color: '#FFD700', points: 50, label: '50' },
+        { size: '30%', color: '#ff6b6b', points: 25, label: '25' },
+        { size: '45%', color: '#fff', points: 15, label: '15' },
+        { size: '60%', color: '#000', points: 10, label: '10' },
+        { size: '75%', color: '#f0a500', points: 5, label: '5' },
+        { size: '90%', color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.width = ring.size;
+        ringDiv.style.height = ring.size;
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
@@ -3063,7 +2990,7 @@ function renderLandminesBoard() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.points === 50) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3071,7 +2998,7 @@ function renderLandminesBoard() {
             label.style.transform = 'translateX(-50%)';
         }
         label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
+        label.style.fontSize = 'min(1.2rem, 1.8vw, 1.8vh)';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -3115,18 +3042,18 @@ function handleLandminesHit(points) {
     } else {
         currentPlayer.score = newScore;
     }
-
+    
+    renderLandminesBoard();
+    updateScoreboard();
+    
     // Check win
     if (currentPlayer.score >= targetScore) {
         setTimeout(() => endGame(), 500);
         return;
     }
-
-    // Next player (advance BEFORE rendering so board shows correct player's turn)
+    
+    // Next player
     GameState.currentPlayerIndex = (GameState.currentPlayerIndex + 1) % GameState.players.length;
-
-    renderLandminesBoard();
-    updateScoreboard();
     updateCurrentPlayerDisplay();
 }
 
@@ -3204,20 +3131,21 @@ function renderThrowRoyale() {
     const target = document.createElement('div');
     target.className = 'target-bullseye';
     
+    // Use percentages for responsive scaling
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: '15%', color: '#FFD700', points: 50, label: '50' },
+        { size: '30%', color: '#ff6b6b', points: 25, label: '25' },
+        { size: '45%', color: '#fff', points: 15, label: '15' },
+        { size: '60%', color: '#000', points: 10, label: '10' },
+        { size: '75%', color: '#f0a500', points: 5, label: '5' },
+        { size: '90%', color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.width = ring.size;
+        ringDiv.style.height = ring.size;
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
@@ -3228,7 +3156,7 @@ function renderThrowRoyale() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.points === 50) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3236,7 +3164,7 @@ function renderThrowRoyale() {
             label.style.transform = 'translateX(-50%)';
         }
         label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
+        label.style.fontSize = 'min(1.2rem, 1.8vw, 1.8vh)';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -3373,20 +3301,21 @@ function renderDateNight() {
     target.className = 'target-bullseye';
     target.style.filter = 'hue-rotate(330deg)'; // Make it more pink
     
+    // Use percentages for responsive scaling
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: '15%', color: '#FFD700', points: 50, label: '50' },
+        { size: '30%', color: '#ff6b6b', points: 25, label: '25' },
+        { size: '45%', color: '#fff', points: 15, label: '15' },
+        { size: '60%', color: '#000', points: 10, label: '10' },
+        { size: '75%', color: '#f0a500', points: 5, label: '5' },
+        { size: '90%', color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
         const ringDiv = document.createElement('div');
         ringDiv.className = 'target-ring';
-        ringDiv.style.width = ring.size + 'px';
-        ringDiv.style.height = ring.size + 'px';
+        ringDiv.style.width = ring.size;
+        ringDiv.style.height = ring.size;
         ringDiv.style.background = ring.color;
         ringDiv.dataset.points = ring.points;
         ringDiv.style.zIndex = String(index + 1);
@@ -3397,7 +3326,7 @@ function renderDateNight() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.points === 50) {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3405,7 +3334,7 @@ function renderDateNight() {
             label.style.transform = 'translateX(-50%)';
         }
         label.style.left = '50%';
-        label.style.fontSize = '1.2rem';
+        label.style.fontSize = 'min(1.2rem, 1.8vw, 1.8vh)';
         label.style.fontWeight = 'bold';
         label.style.color = ring.color === '#fff' || ring.color === '#FFD700' ? '#000' : '#fff';
         label.style.pointerEvents = 'none';
@@ -3430,9 +3359,8 @@ function renderDateNight() {
         heartContainer.style.zIndex = '100'; // Ensure hearts are above all rings
         heartContainer.dataset.bonus = 'heart';
 
-        // Position at corners (diagonal positions) for better gameplay
-        const cornerAngles = [45, 135, 225, 315]; // Top-right, Top-left, Bottom-left, Bottom-right
-        const angle = cornerAngles[i % 4];
+        // Position at outer rim of the bullseye for better gameplay
+        const angle = (360 / heartZones) * i + 45; // +45 to position at corners instead of cardinal points
         const radius = 150; // Position at the outer rim of the orange ring
         const x = Math.cos(angle * Math.PI / 180) * radius;
         const y = Math.sin(angle * Math.PI / 180) * radius;
@@ -3443,11 +3371,11 @@ function renderDateNight() {
 
         // Visual indicator background
         const indicator = document.createElement('div');
-        indicator.style.width = '84px';
-        indicator.style.height = '84px';
+        indicator.style.width = '60px';
+        indicator.style.height = '60px';
         indicator.style.background = 'radial-gradient(circle, rgba(255, 105, 180, 0.3), rgba(255, 20, 147, 0.1))';
         indicator.style.borderRadius = '50%';
-        indicator.style.border = '3px solid #ff69b4';
+        indicator.style.border = '2px solid #ff69b4';
         indicator.style.display = 'flex';
         indicator.style.alignItems = 'center';
         indicator.style.justifyContent = 'center';
@@ -3455,7 +3383,7 @@ function renderDateNight() {
 
         const heart = document.createElement('div');
         heart.textContent = '💕';
-        heart.style.fontSize = '2.8rem';
+        heart.style.fontSize = '2rem';
 
         indicator.appendChild(heart);
         heartContainer.appendChild(indicator);
@@ -3672,8 +3600,8 @@ function renderXmasTreeWithGifts() {
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '840px';
-    container.style.height = '840px';
+    container.style.maxWidth = '600px';
+    container.style.height = '600px';
     container.style.margin = '20px auto';
     container.style.display = 'flex';
     container.style.justifyContent = 'center';
@@ -3682,20 +3610,20 @@ function renderXmasTreeWithGifts() {
     // Create large Christmas tree using text/emoji layers
     const tree = document.createElement('div');
     tree.style.position = 'relative';
-    tree.style.fontSize = '39.2rem';
+    tree.style.fontSize = '28rem';
     tree.style.lineHeight = '1';
     tree.style.textAlign = 'center';
-    tree.style.filter = 'drop-shadow(0 0 30px rgba(76, 175, 80, 0.6))';
+    tree.style.filter = 'drop-shadow(0 0 20px rgba(76, 175, 80, 0.6))';
     tree.textContent = '🎄';
 
     // Add twinkling star on top
     const star = document.createElement('div');
     star.textContent = '⭐';
     star.style.position = 'absolute';
-    star.style.top = '-56px';
+    star.style.top = '-40px';
     star.style.left = '50%';
     star.style.transform = 'translateX(-50%)';
-    star.style.fontSize = '5.6rem';
+    star.style.fontSize = '4rem';
     star.style.animation = 'twinkle 1.5s ease-in-out infinite';
     star.style.filter = 'drop-shadow(0 0 10px #FFD700)';
     tree.appendChild(star);
@@ -3812,8 +3740,8 @@ function renderXmasGiftHunt() {
     container.className = 'xmas-gift-container';
     container.style.position = 'relative';
     container.style.width = '100%';
-    container.style.maxWidth = '840px';
-    container.style.height = '700px';
+    container.style.maxWidth = '600px';
+    container.style.height = '500px';
     container.style.margin = '20px auto';
     container.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #0f3a2e 100%)';
     container.style.borderRadius = '20px';
@@ -3827,14 +3755,14 @@ function renderXmasGiftHunt() {
         giftDiv.style.position = 'absolute';
         giftDiv.style.left = present.x + '%';
         giftDiv.style.top = present.y + '%';
-        giftDiv.style.fontSize = '4.2rem';
+        giftDiv.style.fontSize = '3rem';
         giftDiv.style.cursor = 'pointer';
         giftDiv.style.transition = 'transform 0.2s';
-        giftDiv.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.5))';
-
+        giftDiv.style.filter = 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))';
+        
         const valueLabel = document.createElement('div');
         valueLabel.textContent = present.value;
-        valueLabel.style.fontSize = '1.12rem';
+        valueLabel.style.fontSize = '0.8rem';
         valueLabel.style.background = '#f0a500';
         valueLabel.style.color = '#000';
         valueLabel.style.padding = '2px 6px';
