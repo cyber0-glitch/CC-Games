@@ -1299,8 +1299,8 @@ function renderAxeCrushGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '5px';
-    // Responsive sizing: increased for better visibility
-    gridContainer.style.maxWidth = 'min(60vh, 85vw, 650px)';
+    // Responsive sizing: account for UI elements and ensure it fits in viewport
+    gridContainer.style.maxWidth = 'min(45vh, 80vw, 500px)';
     gridContainer.style.margin = '0 auto';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
@@ -1650,13 +1650,10 @@ function renderAxeMemoryGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '10px';
-    // Responsive sizing: significantly increased for better visibility and centered properly
-    gridContainer.style.maxWidth = 'min(90vh, 90vw, 1100px)';
-    gridContainer.style.margin = '0 auto';
-    gridContainer.style.position = 'absolute';
-    gridContainer.style.top = '50%';
-    gridContainer.style.left = '50%';
-    gridContainer.style.transform = 'translate(-50%, -50%)';
+    // Responsive sizing: fit within viewport with appropriate tile size
+    gridContainer.style.maxWidth = 'min(50vh, 85vw, 600px)';
+    gridContainer.style.margin = '20px auto';
+    gridContainer.style.padding = '10px';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
         for (let c = 0; c < GameState.gameData.cols; c++) {
@@ -1670,7 +1667,7 @@ function renderAxeMemoryGrid() {
             cell.style.display = 'flex';
             cell.style.alignItems = 'center';
             cell.style.justifyContent = 'center';
-            cell.style.fontSize = '2.5rem';
+            cell.style.fontSize = '3.5rem';
             cell.style.cursor = tile.state === 'collected' ? 'default' : 'pointer';
             cell.style.transition = 'all 0.3s';
             
