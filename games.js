@@ -170,18 +170,18 @@ function initAroundWorld() {
         zone.dataset.zone = i + 1;
         zone.style.background = colors[i];
 
-        // Position zones in a circle - INCREASED RADIUS and REDUCED SIZE for better spacing
-        const radius = 280; // Increased for better spacing
+        // Position zones in a circle - optimized for larger container
+        const radius = 320; // Increased for better spacing with larger container
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
         const x = Math.cos(angleRad) * radius * 0.65;
         const y = Math.sin(angleRad) * radius * 0.65;
 
-        zone.style.width = '70px'; // Further reduced to prevent overlap
-        zone.style.height = '70px';
-        zone.style.left = `calc(50% + ${x}px - 35px)`;
-        zone.style.top = `calc(50% + ${y}px - 35px)`;
+        zone.style.width = '80px'; // Increased for better visibility
+        zone.style.height = '80px';
+        zone.style.left = `calc(50% + ${x}px - 40px)`;
+        zone.style.top = `calc(50% + ${y}px - 40px)`;
         zone.style.borderRadius = '50%';
-        zone.style.fontSize = '1.5rem'; // Adjusted font size
+        zone.style.fontSize = '1.6rem'; // Increased font size
         zone.textContent = i + 1;
 
         zone.addEventListener('click', (e) => {
@@ -1299,8 +1299,8 @@ function renderAxeCrushGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '5px';
-    // Responsive sizing: fit within viewport while maintaining aspect ratio
-    gridContainer.style.maxWidth = 'min(70vh, 85vw, 600px)';
+    // Responsive sizing: increased for better visibility
+    gridContainer.style.maxWidth = 'min(75vh, 90vw, 700px)';
     gridContainer.style.margin = '0 auto';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
@@ -1650,9 +1650,13 @@ function renderAxeMemoryGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '10px';
-    // Responsive sizing: fit within viewport while maintaining aspect ratio
-    gridContainer.style.maxWidth = 'min(70vh, 85vw, 600px)';
+    // Responsive sizing: increased for better visibility and centered properly
+    gridContainer.style.maxWidth = 'min(75vh, 90vw, 700px)';
     gridContainer.style.margin = '0 auto';
+    gridContainer.style.position = 'absolute';
+    gridContainer.style.top = '50%';
+    gridContainer.style.left = '50%';
+    gridContainer.style.transform = 'translate(-50%, -50%)';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
         for (let c = 0; c < GameState.gameData.cols; c++) {
