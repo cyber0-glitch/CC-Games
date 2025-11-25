@@ -389,9 +389,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* Responsive sizing: DOUBLED for better visibility, increased by 45% from previous */
-    width: min(123vh, 123vw, 1450px);
-    height: min(123vh, 123vw, 1450px);
+    /* Responsive sizing: DOUBLED for better visibility, increased by 45% from previous, reduced by 10% */
+    width: min(110.7vh, 110.7vw, 1305px);
+    height: min(110.7vh, 110.7vw, 1305px);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -551,9 +551,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* Responsive sizing: increased for better visibility */
-    width: min(80vh, 85vw, 800px);
-    height: min(80vh, 85vw, 800px);
+    /* Responsive sizing: increased for better visibility, increased by 20% */
+    width: min(96vh, 102vw, 960px);
+    height: min(96vh, 102vw, 960px);
 }
 
 .atw-zone {

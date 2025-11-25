@@ -171,17 +171,17 @@ function initAroundWorld() {
         zone.style.background = colors[i];
 
         // Position zones in a circle - optimized for larger container
-        const radius = 320; // Increased for better spacing with larger container
+        const radius = 384; // Increased by 20% for larger container
         const angleRad = (angle + (360 / zones) / 2) * Math.PI / 180;
         const x = Math.cos(angleRad) * radius * 0.65;
         const y = Math.sin(angleRad) * radius * 0.65;
 
-        zone.style.width = '80px'; // Increased for better visibility
-        zone.style.height = '80px';
-        zone.style.left = `calc(50% + ${x}px - 40px)`;
-        zone.style.top = `calc(50% + ${y}px - 40px)`;
+        zone.style.width = '96px'; // Increased by 20% for better visibility
+        zone.style.height = '96px';
+        zone.style.left = `calc(50% + ${x}px - 48px)`;
+        zone.style.top = `calc(50% + ${y}px - 48px)`;
         zone.style.borderRadius = '50%';
-        zone.style.fontSize = '1.6rem'; // Increased font size
+        zone.style.fontSize = '1.9rem'; // Increased font size proportionally
         zone.textContent = i + 1;
 
         zone.addEventListener('click', (e) => {
@@ -2017,7 +2017,7 @@ function initEmojiFrenzy() {
         GameState.gameData.emojis.push({
             type: emojiType,
             x: Math.min(Math.max(x, 12), 82), // Tighter bounds to keep emojis inside
-            y: Math.min(Math.max(y, 15), 80)
+            y: Math.min(Math.max(y, 18), 75) // Adjusted bounds to prevent clipping at top/bottom
         });
     }
 
@@ -2115,7 +2115,7 @@ function handleEmojiClick(index) {
 
         do {
             x = Math.random() * 70 + 10; // Keep in safe bounds
-            y = Math.random() * 70 + 10;
+            y = Math.random() * 57 + 18; // Adjusted to match init bounds (18-75%)
 
             // Check for overlap with other emojis
             const tooClose = GameState.gameData.emojis.some((e, i) => {
@@ -2132,7 +2132,7 @@ function handleEmojiClick(index) {
         GameState.gameData.emojis[index] = {
             type: emojis[Math.floor(Math.random() * emojis.length)],
             x: Math.min(Math.max(x, 12), 82), // Tighter bounds to match init
-            y: Math.min(Math.max(y, 15), 80)
+            y: Math.min(Math.max(y, 18), 75) // Adjusted bounds to prevent clipping at top/bottom
         };
     }
 
@@ -3609,7 +3609,7 @@ function renderXmasTreeWithGifts() {
 
     const container = document.createElement('div');
     container.style.position = 'absolute';
-    container.style.top = '50%';
+    container.style.top = '53%';
     container.style.left = '50%';
     container.style.transform = 'translate(-50%, -50%)';
     container.style.width = '90%';
