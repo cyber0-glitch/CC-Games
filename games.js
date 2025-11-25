@@ -1300,7 +1300,7 @@ function renderAxeCrushGrid() {
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '5px';
     // Responsive sizing: increased for better visibility
-    gridContainer.style.maxWidth = 'min(75vh, 90vw, 700px)';
+    gridContainer.style.maxWidth = 'min(60vh, 85vw, 650px)';
     gridContainer.style.margin = '0 auto';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
@@ -1650,8 +1650,8 @@ function renderAxeMemoryGrid() {
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
     gridContainer.style.gap = '10px';
-    // Responsive sizing: increased for better visibility and centered properly
-    gridContainer.style.maxWidth = 'min(75vh, 90vw, 700px)';
+    // Responsive sizing: significantly increased for better visibility and centered properly
+    gridContainer.style.maxWidth = 'min(90vh, 90vw, 1100px)';
     gridContainer.style.margin = '0 auto';
     gridContainer.style.position = 'absolute';
     gridContainer.style.top = '50%';
@@ -2033,11 +2033,13 @@ function renderEmojiFrenzy() {
     canvas.innerHTML = '';
     
     const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.width = '100%';
-    container.style.maxWidth = '600px';
-    container.style.height = '500px';
-    container.style.margin = '0 auto';
+    container.style.position = 'absolute';
+    container.style.top = '50%';
+    container.style.left = '50%';
+    container.style.transform = 'translate(-50%, -50%)';
+    container.style.width = '90%';
+    container.style.maxWidth = 'min(90vh, 90vw, 1000px)';
+    container.style.height = 'min(75vh, 800px)';
     container.style.background = '#1a1a2e';
     container.style.borderRadius = '20px';
     container.style.border = '3px solid #f0a500';
@@ -2055,7 +2057,7 @@ function renderEmojiFrenzy() {
     const emojiArea = document.createElement('div');
     emojiArea.style.position = 'relative';
     emojiArea.style.width = '100%';
-    emojiArea.style.height = '350px';
+    emojiArea.style.height = 'calc(100% - 120px)';
     
     GameState.gameData.emojis.forEach((emoji, index) => {
         const emojiDiv = document.createElement('div');
@@ -3593,20 +3595,26 @@ function renderXmasTreeWithGifts() {
     const throwsRemaining = maxThrows - (currentPlayer.data.throws || 0);
 
     const throwsDisplay = document.createElement('div');
+    throwsDisplay.style.position = 'absolute';
+    throwsDisplay.style.top = '10px';
+    throwsDisplay.style.left = '50%';
+    throwsDisplay.style.transform = 'translateX(-50%)';
     throwsDisplay.style.textAlign = 'center';
     throwsDisplay.style.fontSize = '1.5rem';
     throwsDisplay.style.fontWeight = 'bold';
     throwsDisplay.style.color = '#f0a500';
-    throwsDisplay.style.marginBottom = '10px';
+    throwsDisplay.style.zIndex = '100';
     throwsDisplay.innerHTML = `Throws Remaining: ${throwsRemaining} / ${maxThrows}`;
     canvas.appendChild(throwsDisplay);
 
     const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.width = '100%';
-    container.style.maxWidth = '600px';
-    container.style.height = '600px';
-    container.style.margin = '20px auto';
+    container.style.position = 'absolute';
+    container.style.top = '50%';
+    container.style.left = '50%';
+    container.style.transform = 'translate(-50%, -50%)';
+    container.style.width = '90%';
+    container.style.maxWidth = 'min(90vh, 90vw, 900px)';
+    container.style.height = 'min(90vh, 90vw, 900px)';
     container.style.display = 'flex';
     container.style.justifyContent = 'center';
     container.style.alignItems = 'center';
@@ -3614,7 +3622,7 @@ function renderXmasTreeWithGifts() {
     // Create large Christmas tree using text/emoji layers
     const tree = document.createElement('div');
     tree.style.position = 'relative';
-    tree.style.fontSize = '28rem';
+    tree.style.fontSize = '40rem';
     tree.style.lineHeight = '1';
     tree.style.textAlign = 'center';
     tree.style.filter = 'drop-shadow(0 0 20px rgba(76, 175, 80, 0.6))';

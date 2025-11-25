@@ -389,9 +389,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* Responsive sizing: DOUBLED for better visibility */
-    width: min(85vh, 85vw, 1000px);
-    height: min(85vh, 85vw, 1000px);
+    /* Responsive sizing: DOUBLED for better visibility, increased by 45% from previous */
+    width: min(123vh, 123vw, 1450px);
+    height: min(123vh, 123vw, 1450px);
     border-radius: 50%;
     display: flex;
     align-items: center;
