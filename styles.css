@@ -1170,6 +1170,38 @@ body {
     transition: none;
 }
 
+/* Floating debug toggle button */
+#debug-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #f0a500, #ff8c00);
+    border: 3px solid #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#debug-toggle-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 6px 20px rgba(240, 165, 0, 0.6);
+    background: linear-gradient(145deg, #ff8c00, #f0a500);
+}
+
+#debug-toggle-btn:active {
+    transform: scale(0.95);
+}
+
 /* Mobile responsiveness for debug panel */
 @media (max-width: 800px) {
     #debug-panel {
@@ -1179,5 +1211,13 @@ body {
         bottom: 0;
         border-left: none;
         border-top: 3px solid #f0a500;
+    }
+
+    #debug-toggle-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
+        bottom: 25px;
+        right: 25px;
     }
 }

@@ -178,6 +178,7 @@ const DebugPanel = {
         });
 
         this.createPanel();
+        this.createFloatingButton();
     },
 
     toggle() {
@@ -185,6 +186,16 @@ const DebugPanel = {
         if (this.panel) {
             this.panel.style.display = this.isOpen ? 'block' : 'none';
         }
+    },
+
+    createFloatingButton() {
+        // Create a floating button for tablet/mobile access
+        const button = document.createElement('button');
+        button.id = 'debug-toggle-btn';
+        button.innerHTML = '🔧';
+        button.title = 'Toggle Debug Panel';
+        button.onclick = () => this.toggle();
+        document.body.appendChild(button);
     },
 
     createPanel() {
@@ -219,7 +230,7 @@ const DebugPanel = {
     },
 
     generateSliders() {
-        let html = '<div class="debug-hint">Press Ctrl+Shift+D to toggle this panel</div>';
+        let html = '<div class="debug-hint">Press Ctrl+Shift+D or tap the 🔧 button to toggle this panel</div>';
 
         // Bullseye Games
         html += this.createSection('🎯 Bullseye Games', 'bullseye', [
