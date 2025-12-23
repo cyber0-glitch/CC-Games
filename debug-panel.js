@@ -515,9 +515,34 @@ const DebugPanel = {
         }
 
         // Trigger re-render if game is active
-        if (GameState.currentGame && typeof window.renderCurrentGame === 'function') {
-            // Some games might need to re-render
-            // We'll add a hook for this
+        if (typeof GameState !== 'undefined' && GameState.currentGame) {
+            // Re-render the game to apply the new sizes
+            const renderFunctionMap = {
+                'bullseye': 'initBullseye',
+                '21': 'init21Game',
+                'ticTacToe': 'initTicTacToe',
+                'connectFour': 'initConnectFour',
+                'targetPractice': 'initTargetPractice',
+                'zombieHunt': 'initZombieHunt',
+                'aroundTheWorld': 'initAroundTheWorld',
+                'cricket': 'initCricket',
+                'knockout': 'initKnockout',
+                'badAxe': 'initBadAxe',
+                'infection': 'initInfection',
+                'landmines': 'initLandmines',
+                'throwRoyale': 'initThrowRoyale',
+                'dateNight': 'renderDateNight',
+                'merryAxemas': 'initMerryAxemas',
+                'axeCrush': 'initAxeCrush',
+                'axeMemory': 'initAxeMemory',
+                'wordWack': 'initWordWack',
+                'emojiFrenzy': 'initEmojiFrenzy'
+            };
+
+            const renderFunc = renderFunctionMap[GameState.currentGame];
+            if (renderFunc && typeof window[renderFunc] === 'function') {
+                window[renderFunc]();
+            }
         }
     },
 

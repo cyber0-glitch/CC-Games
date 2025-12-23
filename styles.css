@@ -16,6 +16,123 @@ body {
     -webkit-user-select: none;
 }
 
+/* CSS Variables for Debug Panel */
+:root {
+    /* Bullseye Games */
+    --bullseye-ring1: 82px;
+    --bullseye-ring2: 165px;
+    --bullseye-ring3: 248px;
+    --bullseye-ring4: 330px;
+    --bullseye-ring5: 412px;
+    --bullseye-ring6: 495px;
+    --bullseye-label-font: 1.2rem;
+    --bullseye-containerSize: 550px;
+
+    /* Around the World */
+    --aroundTheWorld-zoneSize: 98px;
+    --aroundTheWorld-zoneRadius: 392px;
+    --aroundTheWorld-positionOffset: 0.65;
+    --aroundTheWorld-fontSize: 2.0rem;
+
+    /* Tic-Tac-Toe */
+    --ticTacToe-gridSize: 900px;
+    --ticTacToe-gap: 15px;
+    --ticTacToe-fontSize: 6.0rem;
+    --ticTacToe-borderWidth: 4px;
+
+    /* Target Practice */
+    --targetPractice-targetSize: 120px;
+    --targetPractice-borderWidth: 4px;
+    --targetPractice-fontSize: 2.0rem;
+
+    /* Zombie Hunt */
+    --zombieHunt-zombieSize: 100px;
+    --zombieHunt-fontSize: 5.0rem;
+
+    /* Connect Four */
+    --connectFour-gridWidth: 1050px;
+    --connectFour-gridHeight: 900px;
+    --connectFour-padding: 30px;
+    --connectFour-gap: 12px;
+    --connectFour-fontSize: 3.0rem;
+    --connectFour-borderWidth: 5px;
+
+    /* Cricket/Knockout */
+    --cricket-boardMaxWidth: 900px;
+    --cricket-numberColWidth: 150px;
+    --cricket-cellSize: 112px;
+    --cricket-fontSize: 3.5rem;
+    --cricket-gap: 10px;
+
+    /* Axe Crush */
+    --axeCrush-maxWidth: 600px;
+    --axeCrush-fontSize: 2.0rem;
+    --axeCrush-borderWidth: 2px;
+    --axeCrush-borderRadius: 10px;
+    --axeCrush-gap: 5px;
+
+    /* Axe Memory */
+    --axeMemory-maxWidth: 600px;
+    --axeMemory-fontSize: 2.5rem;
+    --axeMemory-borderWidth: 3px;
+    --axeMemory-borderRadius: 10px;
+    --axeMemory-gap: 10px;
+
+    /* Axe Word Wack */
+    --wordWack-maxWidth: 600px;
+    --wordWack-solutionFontSize: 2.5rem;
+    --wordWack-letterSpacing: 5px;
+    --wordWack-letterFontSize: 1.5rem;
+    --wordWack-borderWidth: 2px;
+    --wordWack-gap: 10px;
+
+    /* Emoji Frenzy */
+    --emojiFrenzy-containerWidth: 840px;
+    --emojiFrenzy-containerHeight: 700px;
+    --emojiFrenzy-headerFontSize: 2.5rem;
+    --emojiFrenzy-targetFontSize: 4.2rem;
+    --emojiFrenzy-emojiFontSize: 4.2rem;
+    --emojiFrenzy-emojiAreaHeight: 490px;
+    --emojiFrenzy-borderWidth: 3px;
+    --emojiFrenzy-hoverScale: 1.3;
+
+    /* Date Night */
+    --dateNight-heartSize: 84px;
+    --dateNight-heartFontSize: 2.8rem;
+    --dateNight-heartRadius: 150px;
+    --dateNight-darePopupPadding: 30px;
+    --dateNight-dareTitleFontSize: 1.8rem;
+    --dateNight-dareTextFontSize: 1.3rem;
+
+    /* Merry Axe-mas */
+    --merryAxemas-treeFontSize: 39.2rem;
+    --merryAxemas-starFontSize: 5.6rem;
+    --merryAxemas-starTopOffset: -56px;
+    --merryAxemas-giftFontSize: 3.0rem;
+    --merryAxemas-containerHeight: 840px;
+    --merryAxemas-containerMaxWidth: 840px;
+    --merryAxemas-snowflakeFontSize: 1.5rem;
+
+    /* Infection Mode */
+    --infection-columnPadding: 20px;
+    --infection-playerPadding: 10px;
+    --infection-borderWidth: 3px;
+    --infection-timerFontSize: 1.5rem;
+
+    /* Landmines */
+    --landmines-ladderWidth: 250px;
+    --landmines-ladderHeight: 600px;
+    --landmines-rungPadding: 10px;
+    --landmines-scoreFontSize: 1.8rem;
+
+    /* Throw Royale */
+    --throwRoyale-playerPadding: 15px;
+    --throwRoyale-playerMinWidth: 120px;
+    --throwRoyale-heartFontSize: 1.5rem;
+    --throwRoyale-scoreFontSize: 1.2rem;
+    --throwRoyale-borderWidth: 3px;
+}
+
 #app {
     width: 100vw;
     height: 100vh;
@@ -389,8 +506,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 550px;
-    height: 550px;
+    width: var(--bullseye-containerSize);
+    height: var(--bullseye-containerSize);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -425,19 +542,19 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 15px;
-    width: 900px;
-    height: 900px;
+    gap: var(--ticTacToe-gap);
+    width: var(--ticTacToe-gridSize);
+    height: var(--ticTacToe-gridSize);
 }
 
 .ttt-cell {
     background: rgba(42, 42, 62, 0.8);
-    border: 4px solid #f0a500;
+    border: var(--ticTacToe-borderWidth) solid #f0a500;
     border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 6rem;
+    font-size: var(--ticTacToe-fontSize);
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -460,13 +577,13 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    gap: 12px;
-    width: 1050px;
-    height: 900px;
+    gap: var(--connectFour-gap);
+    width: var(--connectFour-gridWidth);
+    height: var(--connectFour-gridHeight);
     background: rgba(42, 42, 62, 0.9);
-    padding: 30px;
+    padding: var(--connectFour-padding);
     border-radius: 20px;
-    border: 5px solid #f0a500;
+    border: var(--connectFour-borderWidth) solid #f0a500;
 }
 
 .c4-cell {
@@ -476,7 +593,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 3rem;
+    font-size: var(--connectFour-fontSize);
     cursor: pointer;
 }
 
@@ -487,9 +604,9 @@ body {
 /* Zombie Hunt */
 .zombie {
     position: absolute;
-    width: 100px;
-    height: 100px;
-    font-size: 5rem;
+    width: var(--zombieHunt-zombieSize);
+    height: var(--zombieHunt-zombieSize);
+    font-size: var(--zombieHunt-fontSize);
     cursor: pointer;
     transition: all 0.3s;
     /* animation removed - controlled by JavaScript based on settings */
@@ -520,12 +637,12 @@ body {
 /* Target Practice */
 .moving-target {
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: var(--targetPractice-targetSize);
+    height: var(--targetPractice-targetSize);
     border-radius: 50%;
     background: radial-gradient(circle, #ff6b6b 20%, #f0a500 40%, #fff 60%, #000 80%);
     cursor: pointer;
-    border: 4px solid #fff;
+    border: var(--targetPractice-borderWidth) solid #fff;
     box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
 }
 
@@ -534,7 +651,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 2rem;
+    font-size: var(--targetPractice-fontSize);
     font-weight: bold;
     color: #fff;
     text-shadow: 2px 2px 4px #000;
@@ -546,8 +663,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 700px;
-    height: 700px;
+    width: calc(var(--aroundTheWorld-zoneRadius) * 2);
+    height: calc(var(--aroundTheWorld-zoneRadius) * 2);
 }
 
 .atw-zone {
@@ -556,7 +673,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.8rem;
+    font-size: var(--aroundTheWorld-fontSize);
     font-weight: bold;
     border: 3px solid #fff;
     transition: all 0.3s;
@@ -843,30 +960,6 @@ body {
         min-height: 180px;
     }
 
-    .target-bullseye {
-        width: 550px;
-        height: 550px;
-    }
-
-    .ttt-grid {
-        width: 900px;
-        height: 900px;
-    }
-
-    .c4-grid {
-        width: 1050px;
-        height: 900px;
-    }
-
-    .atw-target {
-        width: 700px;
-        height: 700px;
-    }
-
-    .atw-zone {
-        font-size: 1.8rem;
-    }
-
     .settings-container,
     .help-container {
         padding: 30px;
@@ -1013,7 +1106,10 @@ body {
 .debug-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
+    max-height: calc(100vh - 80px); /* Ensure it doesn't overflow parent */
+    min-height: 0; /* Important for flex scrolling */
 }
 
 .debug-hint {

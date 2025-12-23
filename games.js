@@ -1,4 +1,18 @@
 // ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+// Get bullseye ring sizes from debug config or defaults
+function getBullseyeRingSizes() {
+    if (typeof DebugPanel !== 'undefined' && DebugPanel.config && DebugPanel.config.bullseye) {
+        const cfg = DebugPanel.config.bullseye;
+        return [cfg.ring1, cfg.ring2, cfg.ring3, cfg.ring4, cfg.ring5, cfg.ring6];
+    }
+    // Default values
+    return [82, 165, 248, 330, 412, 495];
+}
+
+// ============================================
 // GAME 1: CLASSIC BULLSEYE
 // ============================================
 function initBullseye() {
@@ -18,13 +32,14 @@ function initBullseye() {
     target.className = 'target-bullseye';
     console.log('Target created:', target);
 
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -43,7 +58,7 @@ function initBullseye() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -1005,13 +1020,14 @@ function init21Game() {
     const target = document.createElement('div');
     target.className = 'target-bullseye';
 
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 7, label: '7' },
-        { size: 165, color: '#ff6b6b', points: 5, label: '5' },
-        { size: 248, color: '#fff', points: 3, label: '3' },
-        { size: 330, color: '#000', points: 2, label: '2' },
-        { size: 412, color: '#f0a500', points: 1, label: '1' },
-        { size: 495, color: '#1a1a2e', points: 0, label: '0' }
+        { size: sizes[0], color: '#FFD700', points: 7, label: '7' },
+        { size: sizes[1], color: '#ff6b6b', points: 5, label: '5' },
+        { size: sizes[2], color: '#fff', points: 3, label: '3' },
+        { size: sizes[3], color: '#000', points: 2, label: '2' },
+        { size: sizes[4], color: '#f0a500', points: 1, label: '1' },
+        { size: sizes[5], color: '#1a1a2e', points: 0, label: '0' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -2208,14 +2224,15 @@ function initBadAxe() {
     // Create bullseye target (reuse from classic bullseye)
     const target = document.createElement('div');
     target.className = 'target-bullseye';
-    
+
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -2234,7 +2251,7 @@ function initBadAxe() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -2756,13 +2773,14 @@ function renderInfectionMode() {
     target.className = 'target-bullseye';
     target.style.marginTop = '30px';
 
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -2780,7 +2798,7 @@ function renderInfectionMode() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3039,13 +3057,14 @@ function renderLandminesBoard() {
     const target = document.createElement('div');
     target.className = 'target-bullseye';
 
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3063,7 +3082,7 @@ function renderLandminesBoard() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3203,14 +3222,15 @@ function renderThrowRoyale() {
     // Bullseye target
     const target = document.createElement('div');
     target.className = 'target-bullseye';
-    
+
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3228,7 +3248,7 @@ function renderThrowRoyale() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
@@ -3372,14 +3392,15 @@ function renderDateNight() {
     const target = document.createElement('div');
     target.className = 'target-bullseye';
     target.style.filter = 'hue-rotate(330deg)'; // Make it more pink
-    
+
+    const sizes = getBullseyeRingSizes();
     const rings = [
-        { size: 82, color: '#FFD700', points: 50, label: '50' },
-        { size: 165, color: '#ff6b6b', points: 25, label: '25' },
-        { size: 248, color: '#fff', points: 15, label: '15' },
-        { size: 330, color: '#000', points: 10, label: '10' },
-        { size: 412, color: '#f0a500', points: 5, label: '5' },
-        { size: 495, color: '#1a1a2e', points: 1, label: '1' }
+        { size: sizes[0], color: '#FFD700', points: 50, label: '50' },
+        { size: sizes[1], color: '#ff6b6b', points: 25, label: '25' },
+        { size: sizes[2], color: '#fff', points: 15, label: '15' },
+        { size: sizes[3], color: '#000', points: 10, label: '10' },
+        { size: sizes[4], color: '#f0a500', points: 5, label: '5' },
+        { size: sizes[5], color: '#1a1a2e', points: 1, label: '1' }
     ];
 
     rings.reverse().forEach((ring, index) => {
@@ -3397,7 +3418,7 @@ function renderDateNight() {
         label.textContent = ring.label;
         label.style.position = 'absolute';
         // Center the label for the smallest ring (50 points), move others up
-        if (ring.size === 82) {
+        if (ring.label === '50') {
             label.style.top = '50%';
             label.style.transform = 'translate(-50%, -50%)';
         } else {
