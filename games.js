@@ -1691,14 +1691,15 @@ function initAxeMemory() {
 function renderAxeMemoryGrid() {
     const canvas = document.getElementById('gameCanvas');
     canvas.innerHTML = '';
-    
+
     const gridContainer = document.createElement('div');
     gridContainer.className = 'memory-grid';
     gridContainer.style.display = 'grid';
     gridContainer.style.gridTemplateColumns = `repeat(${GameState.gameData.cols}, 1fr)`;
-    gridContainer.style.gap = '10px';
-    gridContainer.style.maxWidth = '600px';
+    gridContainer.style.gap = 'var(--memory-gap, 10px)';
+    gridContainer.style.maxWidth = 'var(--memory-maxWidth, 600px)';
     gridContainer.style.margin = '0 auto';
+    gridContainer.style.marginTop = 'var(--memory-marginTop, 50px)';
     
     for (let r = 0; r < GameState.gameData.rows; r++) {
         for (let c = 0; c < GameState.gameData.cols; c++) {
@@ -1707,12 +1708,12 @@ function renderAxeMemoryGrid() {
             cell.className = 'memory-tile';
             cell.style.aspectRatio = '1';
             cell.style.background = tile.state === 'collected' ? '#1a1a2e' : '#f0a500';
-            cell.style.border = '3px solid #555';
-            cell.style.borderRadius = '10px';
+            cell.style.border = `var(--memory-borderWidth, 3px) solid #555`;
+            cell.style.borderRadius = 'var(--memory-borderRadius, 10px)';
             cell.style.display = 'flex';
             cell.style.alignItems = 'center';
             cell.style.justifyContent = 'center';
-            cell.style.fontSize = '2.5rem';
+            cell.style.fontSize = 'var(--memory-fontSize, 2.5rem)';
             cell.style.cursor = tile.state === 'collected' ? 'default' : 'pointer';
             cell.style.transition = 'all 0.3s';
             

@@ -595,6 +595,12 @@ body {
     align-items: center;
     font-size: var(--connectFour-fontSize);
     cursor: pointer;
+    aspect-ratio: 1 / 1;
+    line-height: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
 }
 
 .c4-cell:hover:not(.filled) {

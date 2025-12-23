@@ -22,6 +22,30 @@ const DebugPanel = {
             containerSize: 550
         },
 
+        // 21 Game (uses bullseye target)
+        game21: {
+            ring1: 82,
+            ring2: 165,
+            ring3: 248,
+            ring4: 330,
+            ring5: 412,
+            ring6: 495,
+            labelFontSize: 1.2,
+            containerSize: 550
+        },
+
+        // Bad Axe (uses bullseye target)
+        badAxe: {
+            ring1: 82,
+            ring2: 165,
+            ring3: 248,
+            ring4: 330,
+            ring5: 412,
+            ring6: 495,
+            labelFontSize: 1.2,
+            containerSize: 550
+        },
+
         // Around the World
         aroundTheWorld: {
             zoneSize: 98,
@@ -96,7 +120,8 @@ const DebugPanel = {
             borderWidth: 3,
             borderRadius: 10,
             gap: 10,
-            revealDuration: 1.5
+            revealDuration: 1.5,
+            marginTop: 50
         },
 
         // Axe Word Wack
@@ -244,6 +269,30 @@ const DebugPanel = {
             { key: 'containerSize', label: 'Container Size', min: 400, max: 1000, step: 10, unit: 'px' }
         ]);
 
+        // 21 Game
+        html += this.createSection('🎲 21 Game', 'game21', [
+            { key: 'ring1', label: 'Ring 1 (7 pts - Center)', min: 40, max: 200, step: 1, unit: 'px' },
+            { key: 'ring2', label: 'Ring 2 (5 pts)', min: 80, max: 300, step: 1, unit: 'px' },
+            { key: 'ring3', label: 'Ring 3 (3 pts)', min: 120, max: 400, step: 1, unit: 'px' },
+            { key: 'ring4', label: 'Ring 4 (2 pts)', min: 160, max: 500, step: 1, unit: 'px' },
+            { key: 'ring5', label: 'Ring 5 (1 pt)', min: 200, max: 600, step: 1, unit: 'px' },
+            { key: 'ring6', label: 'Ring 6 (0 pts - Outer)', min: 240, max: 700, step: 1, unit: 'px' },
+            { key: 'labelFontSize', label: 'Label Font Size', min: 0.5, max: 3, step: 0.1, unit: 'rem' },
+            { key: 'containerSize', label: 'Container Size', min: 400, max: 1000, step: 10, unit: 'px' }
+        ]);
+
+        // Bad Axe
+        html += this.createSection('🏀 BAD AXE', 'badAxe', [
+            { key: 'ring1', label: 'Ring 1 (50 pts - Bullseye)', min: 40, max: 200, step: 1, unit: 'px' },
+            { key: 'ring2', label: 'Ring 2 (25 pts)', min: 80, max: 300, step: 1, unit: 'px' },
+            { key: 'ring3', label: 'Ring 3 (15 pts)', min: 120, max: 400, step: 1, unit: 'px' },
+            { key: 'ring4', label: 'Ring 4 (10 pts)', min: 160, max: 500, step: 1, unit: 'px' },
+            { key: 'ring5', label: 'Ring 5 (5 pts)', min: 200, max: 600, step: 1, unit: 'px' },
+            { key: 'ring6', label: 'Ring 6 (1 pt - Outer)', min: 240, max: 700, step: 1, unit: 'px' },
+            { key: 'labelFontSize', label: 'Label Font Size', min: 0.5, max: 3, step: 0.1, unit: 'rem' },
+            { key: 'containerSize', label: 'Container Size', min: 400, max: 1000, step: 10, unit: 'px' }
+        ]);
+
         // Around the World
         html += this.createSection('🌍 Around the World', 'aroundTheWorld', [
             { key: 'zoneSize', label: 'Zone Size', min: 50, max: 150, step: 1, unit: 'px' },
@@ -318,7 +367,8 @@ const DebugPanel = {
             { key: 'borderWidth', label: 'Border Width', min: 1, max: 6, step: 1, unit: 'px' },
             { key: 'borderRadius', label: 'Border Radius', min: 0, max: 30, step: 1, unit: 'px' },
             { key: 'gap', label: 'Gap', min: 5, max: 25, step: 1, unit: 'px' },
-            { key: 'revealDuration', label: 'Reveal Duration', min: 0.5, max: 5, step: 0.1, unit: 's' }
+            { key: 'revealDuration', label: 'Reveal Duration', min: 0.5, max: 5, step: 0.1, unit: 's' },
+            { key: 'marginTop', label: 'Vertical Position (Top Margin)', min: 0, max: 300, step: 5, unit: 'px' }
         ]);
 
         // Axe Word Wack
@@ -458,10 +508,13 @@ const DebugPanel = {
     applyChanges(category, key, value, unit) {
         // Apply CSS changes dynamically
         const root = document.documentElement;
+        let needsRerender = false;
 
         // Map config to CSS variables and game settings
         switch(category) {
             case 'bullseye':
+            case 'game21':
+            case 'badAxe':
                 if (key.startsWith('ring')) {
                     root.style.setProperty(`--bullseye-${key}`, `${value}px`);
                 } else if (key === 'labelFontSize') {
@@ -469,6 +522,24 @@ const DebugPanel = {
                 } else if (key === 'containerSize') {
                     root.style.setProperty('--bullseye-container-size', `${value}px`);
                 }
+                needsRerender = true; // Bullseye needs rerender to update ring sizes
+                break;
+
+            case 'aroundTheWorld':
+                root.style.setProperty(`--aroundTheWorld-${key}`, `${value}${unit}`);
+                needsRerender = true; // Around the World needs rerender to reposition zones
+                break;
+
+            case 'ticTacToe':
+                root.style.setProperty(`--ticTacToe-${key}`, `${value}${unit}`);
+                // Only rerender for structural changes, not cosmetic ones
+                needsRerender = false;
+                break;
+
+            case 'connectFour':
+                root.style.setProperty(`--connectFour-${key}`, `${value}${unit}`);
+                // Only rerender for structural changes
+                needsRerender = false;
                 break;
 
             case 'targetPractice':
@@ -478,6 +549,8 @@ const DebugPanel = {
                     GameState.settings.staticDuration = value;
                 }
                 root.style.setProperty(`--target-practice-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately to existing targets
+                needsRerender = false;
                 break;
 
             case 'zombieHunt':
@@ -485,16 +558,35 @@ const DebugPanel = {
                     GameState.settings.maxZombies = value;
                 } else if (key === 'despawnTime' && GameState.settings) {
                     GameState.settings.zombieDespawnTime = value;
+                } else if (key === 'minDistance' && GameState.settings) {
+                    GameState.settings.zombieMinDistance = value;
                 }
                 root.style.setProperty(`--zombie-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
+                break;
+
+            case 'cricket':
+                root.style.setProperty(`--cricket-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
                 break;
 
             case 'axeCrush':
                 if (GameState.settings) {
-                    if (key === 'gridCols') GameState.settings.crushGridCols = value;
-                    if (key === 'gridRows') GameState.settings.crushGridRows = value;
-                    if (key === 'iconTypes') GameState.settings.crushIconTypes = value;
-                    if (key === 'minGroupSize') GameState.settings.crushMinGroupSize = value;
+                    if (key === 'gridCols') {
+                        GameState.settings.crushGridCols = value;
+                        needsRerender = true; // Grid size change requires rerender
+                    } else if (key === 'gridRows') {
+                        GameState.settings.crushGridRows = value;
+                        needsRerender = true; // Grid size change requires rerender
+                    } else if (key === 'iconTypes') {
+                        GameState.settings.crushIconTypes = value;
+                        needsRerender = true; // Icon types change requires rerender
+                    } else if (key === 'minGroupSize') {
+                        GameState.settings.crushMinGroupSize = value;
+                        // Min group size doesn't require rerender
+                    }
                 }
                 root.style.setProperty(`--crush-${key}`, `${value}${unit}`);
                 break;
@@ -502,20 +594,69 @@ const DebugPanel = {
             case 'axeMemory':
                 if (key === 'gridSize' && GameState.settings) {
                     GameState.settings.memoryGridSize = value;
+                    needsRerender = true; // Grid size change requires rerender
                 } else if (key === 'revealDuration' && GameState.settings) {
                     GameState.settings.memoryRevealDuration = value;
+                    needsRerender = false;
+                } else if (key === 'marginTop') {
+                    // Margin top changes should rerender to update grid position
+                    needsRerender = true;
+                } else {
+                    // CSS-only changes don't need rerender
+                    needsRerender = false;
                 }
                 root.style.setProperty(`--memory-${key}`, `${value}${unit}`);
+                break;
+
+            case 'wordWack':
+                root.style.setProperty(`--wordWack-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
+                break;
+
+            case 'emojiFrenzy':
+                root.style.setProperty(`--emojiFrenzy-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
+                break;
+
+            case 'dateNight':
+                root.style.setProperty(`--dateNight-${key}`, `${value}${unit}`);
+                needsRerender = true; // Date Night needs rerender for heart repositioning
+                break;
+
+            case 'merryAxemas':
+                root.style.setProperty(`--merryAxemas-${key}`, `${value}${unit}`);
+                needsRerender = true; // Merry Axemas needs rerender for gift repositioning
+                break;
+
+            case 'infection':
+                root.style.setProperty(`--infection-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
+                break;
+
+            case 'landmines':
+                root.style.setProperty(`--landmines-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
+                break;
+
+            case 'throwRoyale':
+                root.style.setProperty(`--throwRoyale-${key}`, `${value}${unit}`);
+                // Don't rerender - CSS changes apply immediately
+                needsRerender = false;
                 break;
 
             // Add more cases for other categories...
             default:
                 // Generic CSS variable application
                 root.style.setProperty(`--${category}-${key}`, `${value}${unit}`);
+                needsRerender = false;
         }
 
-        // Trigger re-render if game is active
-        if (typeof GameState !== 'undefined' && GameState.currentGame) {
+        // Trigger re-render only if needed and if game is active
+        if (needsRerender && typeof GameState !== 'undefined' && GameState.currentGame) {
             // Re-render the game to apply the new sizes
             const renderFunctionMap = {
                 'bullseye': 'initBullseye',
