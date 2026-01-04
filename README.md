@@ -16,6 +16,8 @@ This application provides 18 different axe throwing games that run on Android ta
 - **Undo Functionality**: Undo last action if mistakes are made
 - **Customizable Settings**: Adjust difficulty, rules, and gameplay options
 - **In-Game Modals**: Smooth user experience with custom modal dialogs
+- **Debug Panel**: Real-time adjustment of game element sizes (toggle with Ctrl+Shift+D or floating button)
+- **Tablet-Optimized**: Designed for 1200x1920 resolution tablets with projector setup
 
 ## Installation
 
@@ -116,11 +118,12 @@ Festive holiday mode! Hit presents and ornaments on the Christmas tree for point
 
 ```
 CC-Games/
-├── index.html      # Main HTML structure and game interface
-├── styles.css      # All styling, animations, and responsive design
-├── app.js          # Core app logic, player management, and settings
-├── games.js        # All 18 game implementations
-└── README.md       # This file
+├── index.html       # Main HTML structure and game interface
+├── styles.css       # All styling, animations, and responsive design
+├── app.js           # Core app logic, player management, and settings
+├── games.js         # All 18 game implementations
+├── debug-panel.js   # Developer debug panel for real-time size adjustments
+└── README.md        # This file
 ```
 
 ## Customization
@@ -132,12 +135,21 @@ Access the settings menu from the main menu to customize:
 - **Difficulty Modes**: Toggle hard mode for 21 Game
 - **Game-Specific Rules**: Customize grid sizes, point values, and gameplay mechanics for each game
 
+### Via Debug Panel
+For developers and installers, a comprehensive debug panel is available:
+- **Toggle**: Press `Ctrl+Shift+D` or use the floating debug button (bottom-right)
+- **Real-Time Adjustments**: Modify sizes of game elements (targets, rings, fonts) while games are running
+- **Visual Calibration**: Fine-tune element sizes for different projector setups
+- **Game-Specific Controls**: Each game has its own set of adjustable parameters
+- **Touch-Friendly**: Includes sliders optimized for tablet use
+
 ### Via Code
 You can also customize by editing the source files:
 - **Colors & Themes**: Edit CSS variables in `styles.css`
 - **Point Values**: Modify scoring constants in `games.js`
 - **Default Settings**: Change default values in `app.js` (lines 8-75)
 - **Game Rules**: Adjust game logic in respective game functions in `games.js`
+- **Debug Panel Defaults**: Adjust initial values in `debug-panel.js`
 
 ## Browser Support
 
@@ -153,18 +165,25 @@ You can also customize by editing the source files:
 1. **Projector Setup**: Ensure projector is properly aligned with the throwing area
 2. **Lighting**: Dim room lighting for best projection visibility
 3. **Calibration**: Test click accuracy before starting games
+   - Use the debug panel (Ctrl+Shift+D) to adjust element sizes for your specific projector setup
 4. **Player Names**: Use short names for better display on scoreboard
 5. **Browser**: Use fullscreen mode (F11) for immersive experience
+6. **Resolution**: For best results, use a tablet with 1200x1920 resolution
 
 ## Recent Updates
 
 - ✅ 18 total games (up from original 8)
+- ✅ Debug panel with real-time size adjustments and touch-friendly controls
+- ✅ Optimized for 1200x1920 tablet resolution
+- ✅ Fixed Connect Four bugs and improved game stability
+- ✅ Enhanced scrollability and slider functionality in debug panel
 - ✅ In-game modal dialogs for better UX
 - ✅ Comprehensive settings menu
 - ✅ Undo functionality with proper state restoration
 - ✅ Multiple game categories (2-player, multiplayer, party games)
 - ✅ Seasonal/themed games (Date Night, Merry Axe-mas)
 - ✅ Improved visual feedback (score displays, animations)
+- ✅ Point labels added to bullseye and BAD AXE targets
 
 ## Potential Future Enhancements
 
